@@ -123,11 +123,11 @@ async def test_diagnostics_with_coordinator_data() -> None:
         food_categories=[],
     )
 
-    coordinator = MagicMock()
+    coordinator = MagicMock(spec=["data", "last_update_success", "ai_task_entity", "_ai_estimates"])
     coordinator.data = cellar_data
     coordinator.last_update_success = True
     coordinator.ai_task_entity = "conversation.openai"
-    coordinator._stored_ai_windows = {"123": {"start_year": 2024, "end_year": 2035}}
+    coordinator._ai_estimates = {"123": {"start_year": 2024, "end_year": 2035}}
 
     hass.data = {DOMAIN: {entry.entry_id: coordinator}}
 
@@ -160,6 +160,29 @@ async def test_diagnostics_without_coordinator() -> None:
 
     assert "entry" in diag
     assert "coordinator" not in diag
+
+
+@pytest.mark.asyncio
+async def test_diagnostics_stored_ai_windows_fallback() -> None:
+    """Test diagnostics falls back to _stored_ai_windows when _ai_estimates is absent."""
+    hass = MockHass()
+    entry = MockConfigEntry()
+
+    coordinator = MagicMock(spec=["data", "last_update_success", "ai_task_entity", "_stored_ai_windows"])
+    coordinator.data = None
+    coordinator.last_update_success = True
+    coordinator.ai_task_entity = None
+    coordinator._stored_ai_windows = {
+        "101": {"start_year": 2023, "end_year": 2028},
+        "102": {"start_year": 2025, "end_year": 2030},
+    }
+
+    hass.data = {DOMAIN: {entry.entry_id: coordinator}}
+
+    diag = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "coordinator" in diag
+    assert diag["coordinator"]["stored_ai_windows_count"] == 2
 
 
 @pytest.mark.asyncio

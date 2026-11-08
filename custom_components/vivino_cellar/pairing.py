@@ -21,6 +21,31 @@ WINDOW_MULTIPLIERS: dict[str, float] = {
 }
 
 ZERO_WEIGHT_BONUS = 0.1
+STYLE_FOOD_FALLBACK_WEIGHT = 0.3
+
+# Standard Vivino food category ID -> (Name, seo_name)
+KNOWN_FOOD_CATEGORIES: dict[int, tuple[str, str]] = {
+    1: ("Beef", "beef"),
+    2: ("Pork", "pork"),
+    3: ("Game", "game"),
+    4: ("Poultry", "poultry"),
+    5: ("Pasta", "pasta"),
+    6: ("Veal", "veal"),
+    7: ("Cured Meat", "cured-meat"),
+    8: ("Rich Fish", "rich-fish"),
+    9: ("Sweet Desserts", "sweet-dessert"),
+    10: ("Blue Cheese", "blue-cheese"),
+    11: ("Spicy Food", "spicy-food"),
+    12: ("Aperitif", "aperitif"),
+    13: ("Fruity Desserts", "fruity-dessert"),
+    14: ("Lean Fish", "lean-fish"),
+    15: ("Mild Cheese", "mild-cheese"),
+    16: ("Goat Cheese", "goat-cheese"),
+    17: ("Lamb", "lamb"),
+    18: ("Vegetarian", "vegetarian"),
+    19: ("Shellfish", "shellfish"),
+    20: ("Mushrooms", "mushrooms"),
+}
 
 
 @dataclass(slots=True)
@@ -53,6 +78,30 @@ def score_vintages(
     if not vintages or not target_food_weights or max_results <= 0:
         return []
 
+    # Build target food name/seo_name mapping from vintages and known categories
+    target_names_by_id: dict[int, set[str]] = {}
+    target_display_by_id: dict[int, str] = {}
+
+    for v in vintages:
+        for f in v.foods:
+            if f.id in target_food_weights:
+                s = target_names_by_id.setdefault(f.id, set())
+                if f.name:
+                    s.add(f.name.strip().lower())
+                if f.seo_name:
+                    s.add(f.seo_name.strip().lower())
+                if f.id not in target_display_by_id and f.name:
+                    target_display_by_id[f.id] = f.name
+
+    for fid in target_food_weights:
+        if fid in KNOWN_FOOD_CATEGORIES:
+            k_name, k_seo = KNOWN_FOOD_CATEGORIES[fid]
+            s = target_names_by_id.setdefault(fid, set())
+            s.add(k_name.strip().lower())
+            s.add(k_seo.strip().lower())
+            if fid not in target_display_by_id:
+                target_display_by_id[fid] = k_name
+
     results: list[PairingResult] = []
 
     for vintage in vintages:
@@ -62,15 +111,46 @@ def score_vintages(
         raw_match_score = 0.0
         matched_foods: list[tuple[float, str]] = []
 
-        for food in vintage.foods:
-            if food.id in target_food_weights:
-                target_weight = target_food_weights[food.id]
-                if target_weight <= 0.0:
+        if vintage.foods:
+            for food in vintage.foods:
+                if food.id in target_food_weights:
+                    target_weight = target_food_weights[food.id]
+                    if target_weight <= 0.0:
+                        continue
+                    wine_weight = ZERO_WEIGHT_BONUS if food.weight == 0.0 else food.weight
+                    contribution = target_weight * wine_weight
+                    raw_match_score += contribution
+                    matched_foods.append((contribution, food.name))
+        elif vintage.style and vintage.style.food:
+            matched_target_ids: set[int] = set()
+            for item in vintage.style.food:
+                if isinstance(item, dict):
+                    item_str = item.get("seo_name") or item.get("name") or ""
+                else:
+                    item_str = str(item)
+                item_clean = item_str.strip().lower()
+                if not item_clean:
                     continue
-                wine_weight = ZERO_WEIGHT_BONUS if food.weight == 0.0 else food.weight
-                contribution = target_weight * wine_weight
-                raw_match_score += contribution
-                matched_foods.append((contribution, food.name))
+
+                for fid, target_weight in target_food_weights.items():
+                    if target_weight <= 0.0 or fid in matched_target_ids:
+                        continue
+                    names_for_id = target_names_by_id.get(fid, set())
+                    matched = False
+                    if item_clean in names_for_id:
+                        matched = True
+                    else:
+                        for candidate in names_for_id:
+                            if item_clean in candidate or candidate in item_clean:
+                                matched = True
+                                break
+
+                    if matched:
+                        matched_target_ids.add(fid)
+                        contribution = target_weight * STYLE_FOOD_FALLBACK_WEIGHT
+                        raw_match_score += contribution
+                        display_name = target_display_by_id.get(fid, item_str.strip().title())
+                        matched_foods.append((contribution, display_name))
 
         if raw_match_score <= 0.0:
             continue

@@ -152,7 +152,7 @@ export class VivinoCellarCard extends HTMLElement {
       }
 
       const res = await this._hass.callWS(payload);
-      this._pairingResults = res.pairings || [];
+      this._pairingResults = res.matches || res.pairings || [];
     } catch (err) {
       this._pairingError = err.message || "Fout bij zoeken naar pairing.";
       this._pairingResults = null;
@@ -552,8 +552,8 @@ export class VivinoCellarCard extends HTMLElement {
           </div>
 
           ${
-            showReason && wine.reason
-              ? `<div class="pairing-reason">${wine.reason}</div>`
+            showReason && (wine.explanation || wine.reason)
+              ? `<div class="pairing-reason">${wine.explanation || wine.reason}</div>`
               : ""
           }
 

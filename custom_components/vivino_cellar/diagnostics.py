@@ -80,7 +80,11 @@ async def async_get_config_entry_diagnostics(
             "last_update_success": getattr(coordinator, "last_update_success", True),
             "ai_task_entity": getattr(coordinator, "ai_task_entity", None),
             "stored_ai_windows_count": len(
-                getattr(coordinator, "_stored_ai_windows", {})
+                getattr(
+                    coordinator,
+                    "_ai_estimates",
+                    getattr(coordinator, "_stored_ai_windows", {}),
+                )
             ),
         }
         if cellar_data and cellar_data.vintages is not None:

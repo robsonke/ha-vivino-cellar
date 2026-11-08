@@ -92,6 +92,7 @@ def mock_hass():
     """Create a mock HomeAssistant instance."""
     hass = MagicMock()
     hass.data = {}
+    hass.client_session = MagicMock()
     hass.http = MockHttp()
     frontend = MockFrontend()
     hass.components = MagicMock()

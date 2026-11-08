@@ -347,6 +347,28 @@ async def test_coordinator_fetch_error_raises_update_failed(
         await coordinator.async_refresh()
 
 
+async def test_coordinator_auth_error_raises_config_entry_auth_failed(
+    mock_hass: MockHass, mock_client: MagicMock
+) -> None:
+    """Test coordinator raises ConfigEntryAuthFailed when VivinoAuthError is raised."""
+    from custom_components.vivino_cellar.coordinator import ConfigEntryAuthFailed
+    from custom_components.vivino_cellar.exceptions import VivinoAuthError
+
+    mock_client.async_fetch_cellar.side_effect = VivinoAuthError("Session expired")
+
+    coordinator = VivinoCellarCoordinator(
+        mock_hass,
+        mock_client,
+        ai_task_entity=None,
+    )
+
+    with pytest.raises(
+        ConfigEntryAuthFailed,
+        match="Vivino authentication failed or session expired",
+    ):
+        await coordinator._async_update_data()
+
+
 async def test_async_drink_bottle_failure_raises(
     mock_hass: MockHass, mock_client: MagicMock
 ) -> None:

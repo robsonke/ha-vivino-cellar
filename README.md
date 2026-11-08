@@ -150,7 +150,7 @@ Or by Vivino food category ID:
 ```yaml
 action: vivino_cellar.suggest_pairing
 data:
-  food_categories: [1, 5]
+  food_ids: [1, 5]
 ```
 
 ### `vivino_cellar.drink_bottle`

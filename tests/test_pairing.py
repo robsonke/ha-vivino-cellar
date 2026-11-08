@@ -1,6 +1,11 @@
 """Tests for the Vivino Cellar wine pairing engine."""
 
-from custom_components.vivino_cellar.models import Bottle, FoodCategory, Vintage
+from custom_components.vivino_cellar.models import (
+    Bottle,
+    FoodCategory,
+    Vintage,
+    WineStyle,
+)
 from custom_components.vivino_cellar.pairing import PairingResult, score_vintages
 
 
@@ -476,3 +481,107 @@ def test_pairing_empty_inputs():
 
     assert score_vintages([], {10: 1.0}, current_year=2026) == []
     assert score_vintages([vintage], {}, current_year=2026) == []
+
+
+def test_pairing_style_food_fallback():
+    """Test fallback to vintage.style.food when vintage.foods is empty."""
+    bottle = _make_bottle()
+
+    # Vintage with empty foods but style.food matching "beef"
+    v_style_match = Vintage(
+        id=1,
+        year=2020,
+        name="Barolo with Style Match",
+        winery="Vietti",
+        region="Piedmont",
+        country="Italy",
+        type_id=1,
+        grapes=["Nebbiolo"],
+        image_url=None,
+        rating=4.5,
+        ratings_count=100,
+        foods=[],
+        style=WineStyle(
+            name="Italian Barolo",
+            body=4.5,
+            acidity=4.0,
+            food=["Beef", "Game"],
+        ),
+        bottles=[bottle],
+        start_year=2022,
+        end_year=2028,
+        window_source="vivino",
+    )
+
+    # Vintage with empty foods and style.food not matching "beef"
+    v_style_no_match = Vintage(
+        id=2,
+        year=2022,
+        name="Chablis with Fish Style",
+        winery="William Fèvre",
+        region="Chablis",
+        country="France",
+        type_id=2,
+        grapes=["Chardonnay"],
+        image_url=None,
+        rating=4.3,
+        ratings_count=80,
+        foods=[],
+        style=WineStyle(
+            name="French Chablis",
+            body=2.0,
+            acidity=4.5,
+            food=["Shellfish", "Lean Fish"],
+        ),
+        bottles=[bottle],
+        start_year=2024,
+        end_year=2030,
+        window_source="vivino",
+    )
+
+    # Target: Beef (standard Vivino ID 1, or custom ID 10 with reference category)
+    # Using Vivino standard category 1 (Beef)
+    results = score_vintages(
+        [v_style_match, v_style_no_match],
+        {1: 1.0},
+        current_year=2026,
+    )
+
+    assert len(results) == 1
+    assert results[0].vintage.id == 1
+    # Fallback score: target_weight (1.0) * fallback (0.3) * ready multiplier (1.2) = 0.36
+    assert results[0].match_score == 0.36
+    assert results[0].window_status == "ready"
+    assert "Beef" in results[0].explanation
+
+    # Also test matching when food category name/seo_name comes from another vintage in cellar
+    v_reference = Vintage(
+        id=3,
+        year=2021,
+        name="Cabernet with food cat",
+        winery="Mondavi",
+        region="Napa",
+        country="USA",
+        type_id=1,
+        grapes=["Cabernet Sauvignon"],
+        image_url=None,
+        rating=4.2,
+        ratings_count=50,
+        foods=[FoodCategory(id=99, name="Beef", seo_name="beef", weight=0.5)],
+        style=None,
+        bottles=[bottle],
+        start_year=2023,
+        end_year=2029,
+        window_source="vivino",
+    )
+
+    results_custom_id = score_vintages(
+        [v_style_match, v_reference],
+        {99: 1.0},
+        current_year=2026,
+    )
+    # Both v_reference (via foods) and v_style_match (via style.food fallback) should match
+    assert len(results_custom_id) == 2
+    matched_ids = [r.vintage.id for r in results_custom_id]
+    assert 1 in matched_ids
+    assert 3 in matched_ids

@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from .exceptions import VivinoError
+from .exceptions import VivinoAuthError, VivinoError
 from .models import CellarData, Vintage
 from .pairing import PairingResult, score_vintages
 from .vivino_client import VivinoClient
@@ -21,6 +21,7 @@ STORAGE_KEY_PREFIX = "vivino_cellar_ai_windows"
 
 try:
     from homeassistant.core import HomeAssistant
+    from homeassistant.exceptions import ConfigEntryAuthFailed
     from homeassistant.helpers.storage import Store
     from homeassistant.helpers.update_coordinator import (
         DataUpdateCoordinator,
@@ -30,6 +31,9 @@ except ImportError:
     # Graceful fallback stubs when running in test environment without Home Assistant
     class HomeAssistant:  # type: ignore[no-redef]
         """Stub Home Assistant core."""
+
+    class ConfigEntryAuthFailed(Exception):  # type: ignore[no-redef]
+        """Stub exception indicating authentication failure."""
 
     class UpdateFailed(Exception):  # type: ignore[no-redef]
         """Stub exception indicating update failure."""
@@ -224,6 +228,10 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
 
         try:
             cellar_data = await self.client.async_fetch_cellar()
+        except VivinoAuthError as err:
+            raise ConfigEntryAuthFailed(
+                f"Vivino authentication failed or session expired: {err}"
+            ) from err
         except Exception as err:
             raise UpdateFailed(
                 f"Error fetching cellar data from Vivino: {err}"
