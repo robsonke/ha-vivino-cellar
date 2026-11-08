@@ -28,5 +28,32 @@
       "already_configured": "Deze Vivino wijnkelder is al geconfigureerd.",
       "reauth_successful": "Herauthenticatie is geslaagd."
     }
+  },
+  "entity": {
+    "sensor": {
+      "total_bottles": {
+        "name": "Totaal aantal flessen"
+      },
+      "ready": {
+        "name": "Op dronk"
+      },
+      "near_past_peak": {
+        "name": "Bijna over het hoogtepunt"
+      },
+      "hold": {
+        "name": "Bewaren"
+      },
+      "past_peak": {
+        "name": "Over het hoogtepunt"
+      },
+      "unknown": {
+        "name": "Onbekend drinkvenster"
+      }
+    },
+    "button": {
+      "refresh_cellar": {
+        "name": "Kelder vernieuwen"
+      }
+    }
   }
 }

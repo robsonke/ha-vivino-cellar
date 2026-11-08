@@ -79,6 +79,10 @@ except ImportError:
             self.last_update_success_time = datetime.now(UTC)
             self.async_update_listeners()
 
+        async def async_config_entry_first_refresh(self) -> None:
+            """Refresh data for first config entry setup."""
+            await self.async_refresh()
+
         async def _async_update_data(self) -> T:
             raise NotImplementedError
 

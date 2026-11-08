@@ -28,5 +28,32 @@
       "already_configured": "This Vivino cellar is already configured.",
       "reauth_successful": "Re-authentication was successful."
     }
+  },
+  "entity": {
+    "sensor": {
+      "total_bottles": {
+        "name": "Total bottles"
+      },
+      "ready": {
+        "name": "Ready to drink"
+      },
+      "near_past_peak": {
+        "name": "Near past peak"
+      },
+      "hold": {
+        "name": "Hold"
+      },
+      "past_peak": {
+        "name": "Past peak"
+      },
+      "unknown": {
+        "name": "Unknown window"
+      }
+    },
+    "button": {
+      "refresh_cellar": {
+        "name": "Refresh cellar"
+      }
+    }
   }
 }
