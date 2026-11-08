@@ -14,3 +14,10 @@ SERVICE_REFRESH = "refresh"
 # Assist Voice Intent
 INTENT_SUGGEST_WINE = "VivinoCellarSuggestWine"
 
+# WebSocket API Commands
+WS_TYPE_CELLAR = "vivino_cellar/cellar"
+WS_TYPE_PAIRING = "vivino_cellar/pairing"
+WS_TYPE_DRINK = "vivino_cellar/drink"
+WS_TYPE_REFRESH = "vivino_cellar/refresh"
+
+
