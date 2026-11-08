@@ -14,6 +14,10 @@ _LOGGER = logging.getLogger(__name__)
 try:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers import intent
+
+    Intent = intent.Intent
+    IntentResponse = intent.IntentResponse
+    IntentHandler = intent.IntentHandler
 except ImportError:
 
     class IntentResponse:  # type: ignore[no-redef]

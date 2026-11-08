@@ -157,7 +157,13 @@ except ImportError:
                 actual_handler = command_or_handler
                 actual_schema = getattr(actual_handler, "_ws_schema", None)
                 cmd_type = None
-                if actual_schema and hasattr(actual_schema, "schema"):
+                if isinstance(actual_schema, dict):
+                    for k, v in actual_schema.items():
+                        key_name = getattr(k, "schema", k)
+                        if key_name == "type":
+                            cmd_type = v
+                            break
+                elif actual_schema and hasattr(actual_schema, "schema"):
                     for k, v in actual_schema.schema.items():
                         key_name = getattr(k, "schema", k)
                         if key_name == "type":
@@ -179,37 +185,29 @@ except ImportError:
             }
 
 
-SCHEMA_WS_CELLAR = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
-    {
-        vol.Required("type"): WS_TYPE_CELLAR,
-        vol.Optional("entry_id"): cv.string,
-    }
-)
+SCHEMA_WS_CELLAR = {
+    vol.Required("type"): WS_TYPE_CELLAR,
+    vol.Optional("entry_id"): cv.string,
+}
 
-SCHEMA_WS_PAIRING = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
-    {
-        vol.Required("type"): WS_TYPE_PAIRING,
-        vol.Optional("dish"): cv.string,
-        vol.Optional("food_ids"): vol.All(cv.ensure_list, [cv.positive_int]),
-        vol.Optional("entry_id"): cv.string,
-    }
-)
+SCHEMA_WS_PAIRING = {
+    vol.Required("type"): WS_TYPE_PAIRING,
+    vol.Optional("dish"): cv.string,
+    vol.Optional("food_ids"): vol.All(cv.ensure_list, [cv.positive_int]),
+    vol.Optional("entry_id"): cv.string,
+}
 
-SCHEMA_WS_DRINK = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
-    {
-        vol.Required("type"): WS_TYPE_DRINK,
-        vol.Required("bottle_id"): cv.positive_int,
-        vol.Optional("vintage_id"): cv.positive_int,
-        vol.Optional("entry_id"): cv.string,
-    }
-)
+SCHEMA_WS_DRINK = {
+    vol.Required("type"): WS_TYPE_DRINK,
+    vol.Required("bottle_id"): cv.positive_int,
+    vol.Optional("vintage_id"): cv.positive_int,
+    vol.Optional("entry_id"): cv.string,
+}
 
-SCHEMA_WS_REFRESH = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
-    {
-        vol.Required("type"): WS_TYPE_REFRESH,
-        vol.Optional("entry_id"): cv.string,
-    }
-)
+SCHEMA_WS_REFRESH = {
+    vol.Required("type"): WS_TYPE_REFRESH,
+    vol.Optional("entry_id"): cv.string,
+}
 
 
 def _get_coordinator(hass: Any, entry_id: str | None = None) -> VivinoCellarCoordinator:
