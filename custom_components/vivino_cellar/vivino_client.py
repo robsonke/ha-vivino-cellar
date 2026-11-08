@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-import asyncio
 import html
-from http.cookies import SimpleCookie
 import json
 import logging
 import re
+from http.cookies import CookieError, SimpleCookie
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import unquote
 
 import aiohttp
 
 from .exceptions import (
     VivinoAuthError,
     VivinoConnectionError,
+    VivinoError,
     VivinoParseError,
 )
 from .models import Bottle, CellarData, FoodCategory, Vintage, WineStyle
@@ -29,6 +29,32 @@ DATA_PAGE_PATTERN = re.compile(
     r"""data-page=(['"])(.*?)\1""",
     re.DOTALL,
 )
+CSRF_META_PATTERN = re.compile(
+    r'<meta\s+[^>]*name=["\']csrf-token["\'][^>]*content=["\']([^"\']+)["\']|<meta\s+[^>]*content=["\']([^"\']+)["\'][^>]*name=["\']csrf-token["\']',
+    re.IGNORECASE,
+)
+
+
+def _split_cookie(cookie_header: str) -> dict[str, str]:
+    """Parse a name=value; name2=value2 cookie header into a dict."""
+    out: dict[str, str] = {}
+    for part in (cookie_header or "").split(";"):
+        part = part.strip()
+        if "=" in part:
+            k, v = part.split("=", 1)
+            out[k.strip()] = v.strip()
+    return out
+
+
+def _parse_set_cookies(headers: Any) -> dict[str, str]:
+    """Extract name=value pairs from a response's Set-Cookie headers."""
+    out: dict[str, str] = {}
+    for c in headers.getall("Set-Cookie", []):
+        nv = c.split(";", 1)[0]
+        if "=" in nv:
+            k, v = nv.split("=", 1)
+            out[k.strip()] = v.strip()
+    return out
 
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -85,7 +111,7 @@ class VivinoClient:
             cookie_obj = SimpleCookie()
             try:
                 cookie_obj.load(sc)
-            except Exception:
+            except CookieError:
                 continue
 
             if "_ruby-web_session" in cookie_obj:
@@ -155,7 +181,7 @@ class VivinoClient:
                 return version
         except (VivinoAuthError, VivinoParseError):
             raise
-        except (aiohttp.ClientError, asyncio.TimeoutError) as err:
+        except (TimeoutError, aiohttp.ClientError) as err:
             raise VivinoConnectionError(f"Connection error fetching cellar HTML: {err}") from err
 
     async def _fetch_deferred_page(self, page: int, retries: int = 1) -> dict[str, Any]:
@@ -200,7 +226,7 @@ class VivinoClient:
                 return await response.json()
         except (VivinoAuthError, VivinoParseError):
             raise
-        except (aiohttp.ClientError, asyncio.TimeoutError) as err:
+        except (TimeoutError, aiohttp.ClientError) as err:
             raise VivinoConnectionError(f"Connection error fetching page {page}: {err}") from err
 
     def _parse_entry(self, entry: dict[str, Any]) -> Vintage:
@@ -394,3 +420,187 @@ class VivinoClient:
             vintages=vintages,
             food_categories=list(unique_foods.values()),
         )
+
+    def _extract_csrf_from_html(self, html_content: str) -> str | None:
+        """Extract CSRF token from HTML meta tag."""
+        match = CSRF_META_PATTERN.search(html_content)
+        if match:
+            return match.group(1) or match.group(2)
+        return None
+
+    async def _load_write_context(self) -> tuple[str, str | None, str]:
+        """Fetch cellar page HTML to extract CSRF token, version, and cookies.
+
+        Returns (csrf_token, xsrf_token_or_none, cookie_header).
+        """
+        headers = {
+            "User-Agent": DEFAULT_USER_AGENT,
+            "Cookie": self._current_cookie_header,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        }
+        try:
+            async with self._session.get(self._base_url, headers=headers, allow_redirects=False) as response:
+                self._check_cookie_rotation(response.headers)
+                fresh_cookies = _parse_set_cookies(response.headers)
+
+                if response.status in (301, 302, 303, 307, 308):
+                    location = response.headers.get("Location", "")
+                    raise VivinoAuthError(
+                        f"Session expired or login redirect: redirected to {location}"
+                    )
+                if response.status in (401, 403):
+                    raise VivinoAuthError(f"Authentication failed with status {response.status}")
+                if response.status != 200:
+                    raise VivinoParseError(f"Unexpected HTTP status {response.status} fetching write context")
+
+                content = await response.text()
+        except (VivinoAuthError, VivinoParseError):
+            raise
+        except (TimeoutError, aiohttp.ClientError) as err:
+            raise VivinoConnectionError(f"Connection error fetching write context: {err}") from err
+
+        # Extract CSRF token
+        csrf_token = self._extract_csrf_from_html(content)
+        if not csrf_token:
+            csrf_token = fresh_cookies.get("csrf_token") or fresh_cookies.get("XSRF-TOKEN")
+            if not csrf_token:
+                current_cookies = _split_cookie(self._current_cookie_header)
+                csrf_token = current_cookies.get("csrf_token") or current_cookies.get("XSRF-TOKEN")
+
+        if not csrf_token:
+            raise VivinoParseError("Could not extract CSRF token from cellar page")
+
+        # Extract version if present
+        try:
+            version = self._extract_version_from_html(content)
+            self.version = version
+        except VivinoParseError:
+            pass
+
+        all_cookies = _split_cookie(self._current_cookie_header)
+        all_cookies.update(fresh_cookies)
+        cookie_header = "; ".join(f"{k}={v}" for k, v in all_cookies.items())
+
+        xsrf_val = all_cookies.get("XSRF-TOKEN")
+        xsrf_token = unquote(xsrf_val) if xsrf_val else None
+
+        return csrf_token, xsrf_token, cookie_header
+
+    async def async_remove_bottle(
+        self,
+        bottle_id: int,
+        vintage_id: int | None = None,
+    ) -> bool:
+        """Remove a bottle from the Vivino cellar.
+
+        Extracts CSRF token and write context from cellar page, then posts bottle
+        removal event. If bottle-specific deletion fails with 4xx and vintage_id is
+        provided, falls back to decrementing count for vintage_id.
+        """
+        csrf_token, xsrf_token, cookie_header = await self._load_write_context()
+
+        events_url = f"https://www.vivino.com/cellars/{self.cellar_id}/events"
+        headers = {
+            "User-Agent": DEFAULT_USER_AGENT,
+            "Cookie": cookie_header,
+            "Accept": "text/html, application/xhtml+xml, application/json",
+            "Content-Type": "application/json",
+            "X-Inertia": "true",
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRF-Token": csrf_token,
+            "Origin": "https://www.vivino.com",
+            "Referer": self._base_url,
+        }
+        if self.version:
+            headers["X-Inertia-Version"] = self.version
+        if xsrf_token:
+            headers["X-XSRF-TOKEN"] = xsrf_token
+
+        payload: dict[str, Any] = {
+            "bottle_id": bottle_id,
+            "type": "consume",
+            "count": 1,
+        }
+        if vintage_id is not None:
+            payload["vintage_id"] = vintage_id
+
+        try:
+            async with self._session.post(
+                events_url,
+                headers=headers,
+                json=payload,
+                allow_redirects=False,
+            ) as response:
+                self._check_cookie_rotation(response.headers)
+
+                if response.status in (301, 302, 303, 307, 308):
+                    location = response.headers.get("Location", "")
+                    if "login" in location.lower():
+                        raise VivinoAuthError(
+                            f"Session expired during bottle removal: redirected to {location}"
+                        )
+                    return True
+
+                if response.status in (401, 403):
+                    raise VivinoAuthError(f"Authentication failed during bottle removal: HTTP {response.status}")
+
+                if response.status in (200, 201, 204):
+                    return True
+
+                # If bottle-specific event fails with 400, 404, 405, 422, try vintage decrement fallback
+                if response.status in (400, 404, 405, 422) and vintage_id is not None:
+                    _LOGGER.info(
+                        "Bottle-specific removal failed with HTTP %s; falling back to vintage count decrement for vintage %s",
+                        response.status,
+                        vintage_id,
+                    )
+                    return await self._decrement_vintage_count(vintage_id, headers, events_url)
+
+                raise VivinoError(f"Bottle removal failed with HTTP status {response.status}")
+        except (VivinoAuthError, VivinoError):
+            raise
+        except (TimeoutError, aiohttp.ClientError) as err:
+            raise VivinoConnectionError(f"Connection error during bottle removal: {err}") from err
+
+    async def _decrement_vintage_count(
+        self,
+        vintage_id: int,
+        headers: dict[str, str],
+        events_url: str,
+    ) -> bool:
+        """Decrement count for vintage as fallback."""
+        payload = {
+            "vintage_id": vintage_id,
+            "type": "consume",
+            "count": 1,
+        }
+        try:
+            async with self._session.post(
+                events_url,
+                headers=headers,
+                json=payload,
+                allow_redirects=False,
+            ) as response:
+                self._check_cookie_rotation(response.headers)
+
+                if response.status in (301, 302, 303, 307, 308):
+                    location = response.headers.get("Location", "")
+                    if "login" in location.lower():
+                        raise VivinoAuthError(
+                            f"Session expired during vintage count decrement: redirected to {location}"
+                        )
+                    return True
+
+                if response.status in (401, 403):
+                    raise VivinoAuthError(
+                        f"Authentication failed during vintage count decrement: HTTP {response.status}"
+                    )
+
+                if response.status in (200, 201, 204):
+                    return True
+
+                raise VivinoError(f"Vintage count decrement failed with HTTP status {response.status}")
+        except (VivinoAuthError, VivinoError):
+            raise
+        except (TimeoutError, aiohttp.ClientError) as err:
+            raise VivinoConnectionError(f"Connection error during vintage count decrement: {err}") from err
