@@ -8,6 +8,7 @@ from typing import Any
 from .const import CONF_AI_TASK, CONF_CELLAR_URL, CONF_COOKIE, DOMAIN
 from .coordinator import VivinoCellarCoordinator
 from .intent import async_setup_intents, async_unload_intents
+from .panel import async_register_frontend, async_unregister_frontend
 from .services import async_setup_services, async_unload_services
 from .vivino_client import VivinoClient
 from .websocket_api import async_setup_websocket_api, async_unload_websocket_api
@@ -103,6 +104,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await async_setup_services(hass)
     await async_setup_intents(hass)
     await async_setup_websocket_api(hass)
+    await async_register_frontend(hass)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -118,5 +120,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await async_unload_services(hass)
             await async_unload_intents(hass)
             await async_unload_websocket_api(hass)
+            await async_unregister_frontend(hass)
 
     return unload_ok
