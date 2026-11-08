@@ -174,7 +174,6 @@ def mock_coordinator() -> MagicMock:
     coord.async_drink_bottle = AsyncMock()
     coord.async_refresh = AsyncMock()
 
-    b1 = coord.data.vintages[0].bottles[0]
     pairing_res = [
         PairingResult(
             vintage=coord.data.vintages[0],

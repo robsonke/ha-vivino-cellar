@@ -82,7 +82,13 @@ except ImportError:
 
         class Schema:
             def __init__(self, schema: Any) -> None:
-                self.schema = schema
+                self.schema = dict(schema) if isinstance(schema, dict) else schema
+
+            def extend(self, extra_schema: Any) -> vol.Schema:
+                new_schema = dict(self.schema) if isinstance(self.schema, dict) else {}
+                if isinstance(extra_schema, dict):
+                    new_schema.update(extra_schema)
+                return vol.Schema(new_schema)
 
             def __call__(self, data: Any) -> Any:
                 if not isinstance(data, dict):
@@ -114,6 +120,13 @@ except ImportError:
         ERR_UNKNOWN_ERROR = "unknown_error"
         ERR_INVALID_FORMAT = "invalid_format"
         ERR_UNAUTHORIZED = "unauthorized"
+
+        BASE_COMMAND_MESSAGE_SCHEMA = vol.Schema(
+            {
+                vol.Required("id"): cv.positive_int,
+                vol.Required("type"): cv.string,
+            }
+        )
 
         @staticmethod
         def websocket_command(schema: Any) -> Callable[[Any], Any]:
@@ -166,14 +179,14 @@ except ImportError:
             }
 
 
-SCHEMA_WS_CELLAR = vol.Schema(
+SCHEMA_WS_CELLAR = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
     {
         vol.Required("type"): WS_TYPE_CELLAR,
         vol.Optional("entry_id"): cv.string,
     }
 )
 
-SCHEMA_WS_PAIRING = vol.Schema(
+SCHEMA_WS_PAIRING = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
     {
         vol.Required("type"): WS_TYPE_PAIRING,
         vol.Optional("dish"): cv.string,
@@ -182,7 +195,7 @@ SCHEMA_WS_PAIRING = vol.Schema(
     }
 )
 
-SCHEMA_WS_DRINK = vol.Schema(
+SCHEMA_WS_DRINK = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
     {
         vol.Required("type"): WS_TYPE_DRINK,
         vol.Required("bottle_id"): cv.positive_int,
@@ -191,7 +204,7 @@ SCHEMA_WS_DRINK = vol.Schema(
     }
 )
 
-SCHEMA_WS_REFRESH = vol.Schema(
+SCHEMA_WS_REFRESH = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
     {
         vol.Required("type"): WS_TYPE_REFRESH,
         vol.Optional("entry_id"): cv.string,
@@ -464,7 +477,7 @@ async def ws_drink(
 
     try:
         clean_bottle_id = int(bottle_id)
-    except (TypeError, ValueError) as err:
+    except (TypeError, ValueError):
         connection.send_error(
             msg["id"],
             websocket_api.ERR_INVALID_FORMAT,
@@ -476,7 +489,7 @@ async def ws_drink(
     if msg.get("vintage_id") is not None:
         try:
             clean_vintage_id = int(msg["vintage_id"])
-        except (TypeError, ValueError) as err:
+        except (TypeError, ValueError):
             connection.send_error(
                 msg["id"],
                 websocket_api.ERR_INVALID_FORMAT,
