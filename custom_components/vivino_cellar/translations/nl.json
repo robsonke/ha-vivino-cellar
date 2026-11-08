@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Verbind Vivino Wijnkelder",
+        "description": "Voer je Vivino kelder-URL en sessie-cookie in.",
+        "data": {
+          "cellar_url": "Kelder-URL",
+          "cookie": "Sessie-cookie",
+          "ai_task": "AI Taak Entiteit (optioneel)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Opnieuw verifiëren bij Vivino",
+        "description": "Je Vivino-sessie is verlopen. Voer een nieuwe sessie-cookie in.",
+        "data": {
+          "cookie": "Sessie-cookie"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ongeldige of verlopen sessie-cookie.",
+      "invalid_url": "Ongeldige Vivino kelder-URL. Verwacht formaat: https://www.vivino.com/{locale}/cellars/{id}",
+      "cannot_connect": "Kan geen verbinding maken met Vivino. Controleer je internetverbinding.",
+      "unknown": "Er is een onverwachte fout opgetreden."
+    },
+    "abort": {
+      "already_configured": "Deze Vivino wijnkelder is al geconfigureerd.",
+      "reauth_successful": "Herauthenticatie is geslaagd."
+    }
+  }
+}

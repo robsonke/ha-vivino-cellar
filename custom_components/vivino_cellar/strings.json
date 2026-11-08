@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Vivino Cellar",
+        "description": "Enter your Vivino cellar URL and session cookie.",
+        "data": {
+          "cellar_url": "Cellar URL",
+          "cookie": "Session Cookie",
+          "ai_task": "AI Task Entity (optional)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate with Vivino",
+        "description": "Your Vivino session has expired. Please enter a new session cookie.",
+        "data": {
+          "cookie": "Session Cookie"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid or expired session cookie.",
+      "invalid_url": "Invalid Vivino cellar URL. Expected format: https://www.vivino.com/{locale}/cellars/{id}",
+      "cannot_connect": "Failed to connect to Vivino. Please check your internet connection.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This Vivino cellar is already configured.",
+      "reauth_successful": "Re-authentication was successful."
+    }
+  }
+}
