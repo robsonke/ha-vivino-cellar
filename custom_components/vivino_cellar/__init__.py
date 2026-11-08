@@ -1,0 +1,1 @@
+"""The Vivino Cellar integration."""
