@@ -106,7 +106,6 @@ BUTTON_TYPES: tuple[ButtonEntityDescription, ...] = (
     ButtonEntityDescription(
         key="refresh_cellar",
         translation_key="refresh_cellar",
-        name="Refresh cellar",
         icon="mdi:refresh",
         device_class=ButtonDeviceClass.UPDATE,
     ),
@@ -129,7 +128,8 @@ class VivinoRefreshButton(CoordinatorEntity[VivinoCellarCoordinator], ButtonEnti
         self.entry = entry
         self.entity_description = description
         self._attr_translation_key = description.translation_key or description.key
-        self._attr_name = description.name
+        if not description.translation_key:
+            self._attr_name = description.name
         self._attr_unique_id = f"{entry.unique_id or entry.entry_id}_{description.key}"
         self._last_press_time: datetime | None = None
 

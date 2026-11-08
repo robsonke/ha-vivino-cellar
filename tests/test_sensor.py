@@ -311,6 +311,9 @@ def test_sensor_metadata(mock_coordinator: MagicMock) -> None:
 
     assert sensor.unique_id == f"{entry.unique_id}_{SENSOR_TYPES[0].key}"
     assert sensor.has_entity_name is True
+    assert sensor._attr_name is None
+    for desc in SENSOR_TYPES:
+        assert desc.state_class == "measurement"
     device_info = sensor.device_info
     assert (DOMAIN, "651553") in device_info.identifiers
     assert device_info.manufacturer == "Vivino"

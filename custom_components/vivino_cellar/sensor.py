@@ -125,50 +125,44 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     SensorEntityDescription(
         key="total_bottles",
         translation_key="total_bottles",
-        name="Total bottles",
         icon="mdi:bottle-wine",
         native_unit_of_measurement="bottles",
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorEntityDescription(
         key=WINDOW_STATUS_READY,
         translation_key="ready",
-        name="Ready to drink",
         icon="mdi:glass-wine",
         native_unit_of_measurement="bottles",
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorEntityDescription(
         key=WINDOW_STATUS_NEAR_PAST_PEAK,
         translation_key="near_past_peak",
-        name="Near past peak",
         icon="mdi:clock-alert-outline",
         native_unit_of_measurement="bottles",
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorEntityDescription(
         key=WINDOW_STATUS_HOLD,
         translation_key="hold",
-        name="Hold",
         icon="mdi:clock-outline",
         native_unit_of_measurement="bottles",
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorEntityDescription(
         key=WINDOW_STATUS_PAST_PEAK,
         translation_key="past_peak",
-        name="Past peak",
         icon="mdi:alert-circle-outline",
         native_unit_of_measurement="bottles",
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorEntityDescription(
         key=WINDOW_STATUS_UNKNOWN,
         translation_key="unknown",
-        name="Unknown window",
         icon="mdi:help-circle-outline",
         native_unit_of_measurement="bottles",
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
 )
 
@@ -189,7 +183,8 @@ class VivinoCellarSensor(CoordinatorEntity[VivinoCellarCoordinator], SensorEntit
         self.entry = entry
         self.entity_description = description
         self._attr_translation_key = description.translation_key or description.key
-        self._attr_name = description.name
+        if not description.translation_key:
+            self._attr_name = description.name
         self._attr_unique_id = f"{entry.unique_id or entry.entry_id}_{description.key}"
 
         cellar_id = (

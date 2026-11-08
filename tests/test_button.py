@@ -143,6 +143,7 @@ def test_button_metadata(mock_coordinator: MagicMock) -> None:
 
     assert button.unique_id == f"{entry.unique_id}_{BUTTON_TYPES[0].key}"
     assert button.has_entity_name is True
+    assert button._attr_name is None
     device_info = button.device_info
     assert (DOMAIN, "651553") in device_info.identifiers
     assert device_info.manufacturer == "Vivino"
