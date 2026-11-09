@@ -274,7 +274,7 @@ async def test_async_suggest_pairing_with_dish_ai_success(
     assert call_args[0][1] == "generate_data"
     service_data = call_args[0][2]
     assert service_data["entity_id"] == "conversation.wine_expert"
-    assert "Prime rib roast" in service_data["task"]
+    assert "Prime rib roast" in service_data["instructions"]
 
     assert len(results) > 0
     assert results[0].vintage.id == 1001

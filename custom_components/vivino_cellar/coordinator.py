@@ -337,7 +337,6 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
                     "entity_id": self.ai_task_entity,
                     "task_name": "estimate_drinking_window",
                     "instructions": prompt,
-                    "task": prompt,
                 }
 
                 response = await self.hass.services.async_call(
@@ -413,7 +412,6 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
                 "entity_id": self.ai_task_entity,
                 "task_name": "wine_pairing",
                 "instructions": prompt,
-                "task": prompt,
             }
 
             try:
