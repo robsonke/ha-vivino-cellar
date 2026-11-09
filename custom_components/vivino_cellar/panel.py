@@ -16,6 +16,7 @@ PANEL_TITLE = "Wijnkelder"
 PANEL_ICON = "mdi:bottle-wine"
 PANEL_WEBCOMPONENT = "vivino-cellar-card"
 CARD_JS = "vivino-cellar-card.js"
+VERSION = "0.1.0"
 
 DATA_FRONTEND_REGISTERED = f"{DOMAIN}_frontend_registered"
 
@@ -29,6 +30,22 @@ except ImportError:
             self.url_path = url_path
             self.path = path
             self.cache_headers = cache_headers
+
+
+def _get_panel_custom(hass: Any) -> Any:
+    """Get panel_custom component from hass or import."""
+    try:
+        from homeassistant.components import panel_custom
+
+        return panel_custom
+    except ImportError:
+        pass
+
+    if hasattr(hass, "components") and hasattr(hass.components, "panel_custom"):
+        return hass.components.panel_custom
+    if isinstance(getattr(hass, "data", None), dict) and "panel_custom" in hass.data:
+        return hass.data["panel_custom"]
+    return None
 
 
 def _get_frontend_component(hass: Any) -> Any:
@@ -79,8 +96,28 @@ async def async_register_frontend(hass: Any) -> None:
         except Exception as err:  # noqa: BLE001
             _LOGGER.debug("Could not add extra js url: %s", err)
 
-    # 4. Register sidebar panel
-    if frontend and hasattr(frontend, "async_register_panel"):
+    # 4. Register sidebar panel via panel_custom (standard HA API)
+    panel_custom = _get_panel_custom(hass)
+    registered = False
+
+    if panel_custom and hasattr(panel_custom, "async_register_panel"):
+        try:
+            await panel_custom.async_register_panel(
+                hass,
+                frontend_url_path=PANEL_URL,
+                webcomponent_name=PANEL_WEBCOMPONENT,
+                sidebar_title=PANEL_TITLE,
+                sidebar_icon=PANEL_ICON,
+                module_url=f"{card_url}?v={VERSION}",
+                require_admin=False,
+                config={},
+            )
+            registered = True
+            _LOGGER.info("Registered Vivino Cellar panel '%s' via panel_custom", PANEL_TITLE)
+        except Exception as err:  # noqa: BLE001
+            _LOGGER.warning("Failed to register Vivino Cellar panel via panel_custom: %s", err)
+
+    if not registered and frontend and hasattr(frontend, "async_register_panel"):
         try:
             frontend.async_register_panel(
                 hass,
@@ -90,9 +127,9 @@ async def async_register_frontend(hass: Any) -> None:
                 sidebar_icon=PANEL_ICON,
                 config={},
             )
-            _LOGGER.debug("Registered Vivino Cellar panel '%s'", PANEL_TITLE)
+            _LOGGER.info("Registered Vivino Cellar panel '%s' via frontend", PANEL_TITLE)
         except Exception as err:  # noqa: BLE001
-            _LOGGER.warning("Failed to register Vivino Cellar panel: %s", err)
+            _LOGGER.warning("Failed to register Vivino Cellar panel via frontend: %s", err)
 
     if hasattr(hass, "data") and isinstance(hass.data, dict):
         hass.data[DATA_FRONTEND_REGISTERED] = True

@@ -3,6 +3,7 @@
   "name": "Vivino Cellar",
   "codeowners": ["@robsonke"],
   "config_flow": true,
+  "dependencies": ["panel_custom"],
   "documentation": "https://github.com/robsonke/ha-vivino-cellar",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
