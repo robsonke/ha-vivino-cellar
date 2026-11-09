@@ -101,15 +101,32 @@ except ImportError:
                 listener()
 
 
+def _clean_json_str(val: str) -> Any:
+    """Strip markdown code fences and parse JSON."""
+    s = val.strip()
+    if s.startswith("```"):
+        lines = s.split("\n")
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        s = "\n".join(lines).strip()
+    try:
+        return json.loads(s)
+    except Exception:
+        return None
+
+
 def _parse_pairing_weights(response: Any) -> dict[int, float]:
     """Extract food_id -> weight mapping from AI pairing response."""
     if not response:
         return {}
 
     if isinstance(response, str):
-        try:
-            response = json.loads(response)
-        except json.JSONDecodeError:
+        parsed = _clean_json_str(response)
+        if parsed is not None:
+            response = parsed
+        else:
             return {}
 
     if isinstance(response, dict):
@@ -121,9 +138,16 @@ def _parse_pairing_weights(response: Any) -> dict[int, float]:
             "categories",
             "food_categories",
         ):
-            if key in response and isinstance(response[key], (list, dict)):
-                response = response[key]
-                break
+            if key in response:
+                inner = response[key]
+                if isinstance(inner, str):
+                    parsed = _clean_json_str(inner)
+                    if parsed is not None:
+                        response = parsed
+                        break
+                elif isinstance(inner, (list, dict)):
+                    response = inner
+                    break
 
     weights: dict[int, float] = {}
 
@@ -157,16 +181,24 @@ def _parse_window_response(response: Any) -> tuple[int, int, float | None] | Non
         return None
 
     if isinstance(response, str):
-        try:
-            response = json.loads(response)
-        except json.JSONDecodeError:
+        parsed = _clean_json_str(response)
+        if parsed is not None:
+            response = parsed
+        else:
             return None
 
     if isinstance(response, dict):
         for key in ("data", "result", "response"):
-            if key in response and isinstance(response[key], dict):
-                response = response[key]
-                break
+            if key in response:
+                inner = response[key]
+                if isinstance(inner, str):
+                    parsed = _clean_json_str(inner)
+                    if parsed is not None:
+                        response = parsed
+                        break
+                elif isinstance(inner, dict):
+                    response = inner
+                    break
 
     if not isinstance(response, dict):
         return None
@@ -298,17 +330,14 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
                 prompt = (
                     f"Estimate the drinking window (start year and end year) for this wine:\n"
                     f"{json.dumps(wine_info, ensure_ascii=False)}\n\n"
-                    "Return JSON with start_year (integer), end_year (integer), and confidence (float 0.0-1.0)."
+                    "Return ONLY a JSON object with start_year (integer), end_year (integer), and confidence (float 0.0-1.0), for example: "
+                    '{"start_year": 2024, "end_year": 2030, "confidence": 0.9}'
                 )
                 service_data = {
                     "entity_id": self.ai_task_entity,
+                    "task_name": "estimate_drinking_window",
+                    "instructions": prompt,
                     "task": prompt,
-                    "prompt": prompt,
-                    "structure": {
-                        "start_year": "integer",
-                        "end_year": "integer",
-                        "confidence": "float between 0.0 and 1.0",
-                    },
                 }
 
                 response = await self.hass.services.async_call(
@@ -377,21 +406,14 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
                 f"Dish: {dish}\n\n"
                 f"Available categories:\n"
                 f"{json.dumps(foods_context, ensure_ascii=False)}\n\n"
-                "Return a JSON list containing the matching category IDs and weights between 0.0 and 1.0."
+                "Return ONLY a JSON array containing matching category IDs and weights between 0.0 and 1.0, for example: "
+                '[{"food_id": 4, "weight": 1.0, "reason": "matches beef"}]'
             )
             service_data = {
                 "entity_id": self.ai_task_entity,
+                "task_name": "wine_pairing",
+                "instructions": prompt,
                 "task": prompt,
-                "prompt": prompt,
-                "structure": {
-                    "matches": [
-                        {
-                            "food_id": "integer (category ID)",
-                            "weight": "float between 0.0 and 1.0",
-                            "reason": "optional string",
-                        }
-                    ]
-                },
             }
 
             try:
@@ -403,6 +425,7 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
                     return_response=True,
                 )
             except Exception as err:
+                _LOGGER.warning("AI pairing service call to %s failed: %s", self.ai_task_entity, err)
                 raise VivinoError(
                     "AI pairing unavailable; please select food categories."
                 ) from err
