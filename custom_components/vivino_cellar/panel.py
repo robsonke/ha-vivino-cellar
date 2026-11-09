@@ -18,8 +18,6 @@ PANEL_WEBCOMPONENT = "vivino-cellar-card"
 CARD_JS = "vivino-cellar-card.js"
 VERSION = "0.1.0"
 
-DATA_FRONTEND_REGISTERED = f"{DOMAIN}_frontend_registered"
-
 try:
     from homeassistant.components.http import StaticPathConfig
 except ImportError:
@@ -32,19 +30,19 @@ except ImportError:
             self.cache_headers = cache_headers
 
 
-def _get_panel_custom(hass: Any) -> Any:
-    """Get panel_custom component from hass or import."""
+async def _ensure_panel_custom(hass: Any) -> Any:
+    """Ensure panel_custom component is set up and return module."""
     try:
         from homeassistant.components import panel_custom
+        from homeassistant.setup import async_setup_component
 
+        if hasattr(hass, "config") and hasattr(hass.config, "components"):
+            if "panel_custom" not in hass.config.components:
+                await async_setup_component(hass, "panel_custom", {})
         return panel_custom
-    except ImportError:
-        pass
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.debug("Could not ensure panel_custom: %s", err)
 
-    if hasattr(hass, "components") and hasattr(hass.components, "panel_custom"):
-        return hass.components.panel_custom
-    if isinstance(getattr(hass, "data", None), dict) and "panel_custom" in hass.data:
-        return hass.data["panel_custom"]
     return None
 
 
@@ -66,43 +64,56 @@ def _get_frontend_component(hass: Any) -> Any:
 
 async def async_register_frontend(hass: Any) -> None:
     """Register frontend static path, Lovelace resource, and sidebar panel."""
-    if (
-        hasattr(hass, "data")
-        and isinstance(hass.data, dict)
-        and hass.data.get(DATA_FRONTEND_REGISTERED)
-    ):
+    # Check if panel is already registered
+    panels = hass.data.get("frontend_panels", {}) if hasattr(hass, "data") and isinstance(hass.data, dict) else {}
+    if PANEL_URL in panels:
+        return
+
+    frontend = _get_frontend_component(hass)
+    if frontend and hasattr(frontend, "panels") and isinstance(frontend.panels, dict) and PANEL_URL in frontend.panels:
         return
 
     frontend_path = Path(__file__).parent / "frontend"
     card_url = f"{URL_BASE}/{CARD_JS}"
 
-    # 1. Register static path
+    # 1. Register static path (ignore duplicate registration errors)
     if hasattr(hass, "http"):
-        if hasattr(hass.http, "async_register_static_paths"):
-            await hass.http.async_register_static_paths(
-                [StaticPathConfig(URL_BASE, str(frontend_path), cache_headers=False)]
-            )
-        elif hasattr(hass.http, "register_static_path"):
-            hass.http.register_static_path(URL_BASE, str(frontend_path), cache_headers=False)
+        try:
+            if hasattr(hass.http, "async_register_static_paths"):
+                await hass.http.async_register_static_paths(
+                    [StaticPathConfig(URL_BASE, str(frontend_path), cache_headers=False)]
+                )
+            elif hasattr(hass.http, "register_static_path"):
+                hass.http.register_static_path(URL_BASE, str(frontend_path), cache_headers=False)
+        except Exception as err:  # noqa: BLE001
+            _LOGGER.debug("Static path registration notice: %s", err)
 
     # 2. Register Lovelace dashboard resource
     await _async_register_lovelace_resource(hass, card_url)
 
-    # 3. Register Extra JS URL (if frontend component supports it)
-    frontend = _get_frontend_component(hass)
+    # 3. Register Extra JS URL
     if frontend and hasattr(frontend, "add_extra_js_url"):
         try:
             frontend.add_extra_js_url(hass, card_url)
         except Exception as err:  # noqa: BLE001
             _LOGGER.debug("Could not add extra js url: %s", err)
 
-    # 4. Register sidebar panel via panel_custom (standard HA API)
-    panel_custom = _get_panel_custom(hass)
+    # 4. Remove previous panel registration if already present to allow clean update
+    if frontend and hasattr(frontend, "async_remove_panel"):
+        try:
+            frontend.async_remove_panel(hass, PANEL_URL)
+        except Exception:  # noqa: BLE001
+            pass
+
+    # 5. Register sidebar panel via panel_custom
+    panel_custom = await _ensure_panel_custom(hass)
     registered = False
 
     if panel_custom and hasattr(panel_custom, "async_register_panel"):
         try:
-            await panel_custom.async_register_panel(
+            import inspect
+
+            res = panel_custom.async_register_panel(
                 hass,
                 frontend_url_path=PANEL_URL,
                 webcomponent_name=PANEL_WEBCOMPONENT,
@@ -112,6 +123,8 @@ async def async_register_frontend(hass: Any) -> None:
                 require_admin=False,
                 config={},
             )
+            if inspect.isawaitable(res):
+                await res
             registered = True
             _LOGGER.info("Registered Vivino Cellar panel '%s' via panel_custom", PANEL_TITLE)
         except Exception as err:  # noqa: BLE001
@@ -127,12 +140,9 @@ async def async_register_frontend(hass: Any) -> None:
                 sidebar_icon=PANEL_ICON,
                 config={},
             )
-            _LOGGER.info("Registered Vivino Cellar panel '%s' via frontend", PANEL_TITLE)
+            _LOGGER.info("Registered Vivino Cellar panel '%s' via frontend fallback", PANEL_TITLE)
         except Exception as err:  # noqa: BLE001
-            _LOGGER.warning("Failed to register Vivino Cellar panel via frontend: %s", err)
-
-    if hasattr(hass, "data") and isinstance(hass.data, dict):
-        hass.data[DATA_FRONTEND_REGISTERED] = True
+            _LOGGER.warning("Failed to register Vivino Cellar panel via frontend fallback: %s", err)
 
 
 async def _async_register_lovelace_resource(hass: Any, url: str) -> None:
@@ -177,6 +187,3 @@ async def async_unregister_frontend(hass: Any) -> None:
             _LOGGER.debug("Unregistered Vivino Cellar panel '%s'", PANEL_URL)
         except Exception as err:  # noqa: BLE001
             _LOGGER.debug("Failed to remove Vivino Cellar panel: %s", err)
-
-    if hasattr(hass, "data") and isinstance(hass.data, dict):
-        hass.data.pop(DATA_FRONTEND_REGISTERED, None)
