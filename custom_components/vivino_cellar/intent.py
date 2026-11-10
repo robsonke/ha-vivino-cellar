@@ -12,6 +12,7 @@ from .exceptions import VivinoError
 _LOGGER = logging.getLogger(__name__)
 
 try:
+    import voluptuous as vol
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers import intent
 
@@ -19,6 +20,7 @@ try:
     IntentResponse = intent.IntentResponse
     IntentHandler = intent.IntentHandler
 except ImportError:
+    vol = None  # type: ignore[assignment]
 
     class IntentResponse:  # type: ignore[no-redef]
         """Stub IntentResponse."""
@@ -93,6 +95,23 @@ class VivinoCellarSuggestWineIntent(intent.IntentHandler):
     """Handle VivinoCellarSuggestWine voice intent for Assist."""
 
     intent_type = INTENT_SUGGEST_WINE
+    platforms = None
+    description = (
+        "Suggest bottles from the user's Vivino wine cellar that pair with a dish, "
+        "meal, or Vivino food category. Use this when the user asks which wine from "
+        "their own cellar fits what they are eating. Returns wine names, locations, "
+        "and drinking-window status. Read-only: never removes bottles."
+    )
+
+    @property
+    def slot_schema(self) -> dict | None:
+        """Return slot schema for LLM tools and intent validation."""
+        if vol is None:
+            return None
+        return {
+            vol.Optional("dish"): intent.non_empty_string,
+            vol.Optional("food"): intent.non_empty_string,
+        }
 
     def __init__(self, hass: Any | None = None) -> None:
         """Initialize the intent handler."""

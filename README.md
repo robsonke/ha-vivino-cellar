@@ -185,6 +185,16 @@ You can ask Home Assistant Assist for wine recommendations using natural speech:
 
 Assist matches your request against your currently stocked wines, prioritizing bottles that are ready to drink, have high ratings, and match the dish's flavor profile.
 
+**LLM conversation agents** (Claude, Gemini, OpenAI, etc.) can call the registered `VivinoCellarSuggestWine` intent as a tool directly.
+
+For Home Assistant's **built-in Assist agent** (without an LLM), copy the included sentence files into your Home Assistant config and reload Assist:
+
+```bash
+cp -r custom_sentences <config_dir>/
+```
+
+Then run **Developer Tools → Actions → `conversation.reload`** (or restart Home Assistant). Example supported sentences include *"Welke wijn uit mijn kelder past bij biefstuk?"* and *"Which wine from my cellar pairs with steak?"*
+
 ---
 
 ## Diagnostics & Privacy

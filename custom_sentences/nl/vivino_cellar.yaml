@@ -1,0 +1,16 @@
+language: "nl"
+intents:
+  VivinoCellarSuggestWine:
+    data:
+      - sentences:
+          - "welke wijn past bij {dish}"
+          - "welke wijn uit mijn kelder past bij {dish}"
+          - "welke wijn uit de kelder past bij {dish}"
+          - "welke wijn bij {food}"
+          - "wijnadvies voor {dish}"
+          - "welke wijn moet ik drinken bij {dish}"
+lists:
+  dish:
+    wildcard: true
+  food:
+    wildcard: true

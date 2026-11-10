@@ -1,0 +1,15 @@
+language: "en"
+intents:
+  VivinoCellarSuggestWine:
+    data:
+      - sentences:
+          - "which wine pairs with {dish}"
+          - "which wine from my cellar pairs with {dish}"
+          - "what wine should I drink with {dish}"
+          - "wine pairing for {dish}"
+          - "which wine goes with {food}"
+lists:
+  dish:
+    wildcard: true
+  food:
+    wildcard: true
