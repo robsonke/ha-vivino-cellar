@@ -159,7 +159,7 @@ tabs:
 
 - **Nu drinken**: a short list of what to open now: wines in their last year first, then the rest of what's ready.
 - **Wijn & Spijs**: food pairing from Vivino food categories, or free text via your AI task.
-- **Kelder**: every wine in the cellar. Filter by drinking-window status (tap a pill), type, country, grape and number of bottles, and search by name, winery, region or grape. Sort by drinking window (grouped), drink-by year, rating, vintage, bottle count or name. Each filter's counts follow the other filters.
+- **Kelder**: every wine in the cellar. Filter by drinking-window status (tap a pill), type, country, region, grape and number of bottles, and search by name, winery, region or grape. Sort by drinking window (grouped), drink-by year, rating, vintage, bottle count or name. Each filter's counts follow the other filters.
 
 ---
 

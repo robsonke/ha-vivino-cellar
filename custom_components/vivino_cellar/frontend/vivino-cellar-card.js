@@ -1117,7 +1117,7 @@ const SORTS = {
   name: "Naam",
 };
 const MIN_BOTTLES = [0, 2, 3, 6];
-const EMPTY_FILTERS = { type: "", country: "", grape: "", minBottles: 0, sort: "status" };
+const EMPTY_FILTERS = { type: "", country: "", region: "", grape: "", minBottles: 0, sort: "status" };
 const NOW_LIMIT = 5;
 const UNDO_MS = 8000;
 const ERROR_TOAST_MS = 8000;
@@ -1799,6 +1799,7 @@ export class VivinoCellarCard extends HTMLElement {
     )) return false;
     if (!skip.includes("type") && f.type && String(wine.type_id) !== f.type) return false;
     if (!skip.includes("country") && f.country && wine.country !== f.country) return false;
+    if (!skip.includes("region") && f.region && wine.region !== f.region) return false;
     if (!skip.includes("grape") && f.grape && !(wine.grapes || []).includes(f.grape)) return false;
     if (!skip.includes("status") && this._statusFilter && wine.window_status !== this._statusFilter)
       return false;
@@ -1806,10 +1807,10 @@ export class VivinoCellarCard extends HTMLElement {
   }
 
   /** Options for one filter, counted (in bottles) over the wines the other filters leave. */
-  _filterOptions(wines, key, valuesOf, labelOf = (v) => v) {
+  _filterOptions(wines, key, valuesOf, labelOf = (v) => v, alsoSkip = []) {
     const counts = new Map();
     for (const wine of wines) {
-      if (!this._matchesFilters(wine, [key])) continue;
+      if (!this._matchesFilters(wine, [key, ...alsoSkip])) continue;
       for (const v of valuesOf(wine)) {
         if (v === null || v === undefined || v === "") continue;
         counts.set(String(v), (counts.get(String(v)) || 0) + wine.bottles.length);
@@ -1850,7 +1851,13 @@ export class VivinoCellarCard extends HTMLElement {
   _hasActiveFilters() {
     const f = this._filters;
     return Boolean(
-      this._statusFilter || this._searchQuery || f.type || f.country || f.grape || f.minBottles
+      this._statusFilter ||
+        this._searchQuery ||
+        f.type ||
+        f.country ||
+        f.region ||
+        f.grape ||
+        f.minBottles
     );
   }
 
@@ -1870,7 +1877,12 @@ export class VivinoCellarCard extends HTMLElement {
     const typeOptions = this._filterOptions(
       view.wines, "type", (w) => [w.type_id], (v) => WINE_TYPES[v] || `Type ${v}`
     );
-    const countryOptions = this._filterOptions(view.wines, "country", (w) => [w.country]);
+    // Region sits under country: picking a region must not hide the other countries.
+    const countryOptions = this._filterOptions(
+      view.wines, "country", (w) => [w.country], (v) => v, ["region"]
+    );
+    // Follows the country filter, so it only lists that country's regions.
+    const regionOptions = this._filterOptions(view.wines, "region", (w) => [w.region]);
     const grapeOptions = this._filterOptions(view.wines, "grape", (w) => w.grapes || []);
 
     let list;
@@ -1934,6 +1946,7 @@ export class VivinoCellarCard extends HTMLElement {
         <div class="filter-grid">
           ${this._renderSelect("type", "Alle soorten", typeOptions)}
           ${this._renderSelect("country", "Alle landen", countryOptions)}
+          ${this._renderSelect("region", "Alle regio's", regionOptions)}
           ${this._renderSelect("grape", "Alle druiven", grapeOptions)}
           <select class="filter-select ${f.minBottles ? "active" : ""}" data-filter="minBottles" aria-label="Aantal flessen">
             ${MIN_BOTTLES.map(
@@ -2222,6 +2235,8 @@ export class VivinoCellarCard extends HTMLElement {
       el.addEventListener("change", () => {
         const key = el.dataset.filter;
         this._filters[key] = key === "minBottles" ? Number(el.value) : el.value;
+        // A region belongs to one country: drop it when the country changes.
+        if (key === "country") this._filters.region = "";
         this._render();
       })
     );
