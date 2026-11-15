@@ -364,6 +364,24 @@ export class VivinoCellarCard extends HTMLElement {
     this._startDrink(wine, wine.bottles[0]);
   }
 
+  /**
+   * Show rendered sheets in the browser's top layer. A parent with a transform
+   * (Bubble Card popups) would otherwise trap position: fixed inside it.
+   */
+  _openDialogs() {
+    this.shadowRoot.querySelectorAll("dialog.modal-layer").forEach((dialog) => {
+      // Esc is handled by our own keydown listener, which knows picker vs sheet.
+      dialog.addEventListener("cancel", (e) => e.preventDefault());
+      if (!dialog.open) {
+        try {
+          dialog.showModal();
+        } catch {
+          dialog.setAttribute("open", ""); // not connected yet; show inline
+        }
+      }
+    });
+  }
+
   _closeModals() {
     // The picker opens from the sheet, so close it first and go back to the sheet.
     if (this._spotPicker !== null) this._spotPicker = null;
@@ -639,6 +657,7 @@ export class VivinoCellarCard extends HTMLElement {
       ${this._renderToasts()}
     `;
     this._attachEventListeners();
+    this._openDialogs();
 
     if (focusId) {
       const el = shadow.getElementById(focusId);
@@ -1097,8 +1116,8 @@ export class VivinoCellarCard extends HTMLElement {
       value ? `<div class="detail-row"><dt>${label}</dt><dd>${value}</dd></div>` : "";
 
     return `
-      <div class="modal-backdrop" id="detail-backdrop">
-        <div class="modal-dialog detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <dialog class="modal-layer" id="detail-backdrop" aria-labelledby="detail-title">
+        <div class="modal-dialog detail-sheet">
           <div class="detail-hero">
             ${
               image
@@ -1151,7 +1170,7 @@ export class VivinoCellarCard extends HTMLElement {
             </div>
           </div>
         </div>
-      </div>
+      </dialog>
     `;
   }
 
@@ -1162,7 +1181,7 @@ export class VivinoCellarCard extends HTMLElement {
     const name = wine.name || wine.wine_name || "Wijn";
 
     return `
-      <div class="modal-backdrop" id="modal-backdrop">
+      <dialog class="modal-layer" id="modal-backdrop" aria-label="Welke fles pak je?">
         <div class="modal-dialog">
           <div class="modal-header">
             ${ICON_GLASS}
@@ -1186,7 +1205,7 @@ export class VivinoCellarCard extends HTMLElement {
             <button class="btn-secondary" id="btn-cancel-picker">Annuleren</button>
           </div>
         </div>
-      </div>
+      </dialog>
     `;
   }
 

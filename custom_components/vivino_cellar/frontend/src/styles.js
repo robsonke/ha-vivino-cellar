@@ -661,18 +661,33 @@ export const cardStyles = `
   }
 
   /* Modal Backdrop & Dialog */
-  .modal-backdrop {
+  /* Native <dialog> shown with showModal(): it lives in the top layer, so a
+     transformed parent (Bubble Card popup) cannot push it out of view. The
+     dialog fills the screen; clicks on its padding count as backdrop clicks. */
+  dialog.modal-layer {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 16px;
+    box-sizing: border-box;
+    border: none;
+    background: transparent;
+    color: inherit;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    padding: 16px;
+  }
+
+  dialog.modal-layer:not([open]) {
+    display: none;
+  }
+
+  dialog.modal-layer::backdrop {
+    background: rgba(0, 0, 0, 0.5);
   }
 
   .modal-dialog {
