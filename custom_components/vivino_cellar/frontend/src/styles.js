@@ -492,10 +492,25 @@ export const cardStyles = `
   .status-chip {
     padding: 4px 10px;
     border-radius: 14px;
+    font: inherit;
     font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
-    border: 1px solid transparent;
+    border: 2px solid transparent;
+    transition: opacity 0.15s ease;
+  }
+
+  .status-chip:disabled {
+    cursor: default;
+    opacity: 0.45;
+  }
+
+  .status-chips-summary.filtering .status-chip:not(.active) {
+    opacity: 0.45;
+  }
+
+  .status-chip.active {
+    border-color: currentColor;
   }
 
   .group-section {

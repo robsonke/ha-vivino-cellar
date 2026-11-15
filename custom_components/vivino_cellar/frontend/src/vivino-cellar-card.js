@@ -97,6 +97,7 @@ export class VivinoCellarCard extends HTMLElement {
 
     // Drinking Windows tab state
     this._searchQuery = "";
+    this._statusFilter = null; // status pill that filters the list, or null
     this._expandedGroups = {
       near_past_peak: true,
       ready: true,
@@ -404,6 +405,11 @@ export class VivinoCellarCard extends HTMLElement {
   // Rendering
   // ---------------------------------------------------------------------------
 
+  _toggleStatusFilter(status) {
+    this._statusFilter = this._statusFilter === status ? null : status;
+    this._render();
+  }
+
   _toggleGroup(status) {
     this._expandedGroups[status] = !this._expandedGroups[status];
     this._render();
@@ -688,14 +694,19 @@ export class VivinoCellarCard extends HTMLElement {
           />
         </div>
 
-        <div class="status-chips-summary">
-          ${STATUS_ORDER.map(
-            (status) =>
-              `<span class="status-chip badge-${status}">${STATUS_LABELS[status]}: ${view.counts[status] || 0}</span>`
-          ).join("")}
+        <div class="status-chips-summary ${this._statusFilter ? "filtering" : ""}">
+          ${STATUS_ORDER.map((status) => {
+            const count = view.counts[status] || 0;
+            const active = this._statusFilter === status;
+            return `<button class="status-chip badge-${status} ${active ? "active" : ""}"
+                data-status="${status}" aria-pressed="${active}" ${count === 0 && !active ? "disabled" : ""}>
+                ${STATUS_LABELS[status]}: ${count}
+              </button>`;
+          }).join("")}
         </div>
 
         ${STATUS_ORDER.map((status) => {
+          if (this._statusFilter && status !== this._statusFilter) return "";
           let wines = grouped[status];
           if (query) {
             wines = wines.filter((w) =>
@@ -704,7 +715,8 @@ export class VivinoCellarCard extends HTMLElement {
             if (wines.length === 0) return "";
           }
 
-          const isOpen = !!this._expandedGroups[status];
+          // A filtered group is always open: that is what the pill asked for.
+          const isOpen = this._statusFilter === status || !!this._expandedGroups[status];
           const bottleCount = wines.reduce((acc, w) => acc + w.bottles.length, 0);
 
           return `
@@ -881,7 +893,7 @@ export class VivinoCellarCard extends HTMLElement {
 
     on("#btn-show-past-peak", () => {
       this._currentTab = "windows";
-      this._expandedGroups.past_peak = true;
+      this._statusFilter = "past_peak";
       this._render();
     });
 
@@ -908,6 +920,7 @@ export class VivinoCellarCard extends HTMLElement {
       });
     }
     on(".group-header", (el) => this._toggleGroup(el.dataset.status));
+    on(".status-chip", (el) => this._toggleStatusFilter(el.dataset.status));
 
     // Drinking
     on(".btn-drink-action", (el, e) => {
