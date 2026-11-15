@@ -403,4 +403,3 @@ def test_translation_files() -> None:
         "config.abort.reauth_successful",
     }
     assert expected_keys.issubset(strings_keys)
-

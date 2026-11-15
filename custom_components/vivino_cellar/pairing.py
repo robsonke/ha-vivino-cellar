@@ -117,7 +117,9 @@ def score_vintages(
                     target_weight = target_food_weights[food.id]
                     if target_weight <= 0.0:
                         continue
-                    wine_weight = ZERO_WEIGHT_BONUS if food.weight == 0.0 else food.weight
+                    wine_weight = (
+                        ZERO_WEIGHT_BONUS if food.weight == 0.0 else food.weight
+                    )
                     contribution = target_weight * wine_weight
                     raw_match_score += contribution
                     matched_foods.append((contribution, food.name))
@@ -149,7 +151,9 @@ def score_vintages(
                         matched_target_ids.add(fid)
                         contribution = target_weight * STYLE_FOOD_FALLBACK_WEIGHT
                         raw_match_score += contribution
-                        display_name = target_display_by_id.get(fid, item_str.strip().title())
+                        display_name = target_display_by_id.get(
+                            fid, item_str.strip().title()
+                        )
                         matched_foods.append((contribution, display_name))
 
         if raw_match_score <= 0.0:

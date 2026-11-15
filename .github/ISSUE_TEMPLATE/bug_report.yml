@@ -1,0 +1,33 @@
+name: Bug report
+description: Something in Vivino Cellar does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Integration version
+      placeholder: "0.2.0"
+    validations:
+      required: true
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      placeholder: "2026.11.0"
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics and logs
+      description: >-
+        Attach the diagnostics file (Settings → Devices & services → Vivino Cellar → ⋮ → Download diagnostics)
+        and relevant log lines. Never paste your Vivino session cookie.
+      render: text

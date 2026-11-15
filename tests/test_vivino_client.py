@@ -1,10 +1,11 @@
 """Tests for Vivino web client."""
+
 import json
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
 from multidict import CIMultiDict, CIMultiDictProxy
+import pytest
 
 from custom_components.vivino_cellar.exceptions import (
     VivinoAuthError,
@@ -146,7 +147,9 @@ async def test_fetch_cellar_302_auth_redirect():
     session = AsyncMock()
     redirect_resp = MockResponse(
         status=302,
-        headers={"Location": "https://www.vivino.com/nl/login?redirect_to=%2Fnl%2Fcellars%2F651553"},
+        headers={
+            "Location": "https://www.vivino.com/nl/login?redirect_to=%2Fnl%2Fcellars%2F651553"
+        },
     )
     session.get = MagicMock(return_value=redirect_resp)
 
@@ -195,8 +198,11 @@ async def test_fetch_cellar_unauthorized_401():
 
 async def test_fetch_cellar_connection_error():
     import aiohttp
+
     session = AsyncMock()
-    session.get = MagicMock(side_effect=aiohttp.ClientConnectionError("Failed to connect"))
+    session.get = MagicMock(
+        side_effect=aiohttp.ClientConnectionError("Failed to connect")
+    )
 
     client = VivinoClient(
         session=session,
@@ -205,6 +211,7 @@ async def test_fetch_cellar_connection_error():
     )
 
     from custom_components.vivino_cellar.exceptions import VivinoConnectionError
+
     with pytest.raises(VivinoConnectionError):
         await client.async_fetch_cellar()
 
@@ -214,7 +221,9 @@ async def test_cookie_rotation_complex_header(cellar_html, cellar_p1_json):
     html_resp = MockResponse(
         status=200,
         text=cellar_html,
-        headers={"Set-Cookie": "_ruby-web_session=new_secret_abc; Path=/; Domain=.vivino.com"},
+        headers={
+            "Set-Cookie": "_ruby-web_session=new_secret_abc; Path=/; Domain=.vivino.com"
+        },
     )
     json_resp = MockResponse(status=200, json_data=cellar_p1_json)
 
@@ -228,7 +237,10 @@ async def test_cookie_rotation_complex_header(cellar_html, cellar_p1_json):
 
     await client.async_fetch_cellar()
 
-    assert client.get_rotated_cookie() == "other=123; _ruby-web_session=new_secret_abc; extra=foo"
+    assert (
+        client.get_rotated_cookie()
+        == "other=123; _ruby-web_session=new_secret_abc; extra=foo"
+    )
 
 
 async def test_nv_vintage_and_none_storage_location(cellar_html):
@@ -263,7 +275,9 @@ async def test_nv_vintage_and_none_storage_location(cellar_html):
             ],
         }
     }
-    session.get = MagicMock(side_effect=[html_resp, MockResponse(status=200, json_data=json_data)])
+    session.get = MagicMock(
+        side_effect=[html_resp, MockResponse(status=200, json_data=json_data)]
+    )
 
     client = VivinoClient(
         session=session,
@@ -299,7 +313,9 @@ async def test_fetch_cellar_409_conflict_version_refresh(cellar_html, cellar_p1_
     p1_json_updated["version"] = "new_version_456"
     json_resp = MockResponse(status=200, json_data=p1_json_updated)
 
-    session.get = MagicMock(side_effect=[html_resp1, conflict_resp, html_resp2, json_resp])
+    session.get = MagicMock(
+        side_effect=[html_resp1, conflict_resp, html_resp2, json_resp]
+    )
 
     client = VivinoClient(
         session=session,
@@ -322,7 +338,9 @@ async def test_cookie_rotation_tracking(cellar_html, cellar_p1_json):
     html_resp = MockResponse(
         status=200,
         text=cellar_html,
-        headers={"Set-Cookie": "_ruby-web_session=rotated_secret_999; path=/; HttpOnly"},
+        headers={
+            "Set-Cookie": "_ruby-web_session=rotated_secret_999; path=/; HttpOnly"
+        },
     )
     json_resp = MockResponse(status=200, json_data=cellar_p1_json)
 
@@ -360,11 +378,13 @@ async def test_pagination(cellar_html, cellar_p1_json):
         },
     }
 
-    session.get = MagicMock(side_effect=[
-        html_resp,
-        MockResponse(status=200, json_data=p1),
-        MockResponse(status=200, json_data=p2),
-    ])
+    session.get = MagicMock(
+        side_effect=[
+            html_resp,
+            MockResponse(status=200, json_data=p1),
+            MockResponse(status=200, json_data=p2),
+        ]
+    )
 
     client = VivinoClient(
         session=session,
@@ -393,10 +413,12 @@ async def test_parse_error_on_corrupt_entry(cellar_html):
             ],
         }
     }
-    session.get = MagicMock(side_effect=[
-        html_resp,
-        MockResponse(status=200, json_data=corrupt_json),
-    ])
+    session.get = MagicMock(
+        side_effect=[
+            html_resp,
+            MockResponse(status=200, json_data=corrupt_json),
+        ]
+    )
 
     client = VivinoClient(
         session=session,

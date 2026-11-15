@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 
 from custom_components.vivino_cellar.const import DOMAIN, INTENT_SUGGEST_WINE
@@ -13,7 +14,12 @@ from custom_components.vivino_cellar.intent import (
     async_setup_intents,
     async_unload_intents,
 )
-from custom_components.vivino_cellar.models import Bottle, CellarData, FoodCategory, Vintage
+from custom_components.vivino_cellar.models import (
+    Bottle,
+    CellarData,
+    FoodCategory,
+    Vintage,
+)
 from custom_components.vivino_cellar.pairing import PairingResult
 
 
@@ -85,12 +91,16 @@ def mock_coordinator() -> MagicMock:
             FoodCategory(id=2, name="Gevogelte", seo_name="poultry", weight=1.0),
         ],
     )
-    coord.async_suggest_pairing = AsyncMock(return_value=_create_sample_pairing_results())
+    coord.async_suggest_pairing = AsyncMock(
+        return_value=_create_sample_pairing_results()
+    )
     return coord
 
 
 @pytest.mark.asyncio
-async def test_intent_registration_and_unregistration(mock_coordinator: MagicMock) -> None:
+async def test_intent_registration_and_unregistration(
+    mock_coordinator: MagicMock,
+) -> None:
     """Test registering and unregistering VivinoCellarSuggestWine intent."""
     hass = MockHass()
     hass.data[DOMAIN] = {"entry_1": mock_coordinator}
@@ -132,7 +142,9 @@ async def test_intent_suggest_wine_with_dish(mock_coordinator: MagicMock) -> Non
 
 
 @pytest.mark.asyncio
-async def test_intent_suggest_wine_with_food_category_slot(mock_coordinator: MagicMock) -> None:
+async def test_intent_suggest_wine_with_food_category_slot(
+    mock_coordinator: MagicMock,
+) -> None:
     """Test intent handler matching food slot against cellar categories without AI."""
     hass = MockHass()
     hass.data[DOMAIN] = {"entry_1": mock_coordinator}
@@ -160,7 +172,9 @@ async def test_intent_suggest_wine_with_food_category_slot(mock_coordinator: Mag
 
 
 @pytest.mark.asyncio
-async def test_intent_suggest_wine_food_fallback_to_dish(mock_coordinator: MagicMock) -> None:
+async def test_intent_suggest_wine_food_fallback_to_dish(
+    mock_coordinator: MagicMock,
+) -> None:
     """Test intent handler falls back to dish when food slot does not match known category."""
     hass = MockHass()
     hass.data[DOMAIN] = {"entry_1": mock_coordinator}
@@ -227,7 +241,9 @@ async def test_intent_suggest_wine_no_slots(mock_coordinator: MagicMock) -> None
 
 
 @pytest.mark.asyncio
-async def test_intent_coordinator_error_handled_gracefully(mock_coordinator: MagicMock) -> None:
+async def test_intent_coordinator_error_handled_gracefully(
+    mock_coordinator: MagicMock,
+) -> None:
     """Test intent handler gracefully returns speech when coordinator raises VivinoError."""
     mock_coordinator.async_suggest_pairing.side_effect = VivinoError(
         "AI pairing unavailable; please select food categories."

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 
 from custom_components.vivino_cellar.const import (
@@ -11,7 +12,6 @@ from custom_components.vivino_cellar.const import (
     SERVICE_REFRESH,
     SERVICE_SUGGEST_PAIRING,
 )
-from custom_components.vivino_cellar.exceptions import VivinoError
 from custom_components.vivino_cellar.models import Bottle, FoodCategory, Vintage
 from custom_components.vivino_cellar.pairing import PairingResult
 from custom_components.vivino_cellar.services import (
@@ -38,7 +38,7 @@ class MockServices:
         domain: str,
         service: str,
         service_func: any,
-        schema: any = None,
+        schema: any | None = None,
         supports_response: any = SupportsResponse.NONE,
     ) -> None:
         self.services.setdefault(domain, {})
@@ -126,14 +126,18 @@ def _create_sample_pairing_results() -> list[PairingResult]:
 def mock_coordinator() -> MagicMock:
     """Mock coordinator fixture."""
     coord = MagicMock()
-    coord.async_suggest_pairing = AsyncMock(return_value=_create_sample_pairing_results())
+    coord.async_suggest_pairing = AsyncMock(
+        return_value=_create_sample_pairing_results()
+    )
     coord.async_drink_bottle = AsyncMock()
     coord.async_refresh = AsyncMock()
     return coord
 
 
 @pytest.mark.asyncio
-async def test_services_registration_and_unregistration(mock_coordinator: MagicMock) -> None:
+async def test_services_registration_and_unregistration(
+    mock_coordinator: MagicMock,
+) -> None:
     """Test registering and unregistering vivino_cellar services."""
     hass = MockHass()
     hass.data[DOMAIN] = {"entry_1": mock_coordinator}
@@ -348,8 +352,13 @@ async def test_service_coordinator_not_found_raises() -> None:
 async def test_init_entry_lifecycle_registers_and_unloads_services() -> None:
     """Test __init__.py async_setup_entry registers services & intents and unload cleans them up."""
     from unittest.mock import patch
+
     from custom_components.vivino_cellar import async_setup_entry, async_unload_entry
-    from custom_components.vivino_cellar.const import CONF_CELLAR_URL, CONF_COOKIE, INTENT_SUGGEST_WINE
+    from custom_components.vivino_cellar.const import (
+        CONF_CELLAR_URL,
+        CONF_COOKIE,
+        INTENT_SUGGEST_WINE,
+    )
 
     class TestEntry:
         def __init__(self, entry_id: str = "entry_test") -> None:
@@ -379,7 +388,11 @@ async def test_init_entry_lifecycle_registers_and_unloads_services() -> None:
 
     with (
         patch("custom_components.vivino_cellar.VivinoClient", return_value=mock_client),
-        patch("custom_components.vivino_cellar.coordinator.Store.async_load", new_callable=AsyncMock, return_value=None),
+        patch(
+            "custom_components.vivino_cellar.coordinator.Store.async_load",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
     ):
         setup_ok = await async_setup_entry(hass, entry)
         assert setup_ok is True
@@ -400,4 +413,3 @@ async def test_init_entry_lifecycle_registers_and_unloads_services() -> None:
         assert not hass.services.has_service(DOMAIN, SERVICE_DRINK_BOTTLE)
         assert not hass.services.has_service(DOMAIN, SERVICE_REFRESH)
         assert INTENT_SUGGEST_WINE not in hass.data.get("intent", {})
-

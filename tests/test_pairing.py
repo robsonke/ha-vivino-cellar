@@ -6,7 +6,7 @@ from custom_components.vivino_cellar.models import (
     Vintage,
     WineStyle,
 )
-from custom_components.vivino_cellar.pairing import PairingResult, score_vintages
+from custom_components.vivino_cellar.pairing import score_vintages
 
 
 def _make_bottle(bottle_id: int = 1) -> Bottle:
@@ -88,7 +88,9 @@ def test_pairing_scoring_and_ranking():
     )
 
     assert len(results) == 2
-    assert results[0].vintage.id == 1  # v_ready outranks v_hold because hold is penalized
+    assert (
+        results[0].vintage.id == 1
+    )  # v_ready outranks v_hold because hold is penalized
     assert results[0].window_status == "ready"
     assert "Beef" in results[0].explanation
 

@@ -20,7 +20,7 @@
     },
     "error": {
       "invalid_auth": "Invalid or expired session cookie.",
-      "invalid_url": "Invalid Vivino cellar URL. Expected format: https://www.vivino.com/{locale}/cellars/{id}",
+      "invalid_url": "Invalid Vivino cellar URL. Use the address of your cellar page on vivino.com.",
       "cannot_connect": "Failed to connect to Vivino. Please check your internet connection.",
       "unknown": "An unexpected error occurred."
     },
@@ -53,6 +53,54 @@
     "button": {
       "refresh_cellar": {
         "name": "Refresh cellar"
+      }
+    }
+  },
+  "services": {
+    "suggest_pairing": {
+      "name": "Suggest pairing",
+      "description": "Suggests wines from your cellar for a dish or Vivino food categories. Provide either a dish or food IDs.",
+      "fields": {
+        "dish": {
+          "name": "Dish",
+          "description": "Free-text dish description. Needs an AI task entity."
+        },
+        "food_ids": {
+          "name": "Food category IDs",
+          "description": "List of Vivino food category IDs."
+        },
+        "entry_id": {
+          "name": "Cellar",
+          "description": "Vivino Cellar entry to use. Defaults to the first configured cellar."
+        }
+      }
+    },
+    "drink_bottle": {
+      "name": "Drink bottle",
+      "description": "Removes a bottle from your Vivino cellar.",
+      "fields": {
+        "bottle_id": {
+          "name": "Bottle ID",
+          "description": "ID of the bottle to remove."
+        },
+        "vintage_id": {
+          "name": "Vintage ID",
+          "description": "Vintage of the bottle; used as fallback when the bottle cannot be removed directly."
+        },
+        "entry_id": {
+          "name": "Cellar",
+          "description": "Vivino Cellar entry to use. Defaults to the first configured cellar."
+        }
+      }
+    },
+    "refresh": {
+      "name": "Refresh",
+      "description": "Fetches the latest cellar data from Vivino.",
+      "fields": {
+        "entry_id": {
+          "name": "Cellar",
+          "description": "Vivino Cellar entry to use. Defaults to the first configured cellar."
+        }
       }
     }
   }

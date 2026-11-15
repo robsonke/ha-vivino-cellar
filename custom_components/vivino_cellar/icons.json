@@ -1,0 +1,13 @@
+{
+  "services": {
+    "suggest_pairing": {
+      "service": "mdi:glass-wine"
+    },
+    "drink_bottle": {
+      "service": "mdi:bottle-wine-outline"
+    },
+    "refresh": {
+      "service": "mdi:refresh"
+    }
+  }
+}

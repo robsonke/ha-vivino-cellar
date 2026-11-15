@@ -2,22 +2,20 @@
 
 from __future__ import annotations
 
-import logging
 from collections.abc import Mapping
+import logging
 from typing import Any
 
 from .const import CONF_AI_TASK, CONF_CELLAR_URL, CONF_COOKIE, DOMAIN
 from .exceptions import (
     VivinoAuthError,
     VivinoConnectionError,
-    VivinoError,
 )
 from .vivino_client import VivinoClient
 
 _LOGGER = logging.getLogger(__name__)
 
 try:
-    import voluptuous as vol
     from homeassistant import config_entries
     from homeassistant.data_entry_flow import AbortFlow, FlowResult
     from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -25,6 +23,7 @@ try:
         EntitySelector,
         EntitySelectorConfig,
     )
+    import voluptuous as vol
 except ImportError:
     # Graceful fallback stubs when running in test environment without Home Assistant
     class AbortFlow(Exception):  # type: ignore[no-redef]
@@ -267,8 +266,10 @@ class VivinoCellarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except (VivinoConnectionError, TimeoutError):
                 errors["base"] = "cannot_connect"
-            except Exception as err:  # noqa: BLE001
-                _LOGGER.exception("Unexpected exception during Vivino validation: %s", err)
+            except Exception as err:
+                _LOGGER.exception(
+                    "Unexpected exception during Vivino validation: %s", err
+                )
                 errors["base"] = "cannot_connect"
             else:
                 try:
@@ -345,7 +346,7 @@ class VivinoCellarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except (VivinoConnectionError, TimeoutError):
                 errors["base"] = "cannot_connect"
-            except Exception as err:  # noqa: BLE001
+            except Exception as err:
                 _LOGGER.exception("Unexpected exception during reauth: %s", err)
                 errors["base"] = "cannot_connect"
             else:

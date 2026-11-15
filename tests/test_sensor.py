@@ -20,13 +20,13 @@ from custom_components.vivino_cellar.const import (
 from custom_components.vivino_cellar.models import (
     Bottle,
     CellarData,
-    FoodCategory,
     Vintage,
-    WineStyle,
 )
 from custom_components.vivino_cellar.sensor import (
     SENSOR_TYPES,
     VivinoCellarSensor,
+)
+from custom_components.vivino_cellar.sensor import (
     async_setup_entry as async_setup_sensor_entry,
 )
 
@@ -328,7 +328,9 @@ async def test_integration_async_setup_and_unload_entry() -> None:
     mock_client = MagicMock()
     mock_client.cellar_id = "651553"
     mock_client.get_rotated_cookie.return_value = None
-    mock_client.async_fetch_cellar = AsyncMock(return_value=_create_sample_cellar_data())
+    mock_client.async_fetch_cellar = AsyncMock(
+        return_value=_create_sample_cellar_data()
+    )
 
     with (
         patch(
@@ -374,7 +376,9 @@ async def test_integration_cookie_rotation_update() -> None:
     mock_client.cellar_id = "651553"
     # Initially returns rotated cookie
     mock_client.get_rotated_cookie.return_value = "_ruby-web_session=rotated_cookie_456"
-    mock_client.async_fetch_cellar = AsyncMock(return_value=_create_sample_cellar_data())
+    mock_client.async_fetch_cellar = AsyncMock(
+        return_value=_create_sample_cellar_data()
+    )
 
     with (
         patch(

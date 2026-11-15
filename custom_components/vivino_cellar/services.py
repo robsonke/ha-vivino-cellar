@@ -16,15 +16,14 @@ from .coordinator import VivinoCellarCoordinator
 _LOGGER = logging.getLogger(__name__)
 
 try:
-    import voluptuous as vol
     from homeassistant.core import (
-        HomeAssistant,
         ServiceCall,
         ServiceResponse,
         SupportsResponse,
     )
     from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
     from homeassistant.helpers import config_validation as cv
+    import voluptuous as vol
 except ImportError:
     from enum import StrEnum
 
@@ -246,7 +245,9 @@ async def async_setup_services(hass: Any) -> None:
             try:
                 vintage_id = int(vintage_id)
             except (TypeError, ValueError) as err:
-                raise ServiceValidationError(f"Invalid vintage_id: {vintage_id}") from err
+                raise ServiceValidationError(
+                    f"Invalid vintage_id: {vintage_id}"
+                ) from err
 
         coordinator = _get_coordinator(hass, call)
         await coordinator.async_drink_bottle(

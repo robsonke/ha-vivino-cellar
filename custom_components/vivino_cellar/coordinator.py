@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import asyncio
-import json
-import logging
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
+import json
+import logging
 from typing import Any
 
 from .exceptions import VivinoAuthError, VivinoError
@@ -113,7 +113,7 @@ def _clean_json_str(val: str) -> Any:
         s = "\n".join(lines).strip()
     try:
         return json.loads(s)
-    except Exception:
+    except (ValueError, TypeError):
         return None
 
 
@@ -423,7 +423,9 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
                     return_response=True,
                 )
             except Exception as err:
-                _LOGGER.warning("AI pairing service call to %s failed: %s", self.ai_task_entity, err)
+                _LOGGER.warning(
+                    "AI pairing service call to %s failed: %s", self.ai_task_entity, err
+                )
                 raise VivinoError(
                     "AI pairing unavailable; please select food categories."
                 ) from err
@@ -448,4 +450,3 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
         if not success:
             raise VivinoError(f"Failed to remove bottle {bottle_id} from Vivino.")
         await self.async_refresh()
-

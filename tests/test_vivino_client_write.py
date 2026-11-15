@@ -4,8 +4,8 @@ import json
 from unittest.mock import AsyncMock, MagicMock
 
 import aiohttp
-import pytest
 from multidict import CIMultiDict, CIMultiDictProxy
+import pytest
 
 from custom_components.vivino_cellar.exceptions import (
     HomeAssistantError,
@@ -172,7 +172,9 @@ async def test_remove_bottle_cookie_rotation():
     html_resp = MockResponse(status=200, text=HTML_WITH_CSRF_META)
     write_resp = MockResponse(
         status=200,
-        headers={"Set-Cookie": "_ruby-web_session=rotated_ruby_session_999; Path=/; HttpOnly"},
+        headers={
+            "Set-Cookie": "_ruby-web_session=rotated_ruby_session_999; Path=/; HttpOnly"
+        },
     )
 
     session.get = MagicMock(return_value=html_resp)

@@ -2,6 +2,8 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/default)
 [![GitHub Release](https://img.shields.io/github/v/release/robsonke/ha-vivino-cellar?include_prereleases&color=blue)](https://github.com/robsonke/ha-vivino-cellar/releases)
+[![Validate](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/validate.yml/badge.svg)](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/validate.yml)
+[![Tests](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/tests.yml/badge.svg)](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Vivino Cellar** integrates your personal Vivino wine cellar into [Home Assistant](https://www.home-assistant.io/). Keep track of bottle counts, monitor drinking windows (hold, ready, near peak, past peak), discover food & wine pairings using Vivino food categories or Home Assistant Assist / AI, and mark bottles as drunk directly from your dashboard or voice assistant.
@@ -94,7 +96,7 @@ Because Vivino does not provide a public developer API for private cellars, this
 3. Fill in the configuration dialog:
    - **Cellar URL**: Your Vivino cellar URL (e.g. `https://www.vivino.com/nl/cellars/1234567`).
    - **Session Cookie**: The `_ruby-web_session` cookie value copied in Step 1.
-   - **AI Conversation Agent (Optional)**: Select an existing conversation agent (e.g. `conversation.openai`, `conversation.google_generative_ai`, `conversation.ollama`, etc.) to enable natural language dish pairing and drinking window estimation for unrated vintages.
+   - **AI Task Entity (Optional)**: Select an `ai_task` entity (from e.g. OpenAI, Google Generative AI, Anthropic or Ollama) to enable free-text dish pairing and drinking window estimation for vintages without a Vivino window.
 4. Click **Submit**. The initial cellar sync will begin immediately.
 
 > **Note on Session Expiry:** Vivino session cookies typically remain active for weeks or months. The integration automatically captures cookie rotations during normal requests to extend session longevity. If your session eventually expires, Home Assistant will prompt you to re-authenticate via a notification and config entry repair flow.
@@ -116,8 +118,9 @@ type: custom:vivino-cellar-card
 ```yaml
 type: custom:vivino-cellar-card
 title: Mijn Wijnkelder
-default_tab: pairing    # Options: "pairing" or "windows"
+default_tab: now    # Options: "now", "pairing" or "windows"
 tabs:
+  - now
   - pairing
   - windows
 ```
@@ -128,8 +131,8 @@ tabs:
 |---|---|---|---|
 | `type` | string | **Required** | Must be `custom:vivino-cellar-card` |
 | `title` | string | `"Wijnkelder"` | Header title for the card |
-| `default_tab` | string | `"pairing"` | Initial tab to open (`"pairing"` or `"windows"`) |
-| `tabs` | list | `["pairing", "windows"]` | Which tabs to display |
+| `default_tab` | string | `"now"` | Initial tab to open (`"now"`, `"pairing"` or `"windows"`) |
+| `tabs` | list | `["now", "pairing", "windows"]` | Which tabs to display |
 
 ---
 
@@ -202,6 +205,17 @@ Then run **Developer Tools → Actions → `conversation.reload`** (or restart H
 Vivino Cellar supports Home Assistant's built-in **Download Diagnostics** feature. All sensitive data (including session cookies, authentication tokens, usernames, and passwords) are automatically redacted using `async_redact_data` before being exported.
 
 ---
+
+## Development
+
+```bash
+uv sync --group dev
+uv run pytest            # unit tests
+uvx ruff check . && uvx ruff format --check .
+scripts/build_frontend.sh  # rebuild frontend/vivino-cellar-card.js from frontend/src/
+```
+
+Edit the card in `custom_components/vivino_cellar/frontend/src/` and run `scripts/build_frontend.sh`; Home Assistant serves the bundled `frontend/vivino-cellar-card.js`. Bump `version` in `manifest.json` (and `VERSION` in `panel.py`) for each release so browsers load the new card. Release tags must match the manifest version (`v0.2.0` ↔ `0.2.0`).
 
 ## Disclaimer
 

@@ -6,8 +6,6 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from .const import DOMAIN
-
 _LOGGER = logging.getLogger(__name__)
 
 URL_BASE = "/vivino_cellar_frontend"
@@ -16,15 +14,18 @@ PANEL_TITLE = "Wijnkelder"
 PANEL_ICON = "mdi:bottle-wine"
 PANEL_WEBCOMPONENT = "vivino-cellar-card"
 CARD_JS = "vivino-cellar-card.js"
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 try:
     from homeassistant.components.http import StaticPathConfig
 except ImportError:
+
     class StaticPathConfig:  # type: ignore[no-redef]
         """Stub StaticPathConfig."""
 
-        def __init__(self, url_path: str, path: str, cache_headers: bool = True) -> None:
+        def __init__(
+            self, url_path: str, path: str, cache_headers: bool = True
+        ) -> None:
             self.url_path = url_path
             self.path = path
             self.cache_headers = cache_headers
@@ -65,12 +66,21 @@ def _get_frontend_component(hass: Any) -> Any:
 async def async_register_frontend(hass: Any) -> None:
     """Register frontend static path, Lovelace resource, and sidebar panel."""
     # Check if panel is already registered
-    panels = hass.data.get("frontend_panels", {}) if hasattr(hass, "data") and isinstance(hass.data, dict) else {}
+    panels = (
+        hass.data.get("frontend_panels", {})
+        if hasattr(hass, "data") and isinstance(hass.data, dict)
+        else {}
+    )
     if PANEL_URL in panels:
         return
 
     frontend = _get_frontend_component(hass)
-    if frontend and hasattr(frontend, "panels") and isinstance(frontend.panels, dict) and PANEL_URL in frontend.panels:
+    if (
+        frontend
+        and hasattr(frontend, "panels")
+        and isinstance(frontend.panels, dict)
+        and PANEL_URL in frontend.panels
+    ):
         return
 
     frontend_path = Path(__file__).parent / "frontend"
@@ -81,10 +91,16 @@ async def async_register_frontend(hass: Any) -> None:
         try:
             if hasattr(hass.http, "async_register_static_paths"):
                 await hass.http.async_register_static_paths(
-                    [StaticPathConfig(URL_BASE, str(frontend_path), cache_headers=False)]
+                    [
+                        StaticPathConfig(
+                            URL_BASE, str(frontend_path), cache_headers=False
+                        )
+                    ]
                 )
             elif hasattr(hass.http, "register_static_path"):
-                hass.http.register_static_path(URL_BASE, str(frontend_path), cache_headers=False)
+                hass.http.register_static_path(
+                    URL_BASE, str(frontend_path), cache_headers=False
+                )
         except Exception as err:  # noqa: BLE001
             _LOGGER.debug("Static path registration notice: %s", err)
 
@@ -126,9 +142,13 @@ async def async_register_frontend(hass: Any) -> None:
             if inspect.isawaitable(res):
                 await res
             registered = True
-            _LOGGER.info("Registered Vivino Cellar panel '%s' via panel_custom", PANEL_TITLE)
+            _LOGGER.info(
+                "Registered Vivino Cellar panel '%s' via panel_custom", PANEL_TITLE
+            )
         except Exception as err:  # noqa: BLE001
-            _LOGGER.warning("Failed to register Vivino Cellar panel via panel_custom: %s", err)
+            _LOGGER.warning(
+                "Failed to register Vivino Cellar panel via panel_custom: %s", err
+            )
 
     if not registered and frontend and hasattr(frontend, "async_register_panel"):
         try:
@@ -140,9 +160,13 @@ async def async_register_frontend(hass: Any) -> None:
                 sidebar_icon=PANEL_ICON,
                 config={},
             )
-            _LOGGER.info("Registered Vivino Cellar panel '%s' via frontend fallback", PANEL_TITLE)
+            _LOGGER.info(
+                "Registered Vivino Cellar panel '%s' via frontend fallback", PANEL_TITLE
+            )
         except Exception as err:  # noqa: BLE001
-            _LOGGER.warning("Failed to register Vivino Cellar panel via frontend fallback: %s", err)
+            _LOGGER.warning(
+                "Failed to register Vivino Cellar panel via frontend fallback: %s", err
+            )
 
 
 async def _async_register_lovelace_resource(hass: Any, url: str) -> None:
@@ -166,7 +190,11 @@ async def _async_register_lovelace_resource(hass: Any, url: str) -> None:
             items = list(resources.items)
 
         for item in items:
-            item_url = item.get("url") if isinstance(item, dict) else getattr(item, "url", None)
+            item_url = (
+                item.get("url")
+                if isinstance(item, dict)
+                else getattr(item, "url", None)
+            )
             if item_url == url:
                 _LOGGER.debug("Lovelace resource '%s' already registered", url)
                 return
