@@ -55,10 +55,8 @@ export const cardStyles = `
     justify-content: center;
   }
 
-  .header-icon svg {
-    width: 28px;
-    height: 28px;
-    fill: currentColor;
+  .header-icon ha-icon {
+    --mdc-icon-size: 28px;
   }
 
   .header-titles {
@@ -1336,7 +1334,7 @@ export class VivinoCellarCard extends HTMLElement {
       <div class="card-container">
         <div class="card-header">
           <div class="header-left">
-            <div class="header-icon">${ICON_BOTTLE}</div>
+            <div class="header-icon"><ha-icon icon="mdi:barrel"></ha-icon></div>
             <div class="header-titles">
               <div class="header-title">
                 ${esc(this._title(data))}

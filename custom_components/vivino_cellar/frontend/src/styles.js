@@ -51,10 +51,8 @@ export const cardStyles = `
     justify-content: center;
   }
 
-  .header-icon svg {
-    width: 28px;
-    height: 28px;
-    fill: currentColor;
+  .header-icon ha-icon {
+    --mdc-icon-size: 28px;
   }
 
   .header-titles {

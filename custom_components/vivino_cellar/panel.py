@@ -12,10 +12,10 @@ _LOGGER = logging.getLogger(__name__)
 
 URL_BASE = "/vivino_cellar_frontend"
 PANEL_URL = "vivino_cellar"
-PANEL_ICON = "mdi:bottle-wine"
+PANEL_ICON = "mdi:barrel"
 PANEL_WEBCOMPONENT = "vivino-cellar-card"
 CARD_JS = "vivino-cellar-card.js"
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 
 try:
     from homeassistant.components.http import StaticPathConfig

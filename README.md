@@ -37,7 +37,7 @@
   - `button.vivino_cellar_refresh` (with automatic 30s rate limiting)
   - Full Home Assistant Diagnostics support with sensitive cookie & token redaction.
 - 📱 **Sidebar Panel & Lovelace Custom Card**:
-  - Dedicated **Wijnkelder** panel in your Home Assistant sidebar (`mdi:glass-wine`).
+  - Dedicated **Wijnkelder** panel in your Home Assistant sidebar (`mdi:barrel`).
   - Lit-based Lovelace card (`custom:vivino-cellar-card`) for dashboard embedding.
 
 ---

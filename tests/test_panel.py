@@ -154,7 +154,7 @@ async def test_register_frontend_sidebar_panel(mock_hass):
     assert call_kwargs.get("frontend_url_path") == "vivino_cellar"
     assert call_kwargs.get("webcomponent_name") == "vivino-cellar-card"
     assert call_kwargs.get("sidebar_title") == "Wijnkelder"
-    assert call_kwargs.get("sidebar_icon") == "mdi:bottle-wine"
+    assert call_kwargs.get("sidebar_icon") == "mdi:barrel"
 
 
 @pytest.mark.asyncio
