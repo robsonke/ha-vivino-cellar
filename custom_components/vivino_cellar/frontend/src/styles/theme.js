@@ -2,7 +2,16 @@
  * Shared look: everything follows the HA theme; only status colours are fixed.
  * Every element includes `themeStyles` in its static styles.
  */
-import { css } from "lit";
+import { css, unsafeCSS } from "lit";
+
+import { STATUS_COLORS, TINT, TOAST_ERROR_BG } from "../logic/colors.js";
+
+const statusVars = (theme) =>
+  unsafeCSS(
+    Object.entries(STATUS_COLORS[theme])
+      .map(([status, color]) => `--vc-status-${status}: ${color};`)
+      .join("\n")
+  );
 
 /** Tokens and status colours. Only the root card includes this; children inherit. */
 export const tokenStyles = css`
@@ -20,28 +29,19 @@ export const tokenStyles = css`
     --vc-surface-2: var(--secondary-background-color, #f5f5f5);
     --vc-accent: var(--primary-color, #03a9f4);
     --vc-on-accent: var(--text-primary-color, #fff);
-    --vc-tint: 12%;
+    --vc-tint: ${unsafeCSS(TINT.light * 100)}%;
 
     /* Status colours, light theme */
-    --vc-status-near_past_peak: #b26a00;
-    --vc-status-ready: #2e7d32;
-    --vc-status-can_wait: #00796b;
-    --vc-status-hold: #1565c0;
-    --vc-status-past_peak: #c62828;
-    --vc-status-unknown: #757575;
+    ${statusVars("light")}
+    --vc-toast-error: ${unsafeCSS(TOAST_ERROR_BG)};
     --vc-star: #f5a623;
 
   }
 
   /* Status colours, dark theme (set by the root from hass.themes.darkMode) */
   :host([dark]) {
-    --vc-status-near_past_peak: #ffb74d;
-    --vc-status-ready: #81c784;
-    --vc-status-can_wait: #4db6ac;
-    --vc-status-hold: #64b5f6;
-    --vc-status-past_peak: #ef5350;
-    --vc-status-unknown: #9e9e9e;
-    --vc-tint: 18%;
+    ${statusVars("dark")}
+    --vc-tint: ${unsafeCSS(TINT.dark * 100)}%;
   }
 
 `;

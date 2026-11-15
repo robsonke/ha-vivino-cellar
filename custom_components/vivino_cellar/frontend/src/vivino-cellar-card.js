@@ -77,11 +77,9 @@ export class VivinoCellarCard extends LitElement {
     this._pairing = { dish: "", foodIds: new Set(), results: null, loading: false, error: null };
     this._unsubscribe = null;
     this._subscribing = false;
+    this._subscribeTried = false; // one attempt per connection; a failing backend must not be retried on every hass tick
 
     this._onPageHide = () => this._flushPending();
-    this._onKeyDown = (e) => {
-      if (e.key === "Escape" && (this._pickerId !== null || this._detailId !== null)) this._closeModal();
-    };
     this._listen();
   }
 
@@ -132,16 +130,15 @@ export class VivinoCellarCard extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     window.addEventListener("pagehide", this._onPageHide);
-    window.addEventListener("keydown", this._onKeyDown);
     if (this.hass) this._subscribe();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener("pagehide", this._onPageHide);
-    window.removeEventListener("keydown", this._onKeyDown);
     this._flushPending();
     this._unsubscribeUpdates();
+    this._subscribeTried = false;
   }
 
   willUpdate(changed) {
@@ -165,7 +162,8 @@ export class VivinoCellarCard extends LitElement {
   }
 
   async _subscribe() {
-    if (!this.hass || this._unsubscribe || this._subscribing) return;
+    if (!this.hass || this._unsubscribe || this._subscribing || this._subscribeTried) return;
+    this._subscribeTried = true;
     this._subscribing = true;
     if (!this._data) this._loading = true;
     try {

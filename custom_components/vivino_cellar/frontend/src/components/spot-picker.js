@@ -13,7 +13,7 @@ export class VcSpotPicker extends VcModal {
     const w = this.wine;
     if (!w) return nothing;
     return html`
-      <dialog aria-label="Welke fles pak je?" @cancel=${this._cancel} @click=${this._backdrop}>
+      <dialog aria-label="Welke fles pak je?" @cancel=${this._cancel} @close=${this._closed} @click=${this._backdrop}>
         <div class="sheet picker">
           <div class="head"><ha-icon icon="mdi:glass-wine"></ha-icon> Welke fles pak je?</div>
           <div class="body">

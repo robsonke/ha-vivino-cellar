@@ -699,7 +699,32 @@ function cellarLines(wine) {
   return [first, second];
 }
 
+// custom_components/vivino_cellar/frontend/src/logic/colors.js
+var STATUS_COLORS = {
+  light: {
+    near_past_peak: "#8e5500",
+    ready: "#29702d",
+    can_wait: "#006f62",
+    hold: "#1461b8",
+    past_peak: "#ba2626",
+    unknown: "#626262"
+  },
+  dark: {
+    near_past_peak: "#ffb74d",
+    ready: "#81c784",
+    can_wait: "#5bbcb3",
+    hold: "#64b5f6",
+    past_peak: "#f5918f",
+    unknown: "#aeaeae"
+  }
+};
+var TINT = { light: 0.12, dark: 0.18 };
+var TOAST_ERROR_BG = "#c62828";
+
 // custom_components/vivino_cellar/frontend/src/styles/theme.js
+var statusVars = (theme) => r(
+  Object.entries(STATUS_COLORS[theme]).map(([status, color]) => `--vc-status-${status}: ${color};`).join("\n")
+);
 var tokenStyles = i`
   :host {
     --vc-gap: 12px;
@@ -715,28 +740,19 @@ var tokenStyles = i`
     --vc-surface-2: var(--secondary-background-color, #f5f5f5);
     --vc-accent: var(--primary-color, #03a9f4);
     --vc-on-accent: var(--text-primary-color, #fff);
-    --vc-tint: 12%;
+    --vc-tint: ${r(TINT.light * 100)}%;
 
     /* Status colours, light theme */
-    --vc-status-near_past_peak: #b26a00;
-    --vc-status-ready: #2e7d32;
-    --vc-status-can_wait: #00796b;
-    --vc-status-hold: #1565c0;
-    --vc-status-past_peak: #c62828;
-    --vc-status-unknown: #757575;
+    ${statusVars("light")}
+    --vc-toast-error: ${r(TOAST_ERROR_BG)};
     --vc-star: #f5a623;
 
   }
 
   /* Status colours, dark theme (set by the root from hass.themes.darkMode) */
   :host([dark]) {
-    --vc-status-near_past_peak: #ffb74d;
-    --vc-status-ready: #81c784;
-    --vc-status-can_wait: #4db6ac;
-    --vc-status-hold: #64b5f6;
-    --vc-status-past_peak: #ef5350;
-    --vc-status-unknown: #9e9e9e;
-    --vc-tint: 18%;
+    ${statusVars("dark")}
+    --vc-tint: ${r(TINT.dark * 100)}%;
   }
 
 `;
@@ -1166,17 +1182,29 @@ if (!customElements.get("vc-cellar-tab")) customElements.define("vc-cellar-tab",
 var VcModal = class extends i4 {
   updated() {
     const dialog = this.renderRoot.querySelector("dialog");
-    if (dialog && !dialog.open) {
-      try {
-        dialog.showModal();
-        dialog.querySelector("[autofocus]")?.focus();
-      } catch {
-        dialog.setAttribute("open", "");
-      }
+    if (!dialog || dialog.open) return;
+    if (this._shown) {
+      fire(this, "vc-close");
+      return;
+    }
+    this._shown = true;
+    try {
+      dialog.showModal();
+      dialog.querySelector("[autofocus]")?.focus();
+    } catch {
+      dialog.setAttribute("open", "");
     }
   }
+  /**
+   * Esc, Android back, or the browser closing the dialog itself: tell the
+   * root, so its state matches and the next render does not reopen it.
+   */
   _cancel(e4) {
     e4.preventDefault();
+    fire(this, "vc-close");
+  }
+  _closed() {
+    fire(this, "vc-close");
   }
   _backdrop(e4) {
     if (e4.target === e4.currentTarget) fire(this, "vc-close");
@@ -1309,7 +1337,7 @@ var VcDetailSheet = class extends VcModal {
     const spots = bottleSpots(w2.bottles || []);
     const row = (label, value) => value ? b2`<div class="dl-row"><dt>${label}</dt><dd>${value}</dd></div>` : A;
     return b2`
-      <dialog aria-labelledby="t" @cancel=${this._cancel} @click=${this._backdrop}>
+      <dialog aria-labelledby="t" @cancel=${this._cancel} @close=${this._closed} @click=${this._backdrop}>
         <div class="sheet s-${status}">
           <div class="hero">
             ${image ? b2`<img class="photo" src=${image} alt="" @error=${(e4) => e4.target.style.visibility = "hidden"} />` : b2`<div class="photo bottle-placeholder"><ha-icon icon="mdi:bottle-wine"></ha-icon></div>`}
@@ -1832,7 +1860,7 @@ var VcSpotPicker = class extends VcModal {
     const w2 = this.wine;
     if (!w2) return A;
     return b2`
-      <dialog aria-label="Welke fles pak je?" @cancel=${this._cancel} @click=${this._backdrop}>
+      <dialog aria-label="Welke fles pak je?" @cancel=${this._cancel} @close=${this._closed} @click=${this._backdrop}>
         <div class="sheet picker">
           <div class="head"><ha-icon icon="mdi:glass-wine"></ha-icon> Welke fles pak je?</div>
           <div class="body">
@@ -1971,7 +1999,7 @@ __publicField(VcToastStack, "styles", [
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         font-size: 14px;
       }
-      .toast.error { background: var(--vc-status-past_peak); color: #fff; }
+      .toast.error { background: var(--vc-toast-error); color: #fff; }
       .text { flex: 1; min-width: 0; }
       .action {
         border: none;
@@ -2049,10 +2077,8 @@ var VivinoCellarCard = class extends i4 {
     this._pairing = { dish: "", foodIds: /* @__PURE__ */ new Set(), results: null, loading: false, error: null };
     this._unsubscribe = null;
     this._subscribing = false;
+    this._subscribeTried = false;
     this._onPageHide = () => this._flushPending();
-    this._onKeyDown = (e4) => {
-      if (e4.key === "Escape" && (this._pickerId !== null || this._detailId !== null)) this._closeModal();
-    };
     this._listen();
   }
   // ---------------------------------------------------------------------------
@@ -2090,15 +2116,14 @@ var VivinoCellarCard = class extends i4 {
   connectedCallback() {
     super.connectedCallback();
     window.addEventListener("pagehide", this._onPageHide);
-    window.addEventListener("keydown", this._onKeyDown);
     if (this.hass) this._subscribe();
   }
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener("pagehide", this._onPageHide);
-    window.removeEventListener("keydown", this._onKeyDown);
     this._flushPending();
     this._unsubscribeUpdates();
+    this._subscribeTried = false;
   }
   willUpdate(changed) {
     if (changed.has("hass") && this.hass) {
@@ -2118,7 +2143,8 @@ var VivinoCellarCard = class extends i4 {
     if (hint && rankTonight(this._wines, hint.chip).length) this._chip = hint.chip;
   }
   async _subscribe() {
-    if (!this.hass || this._unsubscribe || this._subscribing) return;
+    if (!this.hass || this._unsubscribe || this._subscribing || this._subscribeTried) return;
+    this._subscribeTried = true;
     this._subscribing = true;
     if (!this._data) this._loading = true;
     try {

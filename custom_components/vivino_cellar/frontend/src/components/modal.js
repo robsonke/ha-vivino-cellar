@@ -10,18 +10,32 @@ import { fire } from "./events.js";
 export class VcModal extends LitElement {
   updated() {
     const dialog = this.renderRoot.querySelector("dialog");
-    if (dialog && !dialog.open) {
-      try {
-        dialog.showModal();
-        dialog.querySelector("[autofocus]")?.focus();
-      } catch {
-        dialog.setAttribute("open", ""); // not connected yet: show inline
-      }
+    if (!dialog || dialog.open) return;
+    if (this._shown) {
+      // The browser closed it (Android back, non-cancelable cancel): report, don't reopen.
+      fire(this, "vc-close");
+      return;
+    }
+    this._shown = true;
+    try {
+      dialog.showModal();
+      dialog.querySelector("[autofocus]")?.focus();
+    } catch {
+      dialog.setAttribute("open", ""); // not connected yet: show inline
     }
   }
 
+  /**
+   * Esc, Android back, or the browser closing the dialog itself: tell the
+   * root, so its state matches and the next render does not reopen it.
+   */
   _cancel(e) {
-    e.preventDefault(); // the root's Esc handler decides what closes
+    e.preventDefault();
+    fire(this, "vc-close");
+  }
+
+  _closed() {
+    fire(this, "vc-close");
   }
 
   _backdrop(e) {

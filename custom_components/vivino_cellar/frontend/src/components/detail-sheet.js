@@ -123,7 +123,7 @@ export class VcDetailSheet extends VcModal {
     const row = (label, value) => (value ? html`<div class="dl-row"><dt>${label}</dt><dd>${value}</dd></div>` : nothing);
 
     return html`
-      <dialog aria-labelledby="t" @cancel=${this._cancel} @click=${this._backdrop}>
+      <dialog aria-labelledby="t" @cancel=${this._cancel} @close=${this._closed} @click=${this._backdrop}>
         <div class="sheet s-${status}">
           <div class="hero">
             ${image

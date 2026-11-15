@@ -84,7 +84,7 @@ export class VcToastStack extends LitElement {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         font-size: 14px;
       }
-      .toast.error { background: var(--vc-status-past_peak); color: #fff; }
+      .toast.error { background: var(--vc-toast-error); color: #fff; }
       .text { flex: 1; min-width: 0; }
       .action {
         border: none;
