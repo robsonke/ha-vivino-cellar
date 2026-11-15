@@ -21,6 +21,7 @@ from .const import (
 from .coordinator import VivinoCellarCoordinator
 from .exceptions import VivinoError
 from .window_engine import (
+    WINDOW_STATUS_CAN_WAIT,
     WINDOW_STATUS_HOLD,
     WINDOW_STATUS_NEAR_PAST_PEAK,
     WINDOW_STATUS_PAST_PEAK,
@@ -260,6 +261,7 @@ def _get_all_coordinators(hass: Any) -> list[VivinoCellarCoordinator]:
 
 _STATUS_ORDER = (
     WINDOW_STATUS_READY,
+    WINDOW_STATUS_CAN_WAIT,
     WINDOW_STATUS_HOLD,
     WINDOW_STATUS_NEAR_PAST_PEAK,
     WINDOW_STATUS_PAST_PEAK,

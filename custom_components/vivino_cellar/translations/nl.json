@@ -57,6 +57,9 @@
       "ready": {
         "name": "Op dronk"
       },
+      "can_wait": {
+        "name": "Kan nog liggen"
+      },
       "near_past_peak": {
         "name": "Bijna over het hoogtepunt"
       },

@@ -57,6 +57,9 @@
       "ready": {
         "name": "Ready to drink"
       },
+      "can_wait": {
+        "name": "Can wait"
+      },
       "near_past_peak": {
         "name": "Near past peak"
       },

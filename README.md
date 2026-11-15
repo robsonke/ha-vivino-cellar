@@ -29,7 +29,8 @@
   - Receive a spoken recommendation based on what you actually have in stock!
 - 📊 **Sensors & Diagnostics**:
   - `sensor.vivino_cellar_total_bottles`
-  - `sensor.vivino_cellar_bottles_ready`
+  - `sensor.vivino_cellar_bottles_ready` (window ends within 5 years)
+  - `sensor.vivino_cellar_bottles_can_wait` (ready, but the window runs 5+ more years)
   - `sensor.vivino_cellar_bottles_hold`
   - `sensor.vivino_cellar_bottles_near_past_peak`
   - `sensor.vivino_cellar_bottles_past_peak`

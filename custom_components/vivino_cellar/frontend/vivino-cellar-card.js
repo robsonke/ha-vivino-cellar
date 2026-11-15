@@ -389,6 +389,12 @@ export const cardStyles = `
     border: 1px solid #ffe0b2;
   }
 
+  .badge-can_wait {
+    background: #e0f2f1;
+    color: #00695c;
+    border: 1px solid #b2dfdb;
+  }
+
   .badge-hold {
     background: #e3f2fd;
     color: #1565c0;
@@ -916,12 +922,13 @@ const ICON_CLOCK = `<svg viewBox="0 0 24 24"><path d="M12,20A8,8 0 0,0 20,12A8,8
 
 const STATUS_LABELS = {
   ready: "Op dronk",
+  can_wait: "Kan nog liggen",
   near_past_peak: "Binnenkort drinken",
   hold: "Nog wegleggen",
   past_peak: "Voorbij piek",
   unknown: "Venster onbekend",
 };
-const STATUS_ORDER = ["near_past_peak", "ready", "hold", "past_peak", "unknown"];
+const STATUS_ORDER = ["near_past_peak", "ready", "can_wait", "hold", "past_peak", "unknown"];
 const DEFAULT_TABS = ["now", "pairing", "windows"];
 const NOW_LIMIT = 5;
 const UNDO_MS = 8000;
@@ -1000,6 +1007,7 @@ export class VivinoCellarCard extends HTMLElement {
     this._expandedGroups = {
       near_past_peak: true,
       ready: true,
+      can_wait: false,
       hold: false,
       past_peak: false,
       unknown: false,
@@ -1442,7 +1450,7 @@ export class VivinoCellarCard extends HTMLElement {
 
   _renderNowTab(view) {
     const year = new Date().getFullYear();
-    const rank = { near_past_peak: 0, ready: 1 };
+    const rank = { near_past_peak: 0, ready: 1, can_wait: 2 };
     const candidates = view.wines
       .filter((w) => w.bottles.length > 0 && w.window_status in rank)
       .sort(

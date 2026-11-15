@@ -118,7 +118,7 @@ def _create_sample_cellar_data() -> CellarData:
         style=None,
         bottles=[b1, b2],
         start_year=2022,
-        end_year=2035,
+        end_year=2029,  # ends within CAN_WAIT_YEARS of 2026, so ready
         window_source="vivino",
     )
 

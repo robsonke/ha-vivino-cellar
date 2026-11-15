@@ -385,6 +385,12 @@ export const cardStyles = `
     border: 1px solid #ffe0b2;
   }
 
+  .badge-can_wait {
+    background: #e0f2f1;
+    color: #00695c;
+    border: 1px solid #b2dfdb;
+  }
+
   .badge-hold {
     background: #e3f2fd;
     color: #1565c0;
