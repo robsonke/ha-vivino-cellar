@@ -8,12 +8,15 @@
 import { LitElement, css, html, nothing } from "lit";
 
 import "./components/detail-sheet.js";
+import "./components/now-tab.js";
 import "./components/spot-picker.js";
 import "./components/toast-stack.js";
 import "./components/wine-row.js";
 import { EMPTY_FILTERS } from "./logic/filters.js";
+import { rankTonight } from "./logic/ranking.js";
 import { STATUS_ORDER } from "./logic/status.js";
 import { bottleId, bottleSpots, viewWines, vintageId } from "./logic/util.js";
+import { weatherSuggestion } from "./logic/weather.js";
 import { themeStyles, tokenStyles } from "./styles/theme.js";
 
 const DEFAULT_TABS = ["now", "pairing", "cellar"];
@@ -67,6 +70,8 @@ export class VivinoCellarCard extends LitElement {
     this._expanded = { near_past_peak: true, ready: true, can_wait: false, hold: false, past_peak: false, unknown: false };
     this._chip = null;
     this._chipTouched = false; // the user picked a chip; the weather no longer preselects
+    this._weatherApplied = false; // the weather preselects a chip once per load
+    this._focusDish = false; // "Bij het eten" asks Wijn & Spijs to focus the dish input
     this._pairing = { dish: "", foodIds: new Set(), results: null, loading: false, error: null };
     this._unsubscribe = null;
     this._subscribing = false;
@@ -142,6 +147,19 @@ export class VivinoCellarCard extends LitElement {
       this.toggleAttribute("dark", Boolean(this.hass.themes?.darkMode));
       if (this.isConnected) this._subscribe();
     }
+    this._applyWeatherChip();
+  }
+
+  get _weather() {
+    return weatherSuggestion(this.hass, this._data?.settings?.weather_entity);
+  }
+
+  /** Once per load: preselect the weather's chip, unless the user chose or it has no wines. */
+  _applyWeatherChip() {
+    if (this._weatherApplied || this._chipTouched || !this._data || !this.hass) return;
+    this._weatherApplied = true;
+    const hint = this._weather;
+    if (hint && rankTonight(this._wines, hint.chip).length) this._chip = hint.chip;
   }
 
   async _subscribe() {
@@ -384,9 +402,10 @@ export class VivinoCellarCard extends LitElement {
     on("vc-rating-draft", (draft) => {
       this._ratingDraft = { ...this._ratingDraft, ...draft, status: "idle", error: null };
     });
-    on("vc-tab", ({ tab, statusFilter }) => {
+    on("vc-tab", ({ tab, statusFilter, focusDish }) => {
       if (!this._config.tabs.includes(tab)) return;
       this._tab = tab;
+      this._focusDish = Boolean(focusDish);
       if (statusFilter !== undefined) this._statusFilter = statusFilter;
     });
     on("vc-chip", ({ chip }) => {
@@ -477,8 +496,21 @@ export class VivinoCellarCard extends LitElement {
   }
 
   _renderTab(wines) {
-    // Filled in by the tab elements (Tasks 6-8).
-    return html`<div class="empty" data-tab=${this._tab} data-wines=${wines.length}>${TAB_LABELS[this._tab]}</div>`;
+    if (this._tab === "now") {
+      const pastPeak = wines
+        .filter((w) => w.window_status === "past_peak")
+        .reduce((n, w) => n + w.bottles.length, 0);
+      return html`<vc-now-tab
+        .wines=${wines}
+        .chip=${this._chip}
+        .limit=${this.nowLimit}
+        .hint=${this._weather}
+        ?showEatChip=${this._config.tabs.includes("pairing")}
+        .pastPeakCount=${pastPeak}
+      ></vc-now-tab>`;
+    }
+    // Kelder and Wijn & Spijs (Tasks 7-8).
+    return html`<div class="empty" data-tab=${this._tab}>${TAB_LABELS[this._tab]}</div>`;
   }
 
   _renderModals() {

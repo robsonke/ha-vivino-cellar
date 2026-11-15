@@ -1052,6 +1052,411 @@ __publicField(VcDetailSheet, "styles", [
 ]);
 if (!customElements.get("vc-detail-sheet")) customElements.define("vc-detail-sheet", VcDetailSheet);
 
+// custom_components/vivino_cellar/frontend/src/logic/ranking.js
+var CHIPS = [
+  { id: "borrelen", label: "\u{1F942} Borrelen" },
+  { id: "verfrissend", label: "\u{1F9CA} Verfrissend" },
+  { id: "winteravond", label: "\u{1F525} Winteravond" },
+  { id: "eten", label: "\u{1F37D} Bij het eten" },
+  { id: "bijzonder", label: "\u2728 Iets bijzonders" },
+  { id: "moet_op", label: "\u23F3 Moet op" }
+];
+var RED = 1;
+var WHITE = 2;
+var SPARKLING = 3;
+var ROSE = 4;
+var DESSERT = 7;
+var FORTIFIED = 24;
+var FULL_GRAPES = /* @__PURE__ */ new Set(
+  [
+    "cabernet sauvignon",
+    "syrah",
+    "shiraz",
+    "malbec",
+    "nebbiolo",
+    "tempranillo",
+    "aglianico",
+    "tannat",
+    "petite sirah",
+    "mourv\xE8dre",
+    "mourvedre",
+    "primitivo",
+    "zinfandel",
+    "sagrantino"
+  ]
+);
+var LIGHT_GRAPES = /* @__PURE__ */ new Set(
+  ["pinot noir", "gamay", "zweigelt", "schiava", "frappato", "cinsault"]
+);
+var SAVE_FOR_LATER = 4.3;
+var DRINKABLE = { near_past_peak: 0, ready: 1, can_wait: 2 };
+var nullsLast = (v2) => v2 === null || v2 === void 0 ? Infinity : v2;
+var inStock = (w2) => (w2.bottles || []).length > 0;
+function bodyOf(wine) {
+  if (typeof wine.style_body === "number") return wine.style_body;
+  const grapes = (wine.grapes || []).map((g2) => String(g2).toLowerCase());
+  if (grapes.some((g2) => FULL_GRAPES.has(g2))) return 4;
+  if (grapes.some((g2) => LIGHT_GRAPES.has(g2))) return 2;
+  return 3;
+}
+function byDefault(a3, b3) {
+  return (DRINKABLE[a3.window_status] ?? 9) - (DRINKABLE[b3.window_status] ?? 9) || nullsLast(a3.end_year) - nullsLast(b3.end_year) || (b3.rating ?? 0) - (a3.rating ?? 0);
+}
+var CHIP_RULES = {
+  borrelen: {
+    keep: (w2) => [SPARKLING, ROSE, WHITE].includes(w2.type_id) || w2.type_id === RED && bodyOf(w2) <= 3,
+    rank: (a3, b3) => {
+      const group = (w2) => [SPARKLING, ROSE].includes(w2.type_id) ? 0 : w2.type_id === WHITE ? 1 : 2;
+      return group(a3) - group(b3) || bodyOf(a3) - bodyOf(b3);
+    }
+  },
+  verfrissend: {
+    keep: (w2) => [WHITE, ROSE, SPARKLING].includes(w2.type_id),
+    rank: (a3, b3) => (b3.style_acidity ?? -Infinity) - (a3.style_acidity ?? -Infinity) || bodyOf(a3) - bodyOf(b3)
+  },
+  winteravond: {
+    keep: (w2) => w2.type_id === RED && bodyOf(w2) >= 4 || [FORTIFIED, DESSERT].includes(w2.type_id),
+    rank: (a3, b3) => bodyOf(b3) - bodyOf(a3) || (b3.rating ?? 0) - (a3.rating ?? 0)
+  },
+  bijzonder: {
+    keep: () => true,
+    rank: (a3, b3) => (b3.rating ?? -Infinity) - (a3.rating ?? -Infinity) || nullsLast(a3.year) - nullsLast(b3.year)
+  }
+};
+function rankTonight(wines, chipId) {
+  const stock = (wines || []).filter(inStock);
+  if (chipId === "moet_op") {
+    const near = stock.filter((w2) => w2.window_status === "near_past_peak").sort(byDefault);
+    const past = stock.filter((w2) => w2.window_status === "past_peak").sort((a3, b3) => (b3.end_year ?? -Infinity) - (a3.end_year ?? -Infinity) || byDefault(a3, b3));
+    return [...near, ...past];
+  }
+  const drinkable = stock.filter((w2) => w2.window_status in DRINKABLE);
+  const rule = CHIP_RULES[chipId];
+  if (!rule) return drinkable.sort(byDefault);
+  let picks = drinkable.filter(rule.keep);
+  if (chipId === "borrelen") {
+    const everyday = picks.filter((w2) => (w2.rating ?? 0) < SAVE_FOR_LATER);
+    if (everyday.length) picks = everyday;
+  }
+  return picks.sort((a3, b3) => rule.rank(a3, b3) || byDefault(a3, b3));
+}
+function describe(wine) {
+  const type = WINE_TYPES[wine.type_id];
+  const body = bodyOf(wine);
+  if (wine.type_id === RED && body >= 4) return "Vol, krachtig";
+  if (wine.type_id !== RED && type && (wine.style_acidity ?? 0) >= 3.5) return `Fris, ${type.toLowerCase()}`;
+  const adjective = body <= 2 ? "Licht" : body >= 4 ? "Vol" : "Soepel";
+  return type ? `${adjective}, ${type.toLowerCase()}` : adjective;
+}
+function hintLine(wine, chipId, year) {
+  const end = wine.end_year;
+  if (wine.window_status === "past_peak") return end ? `Voorbij de piek \xB7 sinds ${end}` : "Voorbij de piek";
+  if (wine.window_status === "can_wait") return end ? `Kan nog liggen \xB7 tot ${end}` : "Kan nog liggen";
+  const text = describe(wine);
+  if (wine.window_status === "near_past_peak") return `${text} \xB7 drink in ${end ?? year}`;
+  return end ? `${text} \xB7 tot ${end}` : text;
+}
+
+// custom_components/vivino_cellar/frontend/src/components/mood-chips.js
+var VcMoodChips = class extends i4 {
+  _pick(id) {
+    if (id === "eten") {
+      fire(this, "vc-tab", { tab: "pairing", focusDish: true });
+      return;
+    }
+    fire(this, "vc-chip", { chip: this.chip === id ? null : id });
+  }
+  render() {
+    const chips = CHIPS.filter((c4) => c4.id !== "eten" || this.showEatChip);
+    return b2`
+      <div class="chips" role="group" aria-label="Waar heb je zin in?">
+        ${chips.map(
+      (c4) => b2`<button class="chip" aria-pressed=${this.chip === c4.id} @click=${() => this._pick(c4.id)}>
+            ${c4.label}
+          </button>`
+    )}
+      </div>
+    `;
+  }
+};
+__publicField(VcMoodChips, "properties", {
+  chip: { type: String },
+  showEatChip: { type: Boolean }
+});
+__publicField(VcMoodChips, "styles", [
+  themeStyles,
+  i`
+      :host { display: block; }
+      .chips {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding: 2px 0 4px;
+        margin: 0 -2px;
+      }
+      .chips::-webkit-scrollbar { display: none; }
+    `
+]);
+if (!customElements.get("vc-mood-chips")) customElements.define("vc-mood-chips", VcMoodChips);
+
+// custom_components/vivino_cellar/frontend/src/components/top-pick.js
+var VcTopPick = class extends i4 {
+  _open() {
+    fire(this, "vc-open", { vintageId: vintageId(this.wine) });
+  }
+  render() {
+    const w2 = this.wine;
+    if (!w2) return A;
+    const name = w2.name || "Onbekende wijn";
+    const image = safeUrl(w2.image_url);
+    const sub = [w2.winery, w2.region].filter(Boolean).join(" \xB7 ");
+    return b2`
+      <div
+        class="pick s-${w2.window_status || "unknown"}"
+        role="button"
+        tabindex="0"
+        aria-label="Details: ${name}"
+        @click=${this._open}
+        @keydown=${(e4) => {
+      if (e4.target === e4.currentTarget && (e4.key === "Enter" || e4.key === " ")) {
+        e4.preventDefault();
+        this._open();
+      }
+    }}
+      >
+        ${image ? b2`<img class="photo" src=${image} alt="" @error=${(e4) => e4.target.style.visibility = "hidden"} />` : b2`<div class="photo bottle-placeholder"><ha-icon icon="mdi:bottle-wine"></ha-icon></div>`}
+        <div class="text">
+          <div class="name">${name}${w2.year ? b2` <span class="year">${w2.year}</span>` : A}</div>
+          ${sub ? b2`<div class="muted sub">${sub}</div>` : A}
+          <div class="reason">${reasonLine(w2, (/* @__PURE__ */ new Date()).getFullYear())}</div>
+          <button
+            class="btn btn-primary"
+            @click=${(e4) => {
+      e4.stopPropagation();
+      fire(this, "vc-drink", { vintageId: vintageId(w2) });
+    }}
+          >
+            <ha-icon icon="mdi:glass-wine"></ha-icon> Ontkurken
+          </button>
+        </div>
+      </div>
+    `;
+  }
+};
+__publicField(VcTopPick, "properties", { wine: { attribute: false } });
+__publicField(VcTopPick, "styles", [
+  themeStyles,
+  i`
+      :host { display: block; }
+      .pick {
+        display: flex;
+        gap: 14px;
+        padding: 14px;
+        border-radius: var(--vc-radius);
+        background: var(--vc-surface-2);
+        border-left: 4px solid var(--vc-edge);
+        cursor: pointer;
+      }
+      .photo { width: 60px; height: 104px; flex: none; object-fit: contain; border-radius: var(--vc-radius-sm); }
+      .photo.bottle-placeholder { background: var(--vc-surface); }
+      .text { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+      .name { font-size: 17px; font-weight: 600; line-height: 1.25; }
+      .year { font-weight: 400; color: var(--vc-muted); }
+      .sub { font-size: 13px; }
+      .reason { font-size: 13.5px; font-weight: 500; color: var(--vc-edge); margin: 4px 0 8px; }
+    `
+]);
+if (!customElements.get("vc-top-pick")) customElements.define("vc-top-pick", VcTopPick);
+
+// custom_components/vivino_cellar/frontend/src/components/wine-row.js
+var VcWineRow = class extends i4 {
+  constructor() {
+    super();
+    this.lines = [];
+  }
+  _open() {
+    fire(this, "vc-open", { vintageId: vintageId(this.wine) });
+  }
+  _key(e4) {
+    if (e4.target !== e4.currentTarget) return;
+    if (e4.key === "Enter" || e4.key === " ") {
+      e4.preventDefault();
+      this._open();
+    }
+  }
+  _drink(e4) {
+    e4.stopPropagation();
+    fire(this, "vc-drink", { vintageId: vintageId(this.wine) });
+  }
+  render() {
+    const w2 = this.wine;
+    if (!w2) return A;
+    const name = w2.name || "Onbekende wijn";
+    const image = safeUrl(w2.image_url);
+    const status = w2.window_status || "unknown";
+    return b2`
+      <div
+        class="row s-${status}"
+        role="button"
+        tabindex="0"
+        aria-label="Details: ${name}"
+        @click=${this._open}
+        @keydown=${this._key}
+      >
+        ${image ? b2`<img class="thumb" src=${image} alt="" loading="lazy" @error=${(e4) => e4.target.style.visibility = "hidden"} />` : b2`<div class="thumb bottle-placeholder"><ha-icon icon="mdi:bottle-wine"></ha-icon></div>`}
+        <div class="text">
+          <div class="name">${name}${w2.year ? b2` <span class="year">${w2.year}</span>` : A}</div>
+          ${(this.lines || []).filter(Boolean).map((l3) => b2`<div class="line">${l3}</div>`)}
+        </div>
+        <button
+          class="icon-btn glass"
+          title="Ontkurken"
+          aria-label="Ontkurken: ${name}"
+          ?disabled=${!(w2.bottles || []).length}
+          @click=${this._drink}
+        >
+          <ha-icon icon="mdi:glass-wine"></ha-icon>
+        </button>
+      </div>
+    `;
+  }
+};
+__publicField(VcWineRow, "properties", {
+  wine: { attribute: false },
+  lines: { attribute: false }
+  // [string, string?]
+});
+__publicField(VcWineRow, "styles", [
+  themeStyles,
+  i`
+      :host { display: block; }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 6px 8px 10px;
+        border-radius: var(--vc-radius-sm);
+        border: 1px solid var(--vc-divider);
+        border-left: 4px solid var(--vc-edge);
+        background: var(--vc-surface);
+        cursor: pointer;
+      }
+      .row:hover { background: color-mix(in srgb, var(--vc-surface-2) 60%, var(--vc-surface)); }
+      .thumb {
+        width: 32px;
+        height: 54px;
+        flex: none;
+        object-fit: contain;
+        border-radius: 6px;
+      }
+      .thumb.bottle-placeholder ha-icon { --mdc-icon-size: 18px; }
+      .text { flex: 1; min-width: 0; }
+      .name {
+        font-size: 14.5px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .year { font-weight: 400; color: var(--vc-muted); }
+      .line {
+        font-size: 12.5px;
+        color: var(--vc-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .glass { color: var(--vc-accent); border: 1px solid var(--vc-divider); }
+      .glass[disabled] { opacity: 0.35; cursor: default; }
+    `
+]);
+if (!customElements.get("vc-wine-row")) customElements.define("vc-wine-row", VcWineRow);
+
+// custom_components/vivino_cellar/frontend/src/components/now-tab.js
+var VcNowTab = class extends i4 {
+  render() {
+    const year = (/* @__PURE__ */ new Date()).getFullYear();
+    const ranked = rankTonight(this.wines || [], this.chip === "eten" ? null : this.chip);
+    const [top, ...rest] = ranked;
+    const more = rest.slice(0, Math.max(0, (this.limit || 5) - 1));
+    return b2`
+      ${this.hint ? b2`<button
+            class="hint ${this.hint.chip === "winteravond" ? "cold" : "warm"}"
+            @click=${() => this.chip !== this.hint.chip && fire(this, "vc-chip", { chip: this.hint.chip })}
+          >
+            ${this.hint.text}
+          </button>` : A}
+      <vc-mood-chips .chip=${this.chip} ?showEatChip=${this.showEatChip}></vc-mood-chips>
+
+      ${top ? b2`
+            <vc-top-pick .wine=${top}></vc-top-pick>
+            ${more.length ? b2`<div class="section-label">Ook goed vanavond</div>
+                  <div class="list">
+                    ${more.map(
+      (w2) => b2`<vc-wine-row .wine=${w2} .lines=${[hintLine(w2, this.chip, year)]} data-id=${vintageId(w2)}></vc-wine-row>`
+    )}
+                  </div>` : A}
+          ` : b2`<div class="empty">
+            ${this.chip ? b2`Niets voor deze keuze.
+                  <button class="btn-link btn" @click=${() => fire(this, "vc-chip", { chip: null })}>Toon alles</button>` : "Niets op dronk op dit moment."}
+          </div>`}
+
+      ${this.pastPeakCount && this.chip !== "moet_op" ? b2`<button class="past" @click=${() => fire(this, "vc-tab", { tab: "cellar", statusFilter: "past_peak" })}>
+            <ha-icon icon="mdi:alert"></ha-icon>
+            ${this.pastPeakCount} ${this.pastPeakCount === 1 ? "fles" : "flessen"} voorbij de piek · Bekijken
+          </button>` : A}
+    `;
+  }
+};
+__publicField(VcNowTab, "properties", {
+  wines: { attribute: false },
+  chip: { type: String },
+  limit: { type: Number },
+  hint: { attribute: false },
+  // {chip, text} | null
+  showEatChip: { type: Boolean },
+  pastPeakCount: { type: Number }
+});
+__publicField(VcNowTab, "styles", [
+  themeStyles,
+  i`
+      :host { display: flex; flex-direction: column; gap: 12px; }
+      .hint {
+        text-align: left;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 10px 12px;
+        border-radius: var(--vc-radius-sm);
+      }
+      .hint.warm {
+        color: var(--vc-status-near_past_peak);
+        background: color-mix(in srgb, var(--vc-status-near_past_peak) var(--vc-tint), transparent);
+      }
+      .hint.cold {
+        color: var(--vc-status-hold);
+        background: color-mix(in srgb, var(--vc-status-hold) var(--vc-tint), transparent);
+      }
+      .list { display: flex; flex-direction: column; gap: 8px; }
+      .section-label { margin-bottom: -4px; }
+      .past {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+        background: none;
+        padding: 4px 2px;
+        color: var(--vc-status-past_peak);
+        font-size: 13.5px;
+        cursor: pointer;
+        text-align: left;
+      }
+      .past ha-icon { --mdc-icon-size: 16px; }
+    `
+]);
+if (!customElements.get("vc-now-tab")) customElements.define("vc-now-tab", VcNowTab);
+
 // custom_components/vivino_cellar/frontend/src/components/spot-picker.js
 var VcSpotPicker = class extends VcModal {
   render() {
@@ -1225,110 +1630,6 @@ __publicField(VcToastStack, "styles", [
 ]);
 if (!customElements.get("vc-toast-stack")) customElements.define("vc-toast-stack", VcToastStack);
 
-// custom_components/vivino_cellar/frontend/src/components/wine-row.js
-var VcWineRow = class extends i4 {
-  constructor() {
-    super();
-    this.lines = [];
-  }
-  _open() {
-    fire(this, "vc-open", { vintageId: vintageId(this.wine) });
-  }
-  _key(e4) {
-    if (e4.target !== e4.currentTarget) return;
-    if (e4.key === "Enter" || e4.key === " ") {
-      e4.preventDefault();
-      this._open();
-    }
-  }
-  _drink(e4) {
-    e4.stopPropagation();
-    fire(this, "vc-drink", { vintageId: vintageId(this.wine) });
-  }
-  render() {
-    const w2 = this.wine;
-    if (!w2) return A;
-    const name = w2.name || "Onbekende wijn";
-    const image = safeUrl(w2.image_url);
-    const status = w2.window_status || "unknown";
-    return b2`
-      <div
-        class="row s-${status}"
-        role="button"
-        tabindex="0"
-        aria-label="Details: ${name}"
-        @click=${this._open}
-        @keydown=${this._key}
-      >
-        ${image ? b2`<img class="thumb" src=${image} alt="" loading="lazy" @error=${(e4) => e4.target.style.visibility = "hidden"} />` : b2`<div class="thumb bottle-placeholder"><ha-icon icon="mdi:bottle-wine"></ha-icon></div>`}
-        <div class="text">
-          <div class="name">${name}${w2.year ? b2` <span class="year">${w2.year}</span>` : A}</div>
-          ${(this.lines || []).filter(Boolean).map((l3) => b2`<div class="line">${l3}</div>`)}
-        </div>
-        <button
-          class="icon-btn glass"
-          title="Ontkurken"
-          aria-label="Ontkurken: ${name}"
-          ?disabled=${!(w2.bottles || []).length}
-          @click=${this._drink}
-        >
-          <ha-icon icon="mdi:glass-wine"></ha-icon>
-        </button>
-      </div>
-    `;
-  }
-};
-__publicField(VcWineRow, "properties", {
-  wine: { attribute: false },
-  lines: { attribute: false }
-  // [string, string?]
-});
-__publicField(VcWineRow, "styles", [
-  themeStyles,
-  i`
-      :host { display: block; }
-      .row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 8px 6px 8px 10px;
-        border-radius: var(--vc-radius-sm);
-        border: 1px solid var(--vc-divider);
-        border-left: 4px solid var(--vc-edge);
-        background: var(--vc-surface);
-        cursor: pointer;
-      }
-      .row:hover { background: color-mix(in srgb, var(--vc-surface-2) 60%, var(--vc-surface)); }
-      .thumb {
-        width: 32px;
-        height: 54px;
-        flex: none;
-        object-fit: contain;
-        border-radius: 6px;
-      }
-      .thumb.bottle-placeholder ha-icon { --mdc-icon-size: 18px; }
-      .text { flex: 1; min-width: 0; }
-      .name {
-        font-size: 14.5px;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .year { font-weight: 400; color: var(--vc-muted); }
-      .line {
-        font-size: 12.5px;
-        color: var(--vc-muted);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .glass { color: var(--vc-accent); border: 1px solid var(--vc-divider); }
-      .glass[disabled] { opacity: 0.35; cursor: default; }
-    `
-]);
-if (!customElements.get("vc-wine-row")) customElements.define("vc-wine-row", VcWineRow);
-
 // custom_components/vivino_cellar/frontend/src/logic/filters.js
 var EMPTY_FILTERS = {
   type: "",
@@ -1338,6 +1639,22 @@ var EMPTY_FILTERS = {
   minBottles: 0,
   sort: "status"
 };
+
+// custom_components/vivino_cellar/frontend/src/logic/weather.js
+var WARM_C = 24;
+var COLD_C = 8;
+function weatherSuggestion(hass, entityId) {
+  if (!hass || !entityId) return null;
+  const raw = hass.states?.[entityId]?.attributes?.temperature;
+  const temp = typeof raw === "number" ? raw : Number.parseFloat(raw);
+  if (!Number.isFinite(temp)) return null;
+  const fahrenheit = hass.config?.unit_system?.temperature === "\xB0F";
+  const celsius = fahrenheit ? (temp - 32) * 5 / 9 : temp;
+  const shown = Math.round(temp);
+  if (celsius >= WARM_C) return { chip: "verfrissend", text: `\u2600\uFE0F Het is ${shown}\xB0. Iets fris?` };
+  if (celsius <= COLD_C) return { chip: "winteravond", text: `\u2744\uFE0F Het is ${shown}\xB0. Iets voor bij de haard?` };
+  return null;
+}
 
 // custom_components/vivino_cellar/frontend/src/vivino-cellar-card.js
 var DEFAULT_TABS = ["now", "pairing", "cellar"];
@@ -1368,6 +1685,8 @@ var VivinoCellarCard = class extends i4 {
     this._expanded = { near_past_peak: true, ready: true, can_wait: false, hold: false, past_peak: false, unknown: false };
     this._chip = null;
     this._chipTouched = false;
+    this._weatherApplied = false;
+    this._focusDish = false;
     this._pairing = { dish: "", foodIds: /* @__PURE__ */ new Set(), results: null, loading: false, error: null };
     this._unsubscribe = null;
     this._subscribing = false;
@@ -1427,6 +1746,17 @@ var VivinoCellarCard = class extends i4 {
       this.toggleAttribute("dark", Boolean(this.hass.themes?.darkMode));
       if (this.isConnected) this._subscribe();
     }
+    this._applyWeatherChip();
+  }
+  get _weather() {
+    return weatherSuggestion(this.hass, this._data?.settings?.weather_entity);
+  }
+  /** Once per load: preselect the weather's chip, unless the user chose or it has no wines. */
+  _applyWeatherChip() {
+    if (this._weatherApplied || this._chipTouched || !this._data || !this.hass) return;
+    this._weatherApplied = true;
+    const hint = this._weather;
+    if (hint && rankTonight(this._wines, hint.chip).length) this._chip = hint.chip;
   }
   async _subscribe() {
     if (!this.hass || this._unsubscribe || this._subscribing) return;
@@ -1643,9 +1973,10 @@ var VivinoCellarCard = class extends i4 {
     on("vc-rating-draft", (draft) => {
       this._ratingDraft = { ...this._ratingDraft, ...draft, status: "idle", error: null };
     });
-    on("vc-tab", ({ tab, statusFilter }) => {
+    on("vc-tab", ({ tab, statusFilter, focusDish }) => {
       if (!this._config.tabs.includes(tab)) return;
       this._tab = tab;
+      this._focusDish = Boolean(focusDish);
       if (statusFilter !== void 0) this._statusFilter = statusFilter;
     });
     on("vc-chip", ({ chip }) => {
@@ -1724,7 +2055,18 @@ var VivinoCellarCard = class extends i4 {
     `;
   }
   _renderTab(wines) {
-    return b2`<div class="empty" data-tab=${this._tab} data-wines=${wines.length}>${TAB_LABELS[this._tab]}</div>`;
+    if (this._tab === "now") {
+      const pastPeak = wines.filter((w2) => w2.window_status === "past_peak").reduce((n4, w2) => n4 + w2.bottles.length, 0);
+      return b2`<vc-now-tab
+        .wines=${wines}
+        .chip=${this._chip}
+        .limit=${this.nowLimit}
+        .hint=${this._weather}
+        ?showEatChip=${this._config.tabs.includes("pairing")}
+        .pastPeakCount=${pastPeak}
+      ></vc-now-tab>`;
+    }
+    return b2`<div class="empty" data-tab=${this._tab}>${TAB_LABELS[this._tab]}</div>`;
   }
   _renderModals() {
     const detail = this._detailId !== null ? this._wine(this._detailId) : null;
