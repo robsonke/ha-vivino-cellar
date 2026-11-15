@@ -7,6 +7,7 @@
  */
 import { LitElement, css, html, nothing } from "lit";
 
+import "./components/cellar-tab.js";
 import "./components/detail-sheet.js";
 import "./components/now-tab.js";
 import "./components/spot-picker.js";
@@ -509,7 +510,16 @@ export class VivinoCellarCard extends LitElement {
         .pastPeakCount=${pastPeak}
       ></vc-now-tab>`;
     }
-    // Kelder and Wijn & Spijs (Tasks 7-8).
+    if (this._tab === "cellar") {
+      return html`<vc-cellar-tab
+        .wines=${wines}
+        .filters=${this._filters}
+        .statusFilter=${this._statusFilter}
+        .query=${this._query}
+        .expanded=${this._expanded}
+      ></vc-cellar-tab>`;
+    }
+    // Wijn & Spijs (Task 8).
     return html`<div class="empty" data-tab=${this._tab}>${TAB_LABELS[this._tab]}</div>`;
   }
 

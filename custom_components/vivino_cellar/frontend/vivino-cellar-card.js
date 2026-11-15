@@ -588,6 +588,69 @@ function reasonLine(wine, year) {
   }
 }
 
+// custom_components/vivino_cellar/frontend/src/logic/filters.js
+var EMPTY_FILTERS = {
+  type: "",
+  country: "",
+  region: "",
+  grape: "",
+  minBottles: 0,
+  sort: "status"
+};
+function matchesFilters(wine, filters, statusFilter, query, skip = []) {
+  const bottles = wine.bottles || [];
+  if (bottles.length === 0) return false;
+  if (bottles.length < (filters.minBottles || 0)) return false;
+  const q = (query || "").toLowerCase();
+  if (q && ![wine.name, wine.winery, wine.region, ...wine.grapes || []].some(
+    (v2) => (v2 || "").toLowerCase().includes(q)
+  ))
+    return false;
+  if (!skip.includes("type") && filters.type && String(wine.type_id) !== filters.type) return false;
+  if (!skip.includes("country") && filters.country && wine.country !== filters.country) return false;
+  if (!skip.includes("region") && filters.region && wine.region !== filters.region) return false;
+  if (!skip.includes("grape") && filters.grape && !(wine.grapes || []).includes(filters.grape))
+    return false;
+  if (!skip.includes("status") && statusFilter && (wine.window_status || "unknown") !== statusFilter)
+    return false;
+  return true;
+}
+function filterOptions(wines, key, valuesOf, labelOf, ctx, alsoSkip = []) {
+  const counts = /* @__PURE__ */ new Map();
+  for (const wine of wines || []) {
+    if (!matchesFilters(wine, ctx.filters, ctx.statusFilter, ctx.query, [key, ...alsoSkip])) continue;
+    for (const v2 of valuesOf(wine)) {
+      if (v2 === null || v2 === void 0 || v2 === "") continue;
+      counts.set(String(v2), (counts.get(String(v2)) || 0) + wine.bottles.length);
+    }
+  }
+  const selected = ctx.filters[key];
+  if (selected && !counts.has(selected)) counts.set(selected, 0);
+  return [...counts.entries()].map(([value, n4]) => ({ value, label: labelOf(value), n: n4 })).sort((a3, b3) => a3.label.localeCompare(b3.label, "nl"));
+}
+var byName = (a3, b3) => (a3.name || "").localeCompare(b3.name || "", "nl");
+var nullsLast = (v2) => v2 === null || v2 === void 0 ? Infinity : v2;
+var SORTERS = {
+  drink_by: (a3, b3) => nullsLast(a3.end_year) - nullsLast(b3.end_year),
+  rating: (a3, b3) => (b3.rating ?? -Infinity) - (a3.rating ?? -Infinity),
+  vintage: (a3, b3) => nullsLast(a3.year) - nullsLast(b3.year),
+  bottles: (a3, b3) => (b3.bottles || []).length - (a3.bottles || []).length,
+  name: byName
+};
+function sortWines(wines, sort) {
+  const by = SORTERS[sort];
+  return [...wines].sort((a3, b3) => (by ? by(a3, b3) : 0) || byName(a3, b3));
+}
+function statusCounts(wines, ctx) {
+  const counts = Object.fromEntries(STATUS_ORDER.map((s4) => [s4, 0]));
+  for (const wine of wines || []) {
+    if (!matchesFilters(wine, ctx.filters, ctx.statusFilter, ctx.query, ["status"])) continue;
+    const st = wine.window_status || "unknown";
+    counts[st] = (counts[st] || 0) + wine.bottles.length;
+  }
+  return counts;
+}
+
 // custom_components/vivino_cellar/frontend/src/logic/util.js
 function safeUrl(url) {
   if (!url) return null;
@@ -619,6 +682,21 @@ function viewWines(wines, pendingIds) {
     const bottles = (wine.bottles || []).filter((b3) => !pendingIds.has(bottleId(b3)));
     return { ...wine, bottles, bottle_count: bottles.length };
   });
+}
+
+// custom_components/vivino_cellar/frontend/src/logic/cellar-lines.js
+var MAX_SPOTS = 2;
+function cellarLines(wine) {
+  const status = wine.window_status || "unknown";
+  const when = status === "hold" && wine.start_year ? `vanaf ${wine.start_year}` : wine.end_year ? `tot ${wine.end_year}` : "";
+  const rating = typeof wine.rating === "number" ? `\u2605 ${formatRating(wine.rating)}` : "";
+  const first = [STATUS_LABELS[status] || status, when, rating].filter(Boolean).join(" \xB7 ");
+  const spots = bottleSpots(wine.bottles).map(
+    (s4) => `${s4.location}${s4.bin ? ` \xB7 vak ${s4.bin}` : ""} \xB7 ${s4.bottles.length}\xD7`
+  );
+  const extra = spots.length - MAX_SPOTS;
+  const second = spots.slice(0, MAX_SPOTS).join(" \xB7 ") + (extra > 0 ? ` \xB7 +${extra}` : "");
+  return [first, second];
 }
 
 // custom_components/vivino_cellar/frontend/src/styles/theme.js
@@ -794,6 +872,295 @@ var themeStyles = i`
 function fire(el, type, detail = {}) {
   el.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
 }
+
+// custom_components/vivino_cellar/frontend/src/components/wine-row.js
+var VcWineRow = class extends i4 {
+  constructor() {
+    super();
+    this.lines = [];
+  }
+  _open() {
+    fire(this, "vc-open", { vintageId: vintageId(this.wine) });
+  }
+  _key(e4) {
+    if (e4.target !== e4.currentTarget) return;
+    if (e4.key === "Enter" || e4.key === " ") {
+      e4.preventDefault();
+      this._open();
+    }
+  }
+  _drink(e4) {
+    e4.stopPropagation();
+    fire(this, "vc-drink", { vintageId: vintageId(this.wine) });
+  }
+  render() {
+    const w2 = this.wine;
+    if (!w2) return A;
+    const name = w2.name || "Onbekende wijn";
+    const image = safeUrl(w2.image_url);
+    const status = w2.window_status || "unknown";
+    return b2`
+      <div
+        class="row s-${status}"
+        role="button"
+        tabindex="0"
+        aria-label="Details: ${name}"
+        @click=${this._open}
+        @keydown=${this._key}
+      >
+        ${image ? b2`<img class="thumb" src=${image} alt="" loading="lazy" @error=${(e4) => e4.target.style.visibility = "hidden"} />` : b2`<div class="thumb bottle-placeholder"><ha-icon icon="mdi:bottle-wine"></ha-icon></div>`}
+        <div class="text">
+          <div class="name">${name}${w2.year ? b2` <span class="year">${w2.year}</span>` : A}</div>
+          ${(this.lines || []).filter(Boolean).map((l3) => b2`<div class="line">${l3}</div>`)}
+        </div>
+        <button
+          class="icon-btn glass"
+          title="Ontkurken"
+          aria-label="Ontkurken: ${name}"
+          ?disabled=${!(w2.bottles || []).length}
+          @click=${this._drink}
+        >
+          <ha-icon icon="mdi:glass-wine"></ha-icon>
+        </button>
+      </div>
+    `;
+  }
+};
+__publicField(VcWineRow, "properties", {
+  wine: { attribute: false },
+  lines: { attribute: false }
+  // [string, string?]
+});
+__publicField(VcWineRow, "styles", [
+  themeStyles,
+  i`
+      :host { display: block; }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 6px 8px 10px;
+        border-radius: var(--vc-radius-sm);
+        border: 1px solid var(--vc-divider);
+        border-left: 4px solid var(--vc-edge);
+        background: var(--vc-surface);
+        cursor: pointer;
+      }
+      .row:hover { background: color-mix(in srgb, var(--vc-surface-2) 60%, var(--vc-surface)); }
+      .thumb {
+        width: 32px;
+        height: 54px;
+        flex: none;
+        object-fit: contain;
+        border-radius: 6px;
+      }
+      .thumb.bottle-placeholder ha-icon { --mdc-icon-size: 18px; }
+      .text { flex: 1; min-width: 0; }
+      .name {
+        font-size: 14.5px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .year { font-weight: 400; color: var(--vc-muted); }
+      .line {
+        font-size: 12.5px;
+        color: var(--vc-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .glass { color: var(--vc-accent); border: 1px solid var(--vc-divider); }
+      .glass[disabled] { opacity: 0.35; cursor: default; }
+    `
+]);
+if (!customElements.get("vc-wine-row")) customElements.define("vc-wine-row", VcWineRow);
+
+// custom_components/vivino_cellar/frontend/src/components/cellar-tab.js
+var SORTS = {
+  status: "Drinkvenster",
+  drink_by: "Drinken voor",
+  rating: "Beoordeling",
+  vintage: "Jaargang (oud eerst)",
+  bottles: "Aantal flessen",
+  name: "Naam"
+};
+var MIN_BOTTLES = [0, 2, 3, 6];
+var VcCellarTab = class extends i4 {
+  constructor() {
+    super();
+    this.filters = { ...EMPTY_FILTERS };
+    this.expanded = {};
+    this.query = "";
+  }
+  get _ctx() {
+    return { filters: this.filters, statusFilter: this.statusFilter || null, query: this.query || "" };
+  }
+  _set(key, value) {
+    const filters = { ...this.filters, [key]: key === "minBottles" ? Number(value) : value };
+    if (key === "country") filters.region = "";
+    fire(this, "vc-filters", { filters });
+  }
+  _active() {
+    const f3 = this.filters;
+    return Boolean(this.statusFilter || this.query || f3.type || f3.country || f3.region || f3.grape || f3.minBottles);
+  }
+  _select(key, allLabel, options) {
+    const current = this.filters[key];
+    return b2`
+      <select class="select ${current ? "active" : ""}" aria-label=${allLabel} @change=${(e4) => this._set(key, e4.target.value)}>
+        <option value="" ?selected=${!current}>${allLabel}</option>
+        ${options.map((o5) => b2`<option value=${o5.value} ?selected=${o5.value === current}>${o5.label} (${o5.n})</option>`)}
+      </select>
+    `;
+  }
+  _row(w2) {
+    return b2`<vc-wine-row .wine=${w2} .lines=${cellarLines(w2)} data-id=${vintageId(w2)}></vc-wine-row>`;
+  }
+  render() {
+    const all = this.wines || [];
+    const ctx = this._ctx;
+    const f3 = this.filters;
+    const wines = all.filter((w2) => matchesFilters(w2, f3, ctx.statusFilter, ctx.query));
+    const bottles = wines.reduce((n4, w2) => n4 + w2.bottles.length, 0);
+    const counts = statusCounts(all, ctx);
+    const typeOpts = filterOptions(all, "type", (w2) => [w2.type_id], (v2) => WINE_TYPES[v2] || `Type ${v2}`, ctx);
+    const countryOpts = filterOptions(all, "country", (w2) => [w2.country], (v2) => v2, ctx, ["region"]);
+    const regionOpts = filterOptions(all, "region", (w2) => [w2.region], (v2) => v2, ctx);
+    const grapeOpts = filterOptions(all, "grape", (w2) => w2.grapes || [], (v2) => v2, ctx);
+    let list;
+    if (f3.sort === "status") {
+      list = STATUS_ORDER.map((status) => {
+        if (ctx.statusFilter && status !== ctx.statusFilter) return A;
+        const group = sortWines(wines.filter((w2) => (w2.window_status || "unknown") === status), "drink_by");
+        if (!group.length) return A;
+        const open = ctx.statusFilter === status || Boolean(this.expanded[status]);
+        const n4 = group.reduce((s4, w2) => s4 + w2.bottles.length, 0);
+        return b2`
+          <section class="group s-${status}">
+            <button class="group-head" aria-expanded=${open} @click=${() => fire(this, "vc-toggle-group", { status })}>
+              <span class="badge">${STATUS_LABELS[status]}</span>
+              <span class="muted">${n4} ${n4 === 1 ? "fles" : "flessen"}</span>
+              <ha-icon class="chev" icon="mdi:chevron-down"></ha-icon>
+            </button>
+            ${open ? b2`<div class="list">${group.map((w2) => this._row(w2))}</div>` : A}
+          </section>
+        `;
+      });
+    } else {
+      list = b2`<div class="list">${sortWines(wines, f3.sort).map((w2) => this._row(w2))}</div>`;
+    }
+    return b2`
+      <input
+        class="input search"
+        type="search"
+        placeholder="Zoek op wijn, wijnhuis, regio of druif…"
+        .value=${this.query || ""}
+        @input=${(e4) => fire(this, "vc-filters", { query: e4.target.value })}
+      />
+
+      <div class="pills ${ctx.statusFilter ? "filtering" : ""}">
+        ${STATUS_ORDER.map((status) => {
+      const active = ctx.statusFilter === status;
+      const n4 = counts[status] || 0;
+      return b2`<button
+            class="pill s-${status} ${active ? "active" : ""}"
+            aria-pressed=${active}
+            ?disabled=${n4 === 0 && !active}
+            @click=${() => fire(this, "vc-filters", { statusFilter: active ? null : status })}
+          >
+            ${STATUS_LABELS[status]}: ${n4}
+          </button>`;
+    })}
+      </div>
+
+      <div class="selects">
+        ${this._select("type", "Alle soorten", typeOpts)}
+        ${this._select("country", "Alle landen", countryOpts)}
+        ${this._select("region", "Alle regio's", regionOpts)}
+        ${this._select("grape", "Alle druiven", grapeOpts)}
+        <select class="select ${f3.minBottles ? "active" : ""}" aria-label="Aantal flessen" @change=${(e4) => this._set("minBottles", e4.target.value)}>
+          ${MIN_BOTTLES.map((n4) => b2`<option value=${n4} ?selected=${n4 === f3.minBottles}>${n4 ? `${n4}+ flessen` : "Elk aantal"}</option>`)}
+        </select>
+        <select class="select sort" aria-label="Sorteren" @change=${(e4) => this._set("sort", e4.target.value)}>
+          ${Object.entries(SORTS).map(([k2, label]) => b2`<option value=${k2} ?selected=${k2 === f3.sort}>Sorteer: ${label}</option>`)}
+        </select>
+      </div>
+
+      <div class="result">
+        <span>${wines.length} ${wines.length === 1 ? "wijn" : "wijnen"} · ${bottles} ${bottles === 1 ? "fles" : "flessen"}</span>
+        ${this._active() ? b2`<button
+              class="btn btn-link"
+              @click=${() => fire(this, "vc-filters", { filters: { ...EMPTY_FILTERS, sort: f3.sort }, statusFilter: null, query: "" })}
+            >
+              Wis filters
+            </button>` : A}
+      </div>
+
+      ${wines.length ? list : b2`<div class="empty">Geen wijnen voor deze filters.</div>`}
+    `;
+  }
+};
+__publicField(VcCellarTab, "properties", {
+  wines: { attribute: false },
+  filters: { attribute: false },
+  statusFilter: { type: String },
+  query: { type: String },
+  expanded: { attribute: false }
+});
+__publicField(VcCellarTab, "styles", [
+  themeStyles,
+  i`
+      :host { display: flex; flex-direction: column; gap: 12px; }
+      .search { -webkit-appearance: none; }
+      .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+      .pill {
+        height: 30px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1.5px solid transparent;
+        font-size: 13px;
+        cursor: pointer;
+        color: var(--vc-edge);
+        background: color-mix(in srgb, var(--vc-edge) var(--vc-tint), transparent);
+        transition: opacity 0.15s ease;
+      }
+      .pill.active { border-color: var(--vc-edge); font-weight: 600; }
+      .pill[disabled] { opacity: 0.4; cursor: default; }
+      .pills.filtering .pill:not(.active) { opacity: 0.45; }
+      .selects {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 8px;
+      }
+      .selects .sort { grid-column: 1 / -1; }
+      .result {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--vc-muted);
+      }
+      .list { display: flex; flex-direction: column; gap: 8px; }
+      .group { display: flex; flex-direction: column; gap: 8px; }
+      .group-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: var(--vc-control-height);
+        padding: 0 8px;
+        border: none;
+        border-radius: var(--vc-radius-sm);
+        background: var(--vc-surface-2);
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .group-head .chev { margin-left: auto; --mdc-icon-size: 20px; color: var(--vc-muted); transition: transform 0.2s; }
+      .group-head[aria-expanded="true"] .chev { transform: rotate(180deg); }
+    `
+]);
+if (!customElements.get("vc-cellar-tab")) customElements.define("vc-cellar-tab", VcCellarTab);
 
 // custom_components/vivino_cellar/frontend/src/components/modal.js
 var VcModal = class extends i4 {
@@ -1090,7 +1457,7 @@ var LIGHT_GRAPES = /* @__PURE__ */ new Set(
 );
 var SAVE_FOR_LATER = 4.3;
 var DRINKABLE = { near_past_peak: 0, ready: 1, can_wait: 2 };
-var nullsLast = (v2) => v2 === null || v2 === void 0 ? Infinity : v2;
+var nullsLast2 = (v2) => v2 === null || v2 === void 0 ? Infinity : v2;
 var inStock = (w2) => (w2.bottles || []).length > 0;
 function bodyOf(wine) {
   if (typeof wine.style_body === "number") return wine.style_body;
@@ -1100,7 +1467,7 @@ function bodyOf(wine) {
   return 3;
 }
 function byDefault(a3, b3) {
-  return (DRINKABLE[a3.window_status] ?? 9) - (DRINKABLE[b3.window_status] ?? 9) || nullsLast(a3.end_year) - nullsLast(b3.end_year) || (b3.rating ?? 0) - (a3.rating ?? 0);
+  return (DRINKABLE[a3.window_status] ?? 9) - (DRINKABLE[b3.window_status] ?? 9) || nullsLast2(a3.end_year) - nullsLast2(b3.end_year) || (b3.rating ?? 0) - (a3.rating ?? 0);
 }
 var CHIP_RULES = {
   borrelen: {
@@ -1120,7 +1487,7 @@ var CHIP_RULES = {
   },
   bijzonder: {
     keep: () => true,
-    rank: (a3, b3) => (b3.rating ?? -Infinity) - (a3.rating ?? -Infinity) || nullsLast(a3.year) - nullsLast(b3.year)
+    rank: (a3, b3) => (b3.rating ?? -Infinity) - (a3.rating ?? -Infinity) || nullsLast2(a3.year) - nullsLast2(b3.year)
   }
 };
 function rankTonight(wines, chipId) {
@@ -1268,110 +1635,6 @@ __publicField(VcTopPick, "styles", [
     `
 ]);
 if (!customElements.get("vc-top-pick")) customElements.define("vc-top-pick", VcTopPick);
-
-// custom_components/vivino_cellar/frontend/src/components/wine-row.js
-var VcWineRow = class extends i4 {
-  constructor() {
-    super();
-    this.lines = [];
-  }
-  _open() {
-    fire(this, "vc-open", { vintageId: vintageId(this.wine) });
-  }
-  _key(e4) {
-    if (e4.target !== e4.currentTarget) return;
-    if (e4.key === "Enter" || e4.key === " ") {
-      e4.preventDefault();
-      this._open();
-    }
-  }
-  _drink(e4) {
-    e4.stopPropagation();
-    fire(this, "vc-drink", { vintageId: vintageId(this.wine) });
-  }
-  render() {
-    const w2 = this.wine;
-    if (!w2) return A;
-    const name = w2.name || "Onbekende wijn";
-    const image = safeUrl(w2.image_url);
-    const status = w2.window_status || "unknown";
-    return b2`
-      <div
-        class="row s-${status}"
-        role="button"
-        tabindex="0"
-        aria-label="Details: ${name}"
-        @click=${this._open}
-        @keydown=${this._key}
-      >
-        ${image ? b2`<img class="thumb" src=${image} alt="" loading="lazy" @error=${(e4) => e4.target.style.visibility = "hidden"} />` : b2`<div class="thumb bottle-placeholder"><ha-icon icon="mdi:bottle-wine"></ha-icon></div>`}
-        <div class="text">
-          <div class="name">${name}${w2.year ? b2` <span class="year">${w2.year}</span>` : A}</div>
-          ${(this.lines || []).filter(Boolean).map((l3) => b2`<div class="line">${l3}</div>`)}
-        </div>
-        <button
-          class="icon-btn glass"
-          title="Ontkurken"
-          aria-label="Ontkurken: ${name}"
-          ?disabled=${!(w2.bottles || []).length}
-          @click=${this._drink}
-        >
-          <ha-icon icon="mdi:glass-wine"></ha-icon>
-        </button>
-      </div>
-    `;
-  }
-};
-__publicField(VcWineRow, "properties", {
-  wine: { attribute: false },
-  lines: { attribute: false }
-  // [string, string?]
-});
-__publicField(VcWineRow, "styles", [
-  themeStyles,
-  i`
-      :host { display: block; }
-      .row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 8px 6px 8px 10px;
-        border-radius: var(--vc-radius-sm);
-        border: 1px solid var(--vc-divider);
-        border-left: 4px solid var(--vc-edge);
-        background: var(--vc-surface);
-        cursor: pointer;
-      }
-      .row:hover { background: color-mix(in srgb, var(--vc-surface-2) 60%, var(--vc-surface)); }
-      .thumb {
-        width: 32px;
-        height: 54px;
-        flex: none;
-        object-fit: contain;
-        border-radius: 6px;
-      }
-      .thumb.bottle-placeholder ha-icon { --mdc-icon-size: 18px; }
-      .text { flex: 1; min-width: 0; }
-      .name {
-        font-size: 14.5px;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .year { font-weight: 400; color: var(--vc-muted); }
-      .line {
-        font-size: 12.5px;
-        color: var(--vc-muted);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .glass { color: var(--vc-accent); border: 1px solid var(--vc-divider); }
-      .glass[disabled] { opacity: 0.35; cursor: default; }
-    `
-]);
-if (!customElements.get("vc-wine-row")) customElements.define("vc-wine-row", VcWineRow);
 
 // custom_components/vivino_cellar/frontend/src/components/now-tab.js
 var VcNowTab = class extends i4 {
@@ -1629,16 +1892,6 @@ __publicField(VcToastStack, "styles", [
     `
 ]);
 if (!customElements.get("vc-toast-stack")) customElements.define("vc-toast-stack", VcToastStack);
-
-// custom_components/vivino_cellar/frontend/src/logic/filters.js
-var EMPTY_FILTERS = {
-  type: "",
-  country: "",
-  region: "",
-  grape: "",
-  minBottles: 0,
-  sort: "status"
-};
 
 // custom_components/vivino_cellar/frontend/src/logic/weather.js
 var WARM_C = 24;
@@ -2065,6 +2318,15 @@ var VivinoCellarCard = class extends i4 {
         ?showEatChip=${this._config.tabs.includes("pairing")}
         .pastPeakCount=${pastPeak}
       ></vc-now-tab>`;
+    }
+    if (this._tab === "cellar") {
+      return b2`<vc-cellar-tab
+        .wines=${wines}
+        .filters=${this._filters}
+        .statusFilter=${this._statusFilter}
+        .query=${this._query}
+        .expanded=${this._expanded}
+      ></vc-cellar-tab>`;
     }
     return b2`<div class="empty" data-tab=${this._tab}>${TAB_LABELS[this._tab]}</div>`;
   }
