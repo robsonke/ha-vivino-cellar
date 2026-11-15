@@ -7,7 +7,10 @@
  */
 import { LitElement, css, html, nothing } from "lit";
 
+import "./components/detail-sheet.js";
+import "./components/spot-picker.js";
 import "./components/toast-stack.js";
+import "./components/wine-row.js";
 import { EMPTY_FILTERS } from "./logic/filters.js";
 import { STATUS_ORDER } from "./logic/status.js";
 import { bottleId, bottleSpots, viewWines, vintageId } from "./logic/util.js";
@@ -479,8 +482,18 @@ export class VivinoCellarCard extends LitElement {
   }
 
   _renderModals() {
-    // Detail sheet and spot picker (Task 5).
-    return nothing;
+    const detail = this._detailId !== null ? this._wine(this._detailId) : null;
+    const picker = this._pickerId !== null ? this._wine(this._pickerId) : null;
+    return html`
+      ${detail
+        ? html`<vc-detail-sheet
+            .wine=${detail}
+            .draft=${this._ratingDraft}
+            .saved=${this._myRatings.get(this._detailId)}
+          ></vc-detail-sheet>`
+        : nothing}
+      ${picker ? html`<vc-spot-picker .wine=${picker}></vc-spot-picker>` : nothing}
+    `;
   }
 
   static styles = [

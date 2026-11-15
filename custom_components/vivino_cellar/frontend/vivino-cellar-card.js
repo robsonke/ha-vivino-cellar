@@ -552,6 +552,75 @@ var o4 = s3.litElementPolyfillSupport;
 o4?.({ LitElement: i4 });
 (s3.litElementVersions ??= []).push("4.2.2");
 
+// custom_components/vivino_cellar/frontend/src/logic/status.js
+var STATUS_ORDER = ["near_past_peak", "ready", "can_wait", "hold", "past_peak", "unknown"];
+var STATUS_LABELS = {
+  near_past_peak: "Binnenkort drinken",
+  ready: "Op dronk",
+  can_wait: "Kan nog liggen",
+  hold: "Nog wegleggen",
+  past_peak: "Voorbij piek",
+  unknown: "Venster onbekend"
+};
+var WINE_TYPES = {
+  1: "Rood",
+  2: "Wit",
+  3: "Mousserend",
+  4: "Ros\xE9",
+  7: "Dessert",
+  24: "Versterkt"
+};
+function reasonLine(wine, year) {
+  const end = wine.end_year;
+  switch (wine.window_status) {
+    case "near_past_peak":
+      return `Laatste jaar: drink in ${end ?? year}`;
+    case "ready":
+      return end ? `Op dronk tot ${end}` : "Op dronk";
+    case "can_wait":
+      return end ? `Kan nog liggen tot ${end}, mag ook nu` : "Kan nog liggen, mag ook nu";
+    case "past_peak":
+      return end ? `Voorbij de piek sinds ${end}: snel open` : "Voorbij de piek: snel open";
+    case "hold":
+      return wine.start_year ? `Nog wegleggen tot ${wine.start_year}` : "Nog wegleggen";
+    default:
+      return "Drinkvenster onbekend";
+  }
+}
+
+// custom_components/vivino_cellar/frontend/src/logic/util.js
+function safeUrl(url) {
+  if (!url) return null;
+  const full = String(url).startsWith("//") ? `https:${url}` : String(url);
+  return /^https?:\/\//i.test(full) ? full : null;
+}
+function bottleId(bottle) {
+  return bottle.bottle_id ?? bottle.id;
+}
+function vintageId(wine) {
+  return wine.vintage_id ?? wine.id;
+}
+function bottleSpots(bottles) {
+  const spots = /* @__PURE__ */ new Map();
+  for (const b3 of bottles || []) {
+    const location = b3.location_name || "Kelder";
+    const bin = b3.bin || null;
+    const key = JSON.stringify([location, bin]);
+    if (!spots.has(key)) spots.set(key, { location, bin, bottles: [] });
+    spots.get(key).bottles.push(b3);
+  }
+  return [...spots.values()];
+}
+function formatRating(value) {
+  return typeof value === "number" ? value.toFixed(1).replace(".", ",") : "";
+}
+function viewWines(wines, pendingIds) {
+  return (wines || []).map((wine) => {
+    const bottles = (wine.bottles || []).filter((b3) => !pendingIds.has(bottleId(b3)));
+    return { ...wine, bottles, bottle_count: bottles.length };
+  });
+}
+
 // custom_components/vivino_cellar/frontend/src/styles/theme.js
 var tokenStyles = i`
   :host {
@@ -726,6 +795,327 @@ function fire(el, type, detail = {}) {
   el.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
 }
 
+// custom_components/vivino_cellar/frontend/src/components/modal.js
+var VcModal = class extends i4 {
+  updated() {
+    const dialog = this.renderRoot.querySelector("dialog");
+    if (dialog && !dialog.open) {
+      try {
+        dialog.showModal();
+        dialog.querySelector("[autofocus]")?.focus();
+      } catch {
+        dialog.setAttribute("open", "");
+      }
+    }
+  }
+  _cancel(e4) {
+    e4.preventDefault();
+  }
+  _backdrop(e4) {
+    if (e4.target === e4.currentTarget) fire(this, "vc-close");
+  }
+};
+__publicField(VcModal, "modalStyles", i`
+    dialog {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      padding: 16px;
+      border: none;
+      background: transparent;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    dialog:not([open]) { display: none; }
+    dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+    .sheet {
+      width: 100%;
+      max-width: 520px;
+      max-height: calc(100vh - 32px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: 16px;
+      background: var(--vc-surface);
+      color: var(--vc-text);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+    .body { overflow-y: auto; padding: 16px; }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--vc-divider);
+      background: var(--vc-surface-2);
+    }
+  `);
+
+// custom_components/vivino_cellar/frontend/src/components/detail-sheet.js
+var SOURCES = { vivino: "volgens Vivino", ai_estimate: "AI-schatting" };
+var VcDetailSheet = class extends VcModal {
+  willUpdate(changed) {
+    if (!changed.has("draft") || !this.draft) return;
+    const prev = changed.get("draft");
+    const fresh = !prev || prev.vid !== this.draft.vid || prev.status === "loading" && this.draft.status !== "loading";
+    if (fresh) {
+      this._rating = this.draft.rating ?? null;
+      this._note = this.draft.note ?? "";
+    }
+  }
+  get _changed() {
+    if (this._rating === null || this._rating === void 0) return false;
+    const s4 = this.saved;
+    return !s4 || s4.rating !== this._rating || (s4.note || "") !== (this._note || "");
+  }
+  _save() {
+    if (!this._changed || this.draft?.status === "saving") return;
+    fire(this, "vc-rate", { vintageId: vintageId(this.wine), rating: this._rating, note: this._note || "" });
+  }
+  _stars() {
+    const value = this._rating ?? 0;
+    return [1, 2, 3, 4, 5].map((n4) => {
+      const icon = value >= n4 ? "mdi:star" : value >= n4 - 0.5 ? "mdi:star-half-full" : "mdi:star-outline";
+      const label = (v2) => `${String(v2).replace(".", ",")} ${v2 === 1 ? "ster" : "sterren"}`;
+      return b2`
+        <span class="star ${value >= n4 - 0.5 ? "on" : ""}">
+          <ha-icon icon=${icon}></ha-icon>
+          <button class="half left" aria-label=${label(n4 - 0.5)} ?disabled=${n4 === 1}
+            @click=${() => this._rating = n4 - 0.5}></button>
+          <button class="half right" aria-label=${label(n4)} @click=${() => this._rating = n4}></button>
+        </span>
+      `;
+    });
+  }
+  _ratingSection() {
+    const d3 = this.draft;
+    if (!d3) return A;
+    if (d3.status === "loading") {
+      return b2`<section class="rating"><h4>Jouw beoordeling</h4><div class="muted">Laden…</div></section>`;
+    }
+    const status = d3.status === "saving" ? b2`<span class="muted">Opslaan…</span>` : d3.status === "error" ? b2`<span class="err">${d3.error || "Mislukt"}</span>` : d3.status === "saved" && !this._changed ? b2`<span class="ok">Opgeslagen op Vivino</span>` : this.saved ? A : b2`<span class="muted">Nog niet beoordeeld</span>`;
+    return b2`
+      <section class="rating">
+        <h4>Jouw beoordeling</h4>
+        <div class="stars" role="group" aria-label="Kies een beoordeling">
+          ${this._stars()}
+          <span class="value">${this._rating ? formatRating(this._rating) : "\u2013"}</span>
+        </div>
+        <textarea
+          class="input"
+          id="rating-note"
+          rows="2"
+          placeholder="Notitie (optioneel)"
+          .value=${this._note ?? ""}
+          @input=${(e4) => this._note = e4.target.value}
+        ></textarea>
+        <div class="actions">
+          ${status}
+          <button class="btn btn-primary save" ?disabled=${!this._changed || d3.status === "saving"} @click=${this._save}>
+            Opslaan
+          </button>
+        </div>
+      </section>
+    `;
+  }
+  render() {
+    const w2 = this.wine;
+    if (!w2) return A;
+    const name = w2.name || "Onbekende wijn";
+    const status = w2.window_status || "unknown";
+    const image = safeUrl(w2.image_url);
+    const link = safeUrl(w2.vivino_url);
+    const window2 = w2.start_year && w2.end_year ? `${w2.start_year} \u2013 ${w2.end_year}` : w2.start_year ? `vanaf ${w2.start_year}` : w2.end_year ? `tot ${w2.end_year}` : "onbekend";
+    const source = SOURCES[w2.window_source];
+    const type = [WINE_TYPES[w2.type_id], w2.style].filter(Boolean).join(" \xB7 ");
+    const origin = [w2.region, w2.country].filter(Boolean).join(", ");
+    const foods = (w2.foods || []).map((f3) => f3.name).filter(Boolean).join(", ");
+    const grapes = (w2.grapes || []).filter(Boolean).join(", ");
+    const spots = bottleSpots(w2.bottles || []);
+    const row = (label, value) => value ? b2`<div class="dl-row"><dt>${label}</dt><dd>${value}</dd></div>` : A;
+    return b2`
+      <dialog aria-labelledby="t" @cancel=${this._cancel} @click=${this._backdrop}>
+        <div class="sheet s-${status}">
+          <div class="hero">
+            ${image ? b2`<img class="photo" src=${image} alt="" @error=${(e4) => e4.target.style.visibility = "hidden"} />` : b2`<div class="photo bottle-placeholder"><ha-icon icon="mdi:bottle-wine"></ha-icon></div>`}
+            <div class="heading">
+              <div class="name" id="t">${name}${w2.year ? ` ${w2.year}` : ""}</div>
+              ${w2.winery ? b2`<div class="muted">${w2.winery}</div>` : A}
+              <div class="badges">
+                ${typeof w2.rating === "number" ? b2`<span class="badge star-badge"><ha-icon icon="mdi:star"></ha-icon>${formatRating(w2.rating)}${w2.ratings_count ? ` \xB7 ${w2.ratings_count} beoordelingen` : ""}</span>` : A}
+                <span class="badge">${STATUS_LABELS[status] || status}</span>
+              </div>
+              <div class="reason">${reasonLine(w2, (/* @__PURE__ */ new Date()).getFullYear())}</div>
+            </div>
+          </div>
+          <div class="body">
+            <dl>
+              ${row("Drinkvenster", b2`${window2}${source ? b2` <span class="muted">(${source})</span>` : A}`)}
+              ${row("Soort", type)}
+              ${row("Herkomst", origin)}
+              ${row("Druiven", grapes)}
+              ${row("Past bij", foods)}
+              ${row(
+      "Flessen",
+      spots.length ? spots.map((s4) => b2`<div>${s4.location}${s4.bin ? ` \xB7 vak ${s4.bin}` : ""}: ${s4.bottles.length}×</div>`) : "Geen flessen op voorraad"
+    )}
+            </dl>
+            ${this._ratingSection()}
+          </div>
+          <div class="foot">
+            ${link ? b2`<a class="vivino" href=${link} target="_blank" rel="noopener noreferrer">
+                  Bekijk op Vivino <ha-icon icon="mdi:open-in-new"></ha-icon>
+                </a>` : A}
+            <button class="btn" id="close" autofocus @click=${() => fire(this, "vc-close")}>Sluiten</button>
+            ${(w2.bottles || []).length ? b2`<button class="btn btn-primary" @click=${() => fire(this, "vc-drink", { vintageId: vintageId(w2) })}>
+                  <ha-icon icon="mdi:glass-wine"></ha-icon> Ontkurken
+                </button>` : A}
+          </div>
+        </div>
+      </dialog>
+    `;
+  }
+};
+__publicField(VcDetailSheet, "properties", {
+  wine: { attribute: false },
+  draft: { attribute: false },
+  // {vid, rating, note, status, error} from the root
+  saved: { attribute: false },
+  // {rating, note} | null | undefined (not loaded)
+  _rating: { state: true },
+  _note: { state: true }
+});
+__publicField(VcDetailSheet, "styles", [
+  themeStyles,
+  VcModal.modalStyles,
+  i`
+      .hero {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+        border-bottom: 1px solid var(--vc-divider);
+        border-left: 4px solid var(--vc-edge);
+      }
+      .photo { width: 64px; height: 108px; flex: none; object-fit: contain; border-radius: var(--vc-radius-sm); }
+      .heading { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+      .name { font-size: 18px; font-weight: 600; line-height: 1.25; }
+      .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+      .star-badge { --vc-edge: var(--vc-star); }
+      .reason { font-size: 13px; font-weight: 500; color: var(--vc-edge); }
+      dl { margin: 0; display: grid; gap: 10px; }
+      .dl-row { display: grid; grid-template-columns: 110px 1fr; gap: 8px; font-size: 14px; }
+      dt { color: var(--vc-muted); }
+      dd { margin: 0; overflow-wrap: anywhere; }
+      .rating {
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid var(--vc-divider);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .rating h4 { margin: 0; font-size: 14px; }
+      .stars { display: flex; align-items: center; gap: 2px; }
+      .star { position: relative; width: 36px; height: 36px; display: inline-flex; color: var(--vc-divider); }
+      .star.on { color: var(--vc-star); }
+      .star ha-icon { --mdc-icon-size: 34px; pointer-events: none; }
+      .half { position: absolute; top: 0; width: 50%; height: 100%; padding: 0; border: none; background: transparent; cursor: pointer; }
+      .half.left { left: 0; }
+      .half.right { right: 0; }
+      .half[disabled] { cursor: default; }
+      .value { margin-left: 10px; font-weight: 600; }
+      .actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+      .actions .save { margin-left: auto; }
+      .ok { color: var(--vc-status-ready); }
+      .err { color: var(--vc-status-past_peak); }
+      .vivino {
+        margin-right: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--vc-accent);
+        font-size: 14px;
+      }
+      .vivino ha-icon { --mdc-icon-size: 16px; }
+      @media (max-width: 420px) {
+        .dl-row { grid-template-columns: 1fr; gap: 2px; }
+      }
+    `
+]);
+if (!customElements.get("vc-detail-sheet")) customElements.define("vc-detail-sheet", VcDetailSheet);
+
+// custom_components/vivino_cellar/frontend/src/components/spot-picker.js
+var VcSpotPicker = class extends VcModal {
+  render() {
+    const w2 = this.wine;
+    if (!w2) return A;
+    return b2`
+      <dialog aria-label="Welke fles pak je?" @cancel=${this._cancel} @click=${this._backdrop}>
+        <div class="sheet picker">
+          <div class="head"><ha-icon icon="mdi:glass-wine"></ha-icon> Welke fles pak je?</div>
+          <div class="body">
+            <div class="wine">${w2.name || "Wijn"}${w2.year ? ` (${w2.year})` : ""}</div>
+            ${bottleSpots(w2.bottles).map(
+      (s4, i5) => b2`
+                <button class="spot" @click=${() => fire(this, "vc-pick-spot", { index: i5 })}>
+                  <span><ha-icon icon="mdi:map-marker"></ha-icon> ${s4.location}${s4.bin ? ` \xB7 vak ${s4.bin}` : ""}</span>
+                  <span class="count">${s4.bottles.length}×</span>
+                </button>
+              `
+    )}
+          </div>
+          <div class="foot">
+            <button class="btn" @click=${() => fire(this, "vc-close")}>Annuleren</button>
+          </div>
+        </div>
+      </dialog>
+    `;
+  }
+};
+__publicField(VcSpotPicker, "properties", { wine: { attribute: false } });
+__publicField(VcSpotPicker, "styles", [
+  themeStyles,
+  VcModal.modalStyles,
+  i`
+      .picker { max-width: 420px; }
+      .head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 16px;
+        font-weight: 600;
+        border-bottom: 1px solid var(--vc-divider);
+      }
+      .head ha-icon { color: var(--vc-accent); }
+      .body { display: flex; flex-direction: column; gap: 8px; }
+      .wine { font-weight: 500; margin-bottom: 4px; }
+      .spot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        min-height: var(--vc-control-height);
+        padding: 8px 12px;
+        border-radius: var(--vc-radius-sm);
+        border: 1px solid var(--vc-divider);
+        background: var(--vc-surface);
+        cursor: pointer;
+        text-align: left;
+      }
+      .spot:hover { border-color: var(--vc-accent); }
+      .spot ha-icon { --mdc-icon-size: 16px; color: var(--vc-muted); }
+      .count { font-weight: 600; }
+    `
+]);
+if (!customElements.get("vc-spot-picker")) customElements.define("vc-spot-picker", VcSpotPicker);
+
 // custom_components/vivino_cellar/frontend/src/components/toast-stack.js
 var VcToastStack = class extends i4 {
   constructor() {
@@ -835,8 +1225,109 @@ __publicField(VcToastStack, "styles", [
 ]);
 if (!customElements.get("vc-toast-stack")) customElements.define("vc-toast-stack", VcToastStack);
 
-// custom_components/vivino_cellar/frontend/src/logic/status.js
-var STATUS_ORDER = ["near_past_peak", "ready", "can_wait", "hold", "past_peak", "unknown"];
+// custom_components/vivino_cellar/frontend/src/components/wine-row.js
+var VcWineRow = class extends i4 {
+  constructor() {
+    super();
+    this.lines = [];
+  }
+  _open() {
+    fire(this, "vc-open", { vintageId: vintageId(this.wine) });
+  }
+  _key(e4) {
+    if (e4.target !== e4.currentTarget) return;
+    if (e4.key === "Enter" || e4.key === " ") {
+      e4.preventDefault();
+      this._open();
+    }
+  }
+  _drink(e4) {
+    e4.stopPropagation();
+    fire(this, "vc-drink", { vintageId: vintageId(this.wine) });
+  }
+  render() {
+    const w2 = this.wine;
+    if (!w2) return A;
+    const name = w2.name || "Onbekende wijn";
+    const image = safeUrl(w2.image_url);
+    const status = w2.window_status || "unknown";
+    return b2`
+      <div
+        class="row s-${status}"
+        role="button"
+        tabindex="0"
+        aria-label="Details: ${name}"
+        @click=${this._open}
+        @keydown=${this._key}
+      >
+        ${image ? b2`<img class="thumb" src=${image} alt="" loading="lazy" @error=${(e4) => e4.target.style.visibility = "hidden"} />` : b2`<div class="thumb bottle-placeholder"><ha-icon icon="mdi:bottle-wine"></ha-icon></div>`}
+        <div class="text">
+          <div class="name">${name}${w2.year ? b2` <span class="year">${w2.year}</span>` : A}</div>
+          ${(this.lines || []).filter(Boolean).map((l3) => b2`<div class="line">${l3}</div>`)}
+        </div>
+        <button
+          class="icon-btn glass"
+          title="Ontkurken"
+          aria-label="Ontkurken: ${name}"
+          ?disabled=${!(w2.bottles || []).length}
+          @click=${this._drink}
+        >
+          <ha-icon icon="mdi:glass-wine"></ha-icon>
+        </button>
+      </div>
+    `;
+  }
+};
+__publicField(VcWineRow, "properties", {
+  wine: { attribute: false },
+  lines: { attribute: false }
+  // [string, string?]
+});
+__publicField(VcWineRow, "styles", [
+  themeStyles,
+  i`
+      :host { display: block; }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 6px 8px 10px;
+        border-radius: var(--vc-radius-sm);
+        border: 1px solid var(--vc-divider);
+        border-left: 4px solid var(--vc-edge);
+        background: var(--vc-surface);
+        cursor: pointer;
+      }
+      .row:hover { background: color-mix(in srgb, var(--vc-surface-2) 60%, var(--vc-surface)); }
+      .thumb {
+        width: 32px;
+        height: 54px;
+        flex: none;
+        object-fit: contain;
+        border-radius: 6px;
+      }
+      .thumb.bottle-placeholder ha-icon { --mdc-icon-size: 18px; }
+      .text { flex: 1; min-width: 0; }
+      .name {
+        font-size: 14.5px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .year { font-weight: 400; color: var(--vc-muted); }
+      .line {
+        font-size: 12.5px;
+        color: var(--vc-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .glass { color: var(--vc-accent); border: 1px solid var(--vc-divider); }
+      .glass[disabled] { opacity: 0.35; cursor: default; }
+    `
+]);
+if (!customElements.get("vc-wine-row")) customElements.define("vc-wine-row", VcWineRow);
 
 // custom_components/vivino_cellar/frontend/src/logic/filters.js
 var EMPTY_FILTERS = {
@@ -847,31 +1338,6 @@ var EMPTY_FILTERS = {
   minBottles: 0,
   sort: "status"
 };
-
-// custom_components/vivino_cellar/frontend/src/logic/util.js
-function bottleId(bottle) {
-  return bottle.bottle_id ?? bottle.id;
-}
-function vintageId(wine) {
-  return wine.vintage_id ?? wine.id;
-}
-function bottleSpots(bottles) {
-  const spots = /* @__PURE__ */ new Map();
-  for (const b3 of bottles || []) {
-    const location = b3.location_name || "Kelder";
-    const bin = b3.bin || null;
-    const key = JSON.stringify([location, bin]);
-    if (!spots.has(key)) spots.set(key, { location, bin, bottles: [] });
-    spots.get(key).bottles.push(b3);
-  }
-  return [...spots.values()];
-}
-function viewWines(wines, pendingIds) {
-  return (wines || []).map((wine) => {
-    const bottles = (wine.bottles || []).filter((b3) => !pendingIds.has(bottleId(b3)));
-    return { ...wine, bottles, bottle_count: bottles.length };
-  });
-}
 
 // custom_components/vivino_cellar/frontend/src/vivino-cellar-card.js
 var DEFAULT_TABS = ["now", "pairing", "cellar"];
@@ -1261,7 +1727,16 @@ var VivinoCellarCard = class extends i4 {
     return b2`<div class="empty" data-tab=${this._tab} data-wines=${wines.length}>${TAB_LABELS[this._tab]}</div>`;
   }
   _renderModals() {
-    return A;
+    const detail = this._detailId !== null ? this._wine(this._detailId) : null;
+    const picker = this._pickerId !== null ? this._wine(this._pickerId) : null;
+    return b2`
+      ${detail ? b2`<vc-detail-sheet
+            .wine=${detail}
+            .draft=${this._ratingDraft}
+            .saved=${this._myRatings.get(this._detailId)}
+          ></vc-detail-sheet>` : A}
+      ${picker ? b2`<vc-spot-picker .wine=${picker}></vc-spot-picker>` : A}
+    `;
   }
 };
 __publicField(VivinoCellarCard, "properties", {
