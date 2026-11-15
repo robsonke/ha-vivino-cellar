@@ -125,6 +125,28 @@
           "description": "Vivino Cellar entry to use. Defaults to the first configured cellar."
         }
       }
+    },
+    "rate_wine": {
+      "name": "Rate wine",
+      "description": "Sets your own rating of a vintage on Vivino. Replaces an existing rating.",
+      "fields": {
+        "vintage_id": {
+          "name": "Vintage ID",
+          "description": "Vivino vintage to rate."
+        },
+        "rating": {
+          "name": "Rating",
+          "description": "1 to 5 stars, in half stars."
+        },
+        "note": {
+          "name": "Note",
+          "description": "Tasting note. Leave out to keep the current note."
+        },
+        "entry_id": {
+          "name": "Cellar",
+          "description": "Vivino Cellar entry to use. Defaults to the first configured cellar."
+        }
+      }
     }
   }
 }

@@ -15,8 +15,11 @@ from .const import (
     WS_TYPE_CELLAR,
     WS_TYPE_DRINK,
     WS_TYPE_PAIRING,
+    WS_TYPE_RATE,
+    WS_TYPE_RATING,
     WS_TYPE_REFRESH,
     WS_TYPE_SUBSCRIBE,
+    parse_rating,
 )
 from .coordinator import VivinoCellarCoordinator
 from .exceptions import VivinoError
@@ -112,6 +115,10 @@ except ImportError:
         @staticmethod
         def Optional(key: str, default: Any = None) -> _Marker:
             return _Marker(key, default)
+
+        @staticmethod
+        def Coerce(type_: Any) -> Any:
+            return type_
 
         @staticmethod
         def All(*validators: Any) -> Any:
@@ -215,6 +222,20 @@ SCHEMA_WS_DRINK = {
     vol.Required("type"): WS_TYPE_DRINK,
     vol.Required("bottle_id"): cv.positive_int,
     vol.Optional("vintage_id"): cv.positive_int,
+    vol.Optional("entry_id"): cv.string,
+}
+
+SCHEMA_WS_RATING = {
+    vol.Required("type"): WS_TYPE_RATING,
+    vol.Required("vintage_id"): cv.positive_int,
+    vol.Optional("entry_id"): cv.string,
+}
+
+SCHEMA_WS_RATE = {
+    vol.Required("type"): WS_TYPE_RATE,
+    vol.Required("vintage_id"): cv.positive_int,
+    vol.Required("rating"): vol.Coerce(float),
+    vol.Optional("note"): cv.string,
     vol.Optional("entry_id"): cv.string,
 }
 
@@ -486,6 +507,44 @@ async def ws_pairing(
     connection.send_result(msg["id"], {"matches": matches})
 
 
+@websocket_api.websocket_command(SCHEMA_WS_RATING)
+@websocket_api.async_response
+async def ws_rating(hass: HomeAssistant, connection: Any, msg: dict[str, Any]) -> None:
+    """Handle vivino_cellar/rating: the user's own rating of a vintage."""
+    try:
+        coordinator = _get_coordinator(hass, msg.get("entry_id"))
+        review = await coordinator.async_get_rating(int(msg["vintage_id"]))
+    except VivinoError as err:
+        connection.send_error(msg["id"], "rating_failed", str(err))
+        return
+    review = review or {}
+    connection.send_result(
+        msg["id"], {"rating": review.get("rating"), "note": review.get("note")}
+    )
+
+
+@websocket_api.websocket_command(SCHEMA_WS_RATE)
+@websocket_api.async_response
+async def ws_rate(hass: HomeAssistant, connection: Any, msg: dict[str, Any]) -> None:
+    """Handle vivino_cellar/rate: set the user's rating (and optional note)."""
+    try:
+        rating = parse_rating(msg.get("rating"))
+    except ValueError as err:
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, str(err))
+        return
+    try:
+        coordinator = _get_coordinator(hass, msg.get("entry_id"))
+        review = await coordinator.async_rate_wine(
+            int(msg["vintage_id"]), rating, msg.get("note")
+        )
+    except VivinoError as err:
+        connection.send_error(msg["id"], "rate_failed", str(err))
+        return
+    connection.send_result(
+        msg["id"], {"rating": review.get("rating"), "note": review.get("note")}
+    )
+
+
 @websocket_api.websocket_command(SCHEMA_WS_DRINK)
 @websocket_api.async_response
 async def ws_drink(
@@ -606,6 +665,8 @@ async def async_setup_websocket_api(hass: Any) -> None:
     websocket_api.async_register_command(hass, ws_drink)
     websocket_api.async_register_command(hass, ws_refresh)
     websocket_api.async_register_command(hass, ws_subscribe)
+    websocket_api.async_register_command(hass, ws_rating)
+    websocket_api.async_register_command(hass, ws_rate)
 
 
 async def async_unload_websocket_api(hass: Any) -> None:
@@ -616,5 +677,7 @@ async def async_unload_websocket_api(hass: Any) -> None:
         WS_TYPE_DRINK,
         WS_TYPE_REFRESH,
         WS_TYPE_SUBSCRIBE,
+        WS_TYPE_RATING,
+        WS_TYPE_RATE,
     ):
         async_unregister_command(hass, cmd_type)

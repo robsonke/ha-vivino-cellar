@@ -125,6 +125,28 @@
           "description": "Vivino-kelder die gebruikt wordt. Standaard de eerste geconfigureerde kelder."
         }
       }
+    },
+    "rate_wine": {
+      "name": "Wijn beoordelen",
+      "description": "Zet je eigen beoordeling van een jaargang op Vivino. Vervangt een bestaande beoordeling.",
+      "fields": {
+        "vintage_id": {
+          "name": "Jaargang-ID",
+          "description": "Vivino-jaargang om te beoordelen."
+        },
+        "rating": {
+          "name": "Beoordeling",
+          "description": "1 tot 5 sterren, in halve sterren."
+        },
+        "note": {
+          "name": "Notitie",
+          "description": "Proefnotitie. Laat leeg om de huidige notitie te houden."
+        },
+        "entry_id": {
+          "name": "Kelder",
+          "description": "Vivino Cellar-item om te gebruiken. Standaard de eerste kelder."
+        }
+      }
     }
   }
 }

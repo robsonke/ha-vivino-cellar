@@ -790,6 +790,125 @@ export const cardStyles = `
     color: var(--secondary-text-color, #757575);
   }
 
+  .rating-section {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--divider-color, #eee);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .rating-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .rating-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .star-picker {
+    display: flex;
+    gap: 2px;
+  }
+
+  /* One star, split into two tap targets: left half and right half. */
+  .star-slot {
+    position: relative;
+    width: 34px;
+    height: 34px;
+  }
+
+  .star-icon,
+  .star-fill {
+    position: absolute;
+    inset: 0;
+    display: block;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .star-icon svg,
+  .star-fill svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .star-icon svg {
+    fill: var(--divider-color, #ddd);
+  }
+
+  .star-fill svg {
+    fill: #f5a623;
+  }
+
+  .star-half {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .star-half.left {
+    left: 0;
+  }
+
+  .star-half.right {
+    right: 0;
+  }
+
+  .star-half:disabled {
+    cursor: default;
+  }
+
+  .star-half:focus-visible {
+    outline: 2px solid var(--primary-color, #8b1e3f);
+    outline-offset: -2px;
+    border-radius: 4px;
+  }
+
+  .rating-value {
+    font-weight: 600;
+    min-width: 2ch;
+  }
+
+  .rating-note {
+    resize: vertical;
+    font: inherit;
+  }
+
+  .rating-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.85rem;
+  }
+
+  .rating-actions .drink-btn {
+    margin-left: auto;
+  }
+
+  .rating-actions .drink-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  .rating-ok {
+    color: #2e7d32;
+  }
+
+  .rating-error {
+    color: var(--error-color, #c62828);
+  }
+
   .detail-actions {
     justify-content: space-between;
     align-items: center;

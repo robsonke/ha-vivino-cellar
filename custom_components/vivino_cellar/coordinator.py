@@ -440,6 +440,19 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
 
         return []
 
+    async def async_get_rating(self, vintage_id: int) -> dict[str, Any] | None:
+        """The user's own Vivino rating of a vintage, or None."""
+        return await self.client.async_get_rating(vintage_id)
+
+    async def async_rate_wine(
+        self, vintage_id: int, rating: float, note: str | None = None
+    ) -> dict[str, Any]:
+        """Rate a vintage on Vivino (1-5 in half stars); None keeps the note."""
+        try:
+            return await self.client.async_rate_vintage(vintage_id, rating, note)
+        except ValueError as err:
+            raise VivinoError(str(err)) from err
+
     async def async_drink_bottle(
         self,
         bottle_id: int,

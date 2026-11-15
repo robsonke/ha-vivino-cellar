@@ -50,10 +50,22 @@ def cellar_settings(entry: Any) -> dict[str, Any]:
     }
 
 
+def parse_rating(value: Any) -> float:
+    """A Vivino rating: 1 to 5 in half stars. Raises ValueError otherwise."""
+    try:
+        rating = float(value)
+    except (TypeError, ValueError) as err:
+        raise ValueError(f"Rating must be a number, got {value!r}") from err
+    if not 1 <= rating <= 5 or (rating * 2) % 1:
+        raise ValueError("Rating must be between 1 and 5 in half stars")
+    return rating
+
+
 # Services (Actions)
 SERVICE_SUGGEST_PAIRING = "suggest_pairing"
 SERVICE_DRINK_BOTTLE = "drink_bottle"
 SERVICE_REFRESH = "refresh"
+SERVICE_RATE_WINE = "rate_wine"
 
 # Assist Voice Intent
 INTENT_SUGGEST_WINE = "VivinoCellarSuggestWine"
@@ -64,3 +76,5 @@ WS_TYPE_PAIRING = "vivino_cellar/pairing"
 WS_TYPE_DRINK = "vivino_cellar/drink"
 WS_TYPE_REFRESH = "vivino_cellar/refresh"
 WS_TYPE_SUBSCRIBE = "vivino_cellar/subscribe"
+WS_TYPE_RATING = "vivino_cellar/rating"
+WS_TYPE_RATE = "vivino_cellar/rate"

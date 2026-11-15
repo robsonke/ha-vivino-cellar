@@ -12,6 +12,7 @@ from urllib.parse import unquote
 
 import aiohttp
 
+from .const import parse_rating
 from .exceptions import (
     VivinoAuthError,
     VivinoConnectionError,
@@ -80,6 +81,7 @@ class VivinoClient:
         self._current_cookie_header = self._format_cookie_header(self._cookie)
         self._rotated_cookie: str | None = None
         self.version: str | None = None
+        self.user_id: int | None = None  # Vivino user; read from the cellar page
 
         match = URL_PATTERN.match(self._cellar_url)
         if not match:
@@ -487,6 +489,19 @@ class VivinoClient:
             return match.group(1) or match.group(2)
         return None
 
+    @staticmethod
+    def _extract_user_id_from_html(html_content: str) -> int | None:
+        """Read the signed-in user's id from the page's Inertia props."""
+        match = DATA_PAGE_PATTERN.search(html_content)
+        if not match:
+            return None
+        try:
+            page = json.loads(html.unescape(match.group(2)))
+            user_id = page["props"]["auth"]["user"]["id"]
+        except (json.JSONDecodeError, KeyError, TypeError):
+            return None
+        return int(user_id) if user_id is not None else None
+
     async def _load_write_context(self) -> tuple[str, str | None, str]:
         """Fetch cellar page HTML to extract CSRF token, version, and cookies.
 
@@ -547,6 +562,9 @@ class VivinoClient:
             self.version = version
         except VivinoParseError:
             pass
+
+        if self.user_id is None:
+            self.user_id = self._extract_user_id_from_html(content)
 
         all_cookies = _split_cookie(self._current_cookie_header)
         all_cookies.update(fresh_cookies)
@@ -687,3 +705,124 @@ class VivinoClient:
             raise VivinoConnectionError(
                 f"Connection error during vintage count decrement: {err}"
             ) from err
+
+    # ------------------------------------------------------------------
+    # The user's own rating ("review") of a vintage
+    # ------------------------------------------------------------------
+
+    async def _ensure_user_id(self) -> int:
+        if self.user_id is None:
+            await self._load_write_context()
+        if self.user_id is None:
+            raise VivinoParseError(
+                "Could not find the Vivino user id on the cellar page"
+            )
+        return self.user_id
+
+    def _api_headers(self, csrf_token: str | None = None) -> dict[str, str]:
+        headers = {
+            "User-Agent": DEFAULT_USER_AGENT,
+            "Cookie": self._current_cookie_header,
+            "Accept": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+            "Origin": "https://www.vivino.com",
+            "Referer": self._base_url,
+        }
+        if csrf_token:
+            headers["X-CSRF-Token"] = csrf_token
+            headers["Content-Type"] = "application/json"
+        return headers
+
+    @staticmethod
+    def _review_summary(review: dict[str, Any]) -> dict[str, Any]:
+        rating = review.get("rating")
+        return {
+            "id": review.get("id"),
+            "rating": float(rating) if rating is not None else None,
+            "note": review.get("note"),
+        }
+
+    async def async_get_rating(self, vintage_id: int) -> dict[str, Any] | None:
+        """Return the user's own rating of a vintage ({id, rating, note}) or None."""
+        user_id = await self._ensure_user_id()
+        url = (
+            f"https://www.vivino.com/api/users/{user_id}/vintages/{vintage_id}/reviews"
+        )
+        try:
+            async with self._session.get(
+                url, headers=self._api_headers(), allow_redirects=False
+            ) as response:
+                self._check_cookie_rotation(response.headers)
+                if response.status in (301, 302, 303, 307, 308, 401, 403):
+                    raise VivinoAuthError(
+                        f"Not signed in to Vivino while reading rating: HTTP {response.status}"
+                    )
+                if response.status != 200:
+                    raise VivinoError(
+                        f"Reading rating failed with HTTP {response.status}"
+                    )
+                data = await response.json()
+        except VivinoError:
+            raise
+        except (TimeoutError, aiohttp.ClientError) as err:
+            raise VivinoConnectionError(
+                f"Connection error reading rating: {err}"
+            ) from err
+
+        reviews = data.get("reviews") if isinstance(data, dict) else None
+        if not reviews:
+            return None
+        return self._review_summary(reviews[0])
+
+    async def async_rate_vintage(
+        self, vintage_id: int, rating: float, note: str | None = None
+    ) -> dict[str, Any]:
+        """Set the user's rating of a vintage, replacing an existing one.
+
+        Ratings are 1 to 5 in half stars. A note of None keeps the existing note.
+        Changing a rating (PUT /api/reviews/<id>) is verified against Vivino; a
+        first rating (POST to the user's vintage reviews) is not yet.
+        """
+        rating = parse_rating(rating)
+
+        csrf_token, _xsrf, _cookies = await self._load_write_context()
+        existing = await self.async_get_rating(vintage_id)
+        user_id = await self._ensure_user_id()
+
+        payload: dict[str, Any] = {"rating": rating}
+        if note is not None:
+            payload["note"] = note
+
+        if existing and existing.get("id"):
+            method = self._session.put
+            url = f"https://www.vivino.com/api/reviews/{existing['id']}"
+        else:
+            method = self._session.post
+            url = f"https://www.vivino.com/api/users/{user_id}/vintages/{vintage_id}/reviews"
+
+        try:
+            async with method(
+                url,
+                headers=self._api_headers(csrf_token),
+                json=payload,
+                allow_redirects=False,
+            ) as response:
+                self._check_cookie_rotation(response.headers)
+                if response.status in (301, 302, 303, 307, 308, 401, 403):
+                    raise VivinoAuthError(
+                        f"Not signed in to Vivino while rating: HTTP {response.status}"
+                    )
+                if response.status not in (200, 201):
+                    raise VivinoError(
+                        f"Vivino rejected the rating with HTTP {response.status}"
+                    )
+                data = await response.json()
+        except VivinoError:
+            raise
+        except (TimeoutError, aiohttp.ClientError) as err:
+            raise VivinoConnectionError(
+                f"Connection error while rating: {err}"
+            ) from err
+
+        review = data.get("review") if isinstance(data, dict) else None
+        return self._review_summary(review or {"rating": rating, "note": note})

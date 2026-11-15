@@ -33,6 +33,34 @@ drink_bottle:
         config_entry:
           integration: vivino_cellar
 
+rate_wine:
+  fields:
+    vintage_id:
+      required: true
+      example: 180601747
+      selector:
+        number:
+          min: 1
+          mode: box
+    rating:
+      required: true
+      example: 3.5
+      selector:
+        number:
+          min: 1
+          max: 5
+          step: 0.5
+          mode: slider
+    note:
+      example: "Prima, niets speciaals."
+      selector:
+        text:
+          multiline: true
+    entry_id:
+      selector:
+        config_entry:
+          integration: vivino_cellar
+
 refresh:
   fields:
     entry_id:

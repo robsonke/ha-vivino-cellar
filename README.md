@@ -194,6 +194,20 @@ data:
   vintage_id: 987654
 ```
 
+### `vivino_cellar.rate_wine`
+
+Set your own rating of a vintage on Vivino, from 1 to 5 in half stars. It replaces an existing rating. Leave out `note` to keep the current note. The card's wine detail sheet does the same with stars and a note field.
+
+```yaml
+action: vivino_cellar.rate_wine
+data:
+  vintage_id: 180601747
+  rating: 3.5
+  note: "Leuk aandenken aan een vakantie."
+```
+
+> Vivino has no public API for this. Changing an existing rating is verified; giving a wine its very first rating uses a request that has not been confirmed yet. If Vivino rejects it, you get an error and nothing is saved.
+
 ### `vivino_cellar.refresh`
 
 Manually trigger a cellar synchronization from Vivino (rate-limited to at most once every 30 seconds).

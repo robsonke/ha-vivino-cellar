@@ -134,6 +134,10 @@ export class VivinoCellarCard extends HTMLElement {
     this._drinkErrors = [];
     this._spotPicker = null; // vintage id whose location picker is open
     this._detailWine = null; // vintage id whose detail sheet is open
+    // Your own Vivino rating, loaded when a sheet opens: vintage id -> {rating, note} | null
+    this._myRatings = new Map();
+    // Edits in the open sheet: {vid, rating, note, status: idle|loading|saving|saved|error, error}
+    this._ratingDraft = null;
     this._wineIndex = new Map();
 
     this._onPageHide = () => this._flushPendingDrinks();
@@ -363,8 +367,114 @@ export class VivinoCellarCard extends HTMLElement {
   _closeModals() {
     // The picker opens from the sheet, so close it first and go back to the sheet.
     if (this._spotPicker !== null) this._spotPicker = null;
-    else this._detailWine = null;
+    else {
+      this._detailWine = null;
+      this._ratingDraft = null;
+    }
     this._render();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Your rating (Vivino review)
+  // ---------------------------------------------------------------------------
+
+  async _openRating(vid) {
+    const known = this._myRatings.get(vid);
+    this._ratingDraft = {
+      vid,
+      rating: known?.rating ?? null,
+      note: known?.note ?? "",
+      status: this._myRatings.has(vid) ? "idle" : "loading",
+      error: null,
+    };
+    if (this._myRatings.has(vid) || !this._hass) return;
+    try {
+      const res = await this._hass.callWS({ type: "vivino_cellar/rating", vintage_id: vid });
+      const mine = res && res.rating !== null ? { rating: res.rating, note: res.note || "" } : null;
+      this._myRatings.set(vid, mine);
+      const d = this._ratingDraft;
+      if (d && d.vid === vid && d.status === "loading") {
+        Object.assign(d, { rating: mine?.rating ?? null, note: mine?.note ?? "", status: "idle" });
+      }
+    } catch (err) {
+      const d = this._ratingDraft;
+      if (d && d.vid === vid) Object.assign(d, { status: "error", error: err?.message || String(err) });
+    }
+    this._render();
+  }
+
+  _ratingChanged() {
+    const d = this._ratingDraft;
+    if (!d || d.rating === null) return false;
+    const mine = this._myRatings.get(d.vid);
+    return !mine || mine.rating !== d.rating || (mine.note || "") !== (d.note || "");
+  }
+
+  async _saveRating() {
+    const d = this._ratingDraft;
+    if (!d || !this._ratingChanged() || d.status === "saving") return;
+    d.status = "saving";
+    d.error = null;
+    this._render();
+    try {
+      const res = await this._hass.callWS({
+        type: "vivino_cellar/rate",
+        vintage_id: d.vid,
+        rating: d.rating,
+        note: d.note || "",
+      });
+      this._myRatings.set(d.vid, { rating: res.rating ?? d.rating, note: res.note ?? d.note });
+      if (this._ratingDraft === d) d.status = "saved";
+    } catch (err) {
+      if (this._ratingDraft === d) {
+        d.status = "error";
+        d.error = err?.message || String(err);
+      }
+    }
+    this._render();
+  }
+
+  _renderStars(rating) {
+    return [1, 2, 3, 4, 5]
+      .map((n) => {
+        const fill = rating >= n ? 100 : rating >= n - 0.5 ? 50 : 0;
+        const label = (v) => `${String(v).replace(".", ",")} ${v === 1 ? "ster" : "sterren"}`;
+        return `
+          <span class="star-slot">
+            <span class="star-icon">${ICON_STAR}<span class="star-fill" style="width:${fill}%">${ICON_STAR}</span></span>
+            <button class="star-half left" data-rate="${n - 0.5}" aria-label="${label(n - 0.5)}" ${n === 1 ? "disabled" : ""}></button>
+            <button class="star-half right" data-rate="${n}" aria-label="${label(n)}"></button>
+          </span>`;
+      })
+      .join("");
+  }
+
+  _renderRatingSection(vid) {
+    const d = this._ratingDraft;
+    if (!d || d.vid !== vid) return "";
+    if (d.status === "loading") {
+      return `<div class="rating-section"><div class="rating-title">Jouw beoordeling</div><div class="muted">Laden…</div></div>`;
+    }
+    const value = d.rating ?? 0;
+    const status = {
+      saving: `<span class="muted">Opslaan…</span>`,
+      saved: `<span class="rating-ok">Opgeslagen op Vivino</span>`,
+      error: `<span class="rating-error">${esc(d.error || "Mislukt")}</span>`,
+    }[d.status] || (this._myRatings.get(vid) ? "" : `<span class="muted">Nog niet beoordeeld</span>`);
+    return `
+      <div class="rating-section">
+        <div class="rating-title">Jouw beoordeling</div>
+        <div class="rating-row">
+          <div class="star-picker" role="group" aria-label="Kies een beoordeling">${this._renderStars(value)}</div>
+          <span class="rating-value">${d.rating ? String(d.rating).replace(".", ",") : "–"}</span>
+        </div>
+        <textarea class="text-input rating-note" id="rating-note" rows="2"
+          placeholder="Notitie (optioneel)">${esc(d.note || "")}</textarea>
+        <div class="rating-actions">
+          ${status}
+          <button class="drink-btn" id="btn-save-rating" ${this._ratingChanged() && d.status !== "saving" ? "" : "disabled"}>Opslaan</button>
+        </div>
+      </div>`;
   }
 
   _handlePickSpot(index) {
@@ -1023,6 +1133,7 @@ export class VivinoCellarCard extends HTMLElement {
                   : "Geen flessen op voorraad"
               )}
             </dl>
+            ${this._renderRatingSection(vintageId(wine))}
           </div>
           <div class="modal-footer detail-actions">
             ${
@@ -1185,6 +1296,7 @@ export class VivinoCellarCard extends HTMLElement {
     shadow.querySelectorAll("[data-detail-id]").forEach((el) => {
       const open = () => {
         this._detailWine = Number(el.dataset.detailId);
+        this._openRating(this._detailWine);
         this._render();
         this.shadowRoot.getElementById("btn-close-detail")?.focus();
       };
@@ -1197,6 +1309,25 @@ export class VivinoCellarCard extends HTMLElement {
       });
     });
     on("#btn-close-detail", () => this._closeModals());
+    on("[data-rate]", (el) => {
+      const d = this._ratingDraft;
+      if (!d || d.status === "loading") return;
+      d.rating = Number(el.dataset.rate);
+      d.status = "idle";
+      this._render();
+    });
+    const ratingNote = shadow.getElementById("rating-note");
+    if (ratingNote) {
+      ratingNote.addEventListener("input", (e) => {
+        const d = this._ratingDraft;
+        if (!d) return;
+        d.note = e.target.value;
+        if (d.status === "saved" || d.status === "error") d.status = "idle";
+        const save = shadow.getElementById("btn-save-rating");
+        if (save) save.disabled = !this._ratingChanged();
+      });
+    }
+    on("#btn-save-rating", () => this._saveRating());
     on("#detail-backdrop", (el, e) => {
       if (e.target === el) this._closeModals();
     });
