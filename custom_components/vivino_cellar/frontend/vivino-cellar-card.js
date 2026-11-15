@@ -1,1259 +1,854 @@
-// custom_components/vivino_cellar/frontend/src/styles.js
-var cardStyles = `
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+
+// node_modules/@lit/reactive-element/css-tag.js
+var t = globalThis;
+var e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
+var s = Symbol();
+var o = /* @__PURE__ */ new WeakMap();
+var n = class {
+  constructor(t3, e4, o5) {
+    if (this._$cssResult$ = true, o5 !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    this.cssText = t3, this.t = e4;
+  }
+  get styleSheet() {
+    let t3 = this.o;
+    const s4 = this.t;
+    if (e && void 0 === t3) {
+      const e4 = void 0 !== s4 && 1 === s4.length;
+      e4 && (t3 = o.get(s4)), void 0 === t3 && ((this.o = t3 = new CSSStyleSheet()).replaceSync(this.cssText), e4 && o.set(s4, t3));
+    }
+    return t3;
+  }
+  toString() {
+    return this.cssText;
+  }
+};
+var r = (t3) => new n("string" == typeof t3 ? t3 : t3 + "", void 0, s);
+var i = (t3, ...e4) => {
+  const o5 = 1 === t3.length ? t3[0] : e4.reduce((e5, s4, o6) => e5 + ((t4) => {
+    if (true === t4._$cssResult$) return t4.cssText;
+    if ("number" == typeof t4) return t4;
+    throw Error("Value passed to 'css' function must be a 'css' function result: " + t4 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+  })(s4) + t3[o6 + 1], t3[0]);
+  return new n(o5, t3, s);
+};
+var S = (s4, o5) => {
+  if (e) s4.adoptedStyleSheets = o5.map((t3) => t3 instanceof CSSStyleSheet ? t3 : t3.styleSheet);
+  else for (const e4 of o5) {
+    const o6 = document.createElement("style"), n4 = t.litNonce;
+    void 0 !== n4 && o6.setAttribute("nonce", n4), o6.textContent = e4.cssText, s4.appendChild(o6);
+  }
+};
+var c = e ? (t3) => t3 : (t3) => t3 instanceof CSSStyleSheet ? ((t4) => {
+  let e4 = "";
+  for (const s4 of t4.cssRules) e4 += s4.cssText;
+  return r(e4);
+})(t3) : t3;
+
+// node_modules/@lit/reactive-element/reactive-element.js
+var { is: i2, defineProperty: e2, getOwnPropertyDescriptor: h, getOwnPropertyNames: r2, getOwnPropertySymbols: o2, getPrototypeOf: n2 } = Object;
+var a = globalThis;
+var c2 = a.trustedTypes;
+var l = c2 ? c2.emptyScript : "";
+var p = a.reactiveElementPolyfillSupport;
+var d = (t3, s4) => t3;
+var u = { toAttribute(t3, s4) {
+  switch (s4) {
+    case Boolean:
+      t3 = t3 ? l : null;
+      break;
+    case Object:
+    case Array:
+      t3 = null == t3 ? t3 : JSON.stringify(t3);
+  }
+  return t3;
+}, fromAttribute(t3, s4) {
+  let i5 = t3;
+  switch (s4) {
+    case Boolean:
+      i5 = null !== t3;
+      break;
+    case Number:
+      i5 = null === t3 ? null : Number(t3);
+      break;
+    case Object:
+    case Array:
+      try {
+        i5 = JSON.parse(t3);
+      } catch (t4) {
+        i5 = null;
+      }
+  }
+  return i5;
+} };
+var f = (t3, s4) => !i2(t3, s4);
+var b = { attribute: true, type: String, converter: u, reflect: false, useDefault: false, hasChanged: f };
+Symbol.metadata ??= Symbol("metadata"), a.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+var y = class extends HTMLElement {
+  static addInitializer(t3) {
+    this._$Ei(), (this.l ??= []).push(t3);
+  }
+  static get observedAttributes() {
+    return this.finalize(), this._$Eh && [...this._$Eh.keys()];
+  }
+  static createProperty(t3, s4 = b) {
+    if (s4.state && (s4.attribute = false), this._$Ei(), this.prototype.hasOwnProperty(t3) && ((s4 = Object.create(s4)).wrapped = true), this.elementProperties.set(t3, s4), !s4.noAccessor) {
+      const i5 = Symbol(), h3 = this.getPropertyDescriptor(t3, i5, s4);
+      void 0 !== h3 && e2(this.prototype, t3, h3);
+    }
+  }
+  static getPropertyDescriptor(t3, s4, i5) {
+    const { get: e4, set: r4 } = h(this.prototype, t3) ?? { get() {
+      return this[s4];
+    }, set(t4) {
+      this[s4] = t4;
+    } };
+    return { get: e4, set(s5) {
+      const h3 = e4?.call(this);
+      r4?.call(this, s5), this.requestUpdate(t3, h3, i5);
+    }, configurable: true, enumerable: true };
+  }
+  static getPropertyOptions(t3) {
+    return this.elementProperties.get(t3) ?? b;
+  }
+  static _$Ei() {
+    if (this.hasOwnProperty(d("elementProperties"))) return;
+    const t3 = n2(this);
+    t3.finalize(), void 0 !== t3.l && (this.l = [...t3.l]), this.elementProperties = new Map(t3.elementProperties);
+  }
+  static finalize() {
+    if (this.hasOwnProperty(d("finalized"))) return;
+    if (this.finalized = true, this._$Ei(), this.hasOwnProperty(d("properties"))) {
+      const t4 = this.properties, s4 = [...r2(t4), ...o2(t4)];
+      for (const i5 of s4) this.createProperty(i5, t4[i5]);
+    }
+    const t3 = this[Symbol.metadata];
+    if (null !== t3) {
+      const s4 = litPropertyMetadata.get(t3);
+      if (void 0 !== s4) for (const [t4, i5] of s4) this.elementProperties.set(t4, i5);
+    }
+    this._$Eh = /* @__PURE__ */ new Map();
+    for (const [t4, s4] of this.elementProperties) {
+      const i5 = this._$Eu(t4, s4);
+      void 0 !== i5 && this._$Eh.set(i5, t4);
+    }
+    this.elementStyles = this.finalizeStyles(this.styles);
+  }
+  static finalizeStyles(s4) {
+    const i5 = [];
+    if (Array.isArray(s4)) {
+      const e4 = new Set(s4.flat(1 / 0).reverse());
+      for (const s5 of e4) i5.unshift(c(s5));
+    } else void 0 !== s4 && i5.push(c(s4));
+    return i5;
+  }
+  static _$Eu(t3, s4) {
+    const i5 = s4.attribute;
+    return false === i5 ? void 0 : "string" == typeof i5 ? i5 : "string" == typeof t3 ? t3.toLowerCase() : void 0;
+  }
+  constructor() {
+    super(), this._$Ep = void 0, this.isUpdatePending = false, this.hasUpdated = false, this._$Em = null, this._$Ev();
+  }
+  _$Ev() {
+    this._$ES = new Promise((t3) => this.enableUpdating = t3), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), this.constructor.l?.forEach((t3) => t3(this));
+  }
+  addController(t3) {
+    (this._$EO ??= /* @__PURE__ */ new Set()).add(t3), void 0 !== this.renderRoot && this.isConnected && t3.hostConnected?.();
+  }
+  removeController(t3) {
+    this._$EO?.delete(t3);
+  }
+  _$E_() {
+    const t3 = /* @__PURE__ */ new Map(), s4 = this.constructor.elementProperties;
+    for (const i5 of s4.keys()) this.hasOwnProperty(i5) && (t3.set(i5, this[i5]), delete this[i5]);
+    t3.size > 0 && (this._$Ep = t3);
+  }
+  createRenderRoot() {
+    const t3 = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
+    return S(t3, this.constructor.elementStyles), t3;
+  }
+  connectedCallback() {
+    this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(true), this._$EO?.forEach((t3) => t3.hostConnected?.());
+  }
+  enableUpdating(t3) {
+  }
+  disconnectedCallback() {
+    this._$EO?.forEach((t3) => t3.hostDisconnected?.());
+  }
+  attributeChangedCallback(t3, s4, i5) {
+    this._$AK(t3, i5);
+  }
+  _$ET(t3, s4) {
+    const i5 = this.constructor.elementProperties.get(t3), e4 = this.constructor._$Eu(t3, i5);
+    if (void 0 !== e4 && true === i5.reflect) {
+      const h3 = (void 0 !== i5.converter?.toAttribute ? i5.converter : u).toAttribute(s4, i5.type);
+      this._$Em = t3, null == h3 ? this.removeAttribute(e4) : this.setAttribute(e4, h3), this._$Em = null;
+    }
+  }
+  _$AK(t3, s4) {
+    const i5 = this.constructor, e4 = i5._$Eh.get(t3);
+    if (void 0 !== e4 && this._$Em !== e4) {
+      const t4 = i5.getPropertyOptions(e4), h3 = "function" == typeof t4.converter ? { fromAttribute: t4.converter } : void 0 !== t4.converter?.fromAttribute ? t4.converter : u;
+      this._$Em = e4;
+      const r4 = h3.fromAttribute(s4, t4.type);
+      this[e4] = r4 ?? this._$Ej?.get(e4) ?? r4, this._$Em = null;
+    }
+  }
+  requestUpdate(t3, s4, i5, e4 = false, h3) {
+    if (void 0 !== t3) {
+      const r4 = this.constructor;
+      if (false === e4 && (h3 = this[t3]), i5 ??= r4.getPropertyOptions(t3), !((i5.hasChanged ?? f)(h3, s4) || i5.useDefault && i5.reflect && h3 === this._$Ej?.get(t3) && !this.hasAttribute(r4._$Eu(t3, i5)))) return;
+      this.C(t3, s4, i5);
+    }
+    false === this.isUpdatePending && (this._$ES = this._$EP());
+  }
+  C(t3, s4, { useDefault: i5, reflect: e4, wrapped: h3 }, r4) {
+    i5 && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(t3) && (this._$Ej.set(t3, r4 ?? s4 ?? this[t3]), true !== h3 || void 0 !== r4) || (this._$AL.has(t3) || (this.hasUpdated || i5 || (s4 = void 0), this._$AL.set(t3, s4)), true === e4 && this._$Em !== t3 && (this._$Eq ??= /* @__PURE__ */ new Set()).add(t3));
+  }
+  async _$EP() {
+    this.isUpdatePending = true;
+    try {
+      await this._$ES;
+    } catch (t4) {
+      Promise.reject(t4);
+    }
+    const t3 = this.scheduleUpdate();
+    return null != t3 && await t3, !this.isUpdatePending;
+  }
+  scheduleUpdate() {
+    return this.performUpdate();
+  }
+  performUpdate() {
+    if (!this.isUpdatePending) return;
+    if (!this.hasUpdated) {
+      if (this.renderRoot ??= this.createRenderRoot(), this._$Ep) {
+        for (const [t5, s5] of this._$Ep) this[t5] = s5;
+        this._$Ep = void 0;
+      }
+      const t4 = this.constructor.elementProperties;
+      if (t4.size > 0) for (const [s5, i5] of t4) {
+        const { wrapped: t5 } = i5, e4 = this[s5];
+        true !== t5 || this._$AL.has(s5) || void 0 === e4 || this.C(s5, void 0, i5, e4);
+      }
+    }
+    let t3 = false;
+    const s4 = this._$AL;
+    try {
+      t3 = this.shouldUpdate(s4), t3 ? (this.willUpdate(s4), this._$EO?.forEach((t4) => t4.hostUpdate?.()), this.update(s4)) : this._$EM();
+    } catch (s5) {
+      throw t3 = false, this._$EM(), s5;
+    }
+    t3 && this._$AE(s4);
+  }
+  willUpdate(t3) {
+  }
+  _$AE(t3) {
+    this._$EO?.forEach((t4) => t4.hostUpdated?.()), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t3)), this.updated(t3);
+  }
+  _$EM() {
+    this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
+  }
+  get updateComplete() {
+    return this.getUpdateComplete();
+  }
+  getUpdateComplete() {
+    return this._$ES;
+  }
+  shouldUpdate(t3) {
+    return true;
+  }
+  update(t3) {
+    this._$Eq &&= this._$Eq.forEach((t4) => this._$ET(t4, this[t4])), this._$EM();
+  }
+  updated(t3) {
+  }
+  firstUpdated(t3) {
+  }
+};
+y.elementStyles = [], y.shadowRootOptions = { mode: "open" }, y[d("elementProperties")] = /* @__PURE__ */ new Map(), y[d("finalized")] = /* @__PURE__ */ new Map(), p?.({ ReactiveElement: y }), (a.reactiveElementVersions ??= []).push("2.1.2");
+
+// node_modules/lit-html/lit-html.js
+var t2 = globalThis;
+var i3 = (t3) => t3;
+var s2 = t2.trustedTypes;
+var e3 = s2 ? s2.createPolicy("lit-html", { createHTML: (t3) => t3 }) : void 0;
+var h2 = "$lit$";
+var o3 = `lit$${Math.random().toFixed(9).slice(2)}$`;
+var n3 = "?" + o3;
+var r3 = `<${n3}>`;
+var l2 = document;
+var c3 = () => l2.createComment("");
+var a2 = (t3) => null === t3 || "object" != typeof t3 && "function" != typeof t3;
+var u2 = Array.isArray;
+var d2 = (t3) => u2(t3) || "function" == typeof t3?.[Symbol.iterator];
+var f2 = "[ 	\n\f\r]";
+var v = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+var _ = /-->/g;
+var m = />/g;
+var p2 = RegExp(`>|${f2}(?:([^\\s"'>=/]+)(${f2}*=${f2}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g");
+var g = /'/g;
+var $ = /"/g;
+var y2 = /^(?:script|style|textarea|title)$/i;
+var x = (t3) => (i5, ...s4) => ({ _$litType$: t3, strings: i5, values: s4 });
+var b2 = x(1);
+var w = x(2);
+var T = x(3);
+var E = Symbol.for("lit-noChange");
+var A = Symbol.for("lit-nothing");
+var C = /* @__PURE__ */ new WeakMap();
+var P = l2.createTreeWalker(l2, 129);
+function V(t3, i5) {
+  if (!u2(t3) || !t3.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return void 0 !== e3 ? e3.createHTML(i5) : i5;
+}
+var N = (t3, i5) => {
+  const s4 = t3.length - 1, e4 = [];
+  let n4, l3 = 2 === i5 ? "<svg>" : 3 === i5 ? "<math>" : "", c4 = v;
+  for (let i6 = 0; i6 < s4; i6++) {
+    const s5 = t3[i6];
+    let a3, u3, d3 = -1, f3 = 0;
+    for (; f3 < s5.length && (c4.lastIndex = f3, u3 = c4.exec(s5), null !== u3); ) f3 = c4.lastIndex, c4 === v ? "!--" === u3[1] ? c4 = _ : void 0 !== u3[1] ? c4 = m : void 0 !== u3[2] ? (y2.test(u3[2]) && (n4 = RegExp("</" + u3[2], "g")), c4 = p2) : void 0 !== u3[3] && (c4 = p2) : c4 === p2 ? ">" === u3[0] ? (c4 = n4 ?? v, d3 = -1) : void 0 === u3[1] ? d3 = -2 : (d3 = c4.lastIndex - u3[2].length, a3 = u3[1], c4 = void 0 === u3[3] ? p2 : '"' === u3[3] ? $ : g) : c4 === $ || c4 === g ? c4 = p2 : c4 === _ || c4 === m ? c4 = v : (c4 = p2, n4 = void 0);
+    const x2 = c4 === p2 && t3[i6 + 1].startsWith("/>") ? " " : "";
+    l3 += c4 === v ? s5 + r3 : d3 >= 0 ? (e4.push(a3), s5.slice(0, d3) + h2 + s5.slice(d3) + o3 + x2) : s5 + o3 + (-2 === d3 ? i6 : x2);
+  }
+  return [V(t3, l3 + (t3[s4] || "<?>") + (2 === i5 ? "</svg>" : 3 === i5 ? "</math>" : "")), e4];
+};
+var S2 = class _S {
+  constructor({ strings: t3, _$litType$: i5 }, e4) {
+    let r4;
+    this.parts = [];
+    let l3 = 0, a3 = 0;
+    const u3 = t3.length - 1, d3 = this.parts, [f3, v2] = N(t3, i5);
+    if (this.el = _S.createElement(f3, e4), P.currentNode = this.el.content, 2 === i5 || 3 === i5) {
+      const t4 = this.el.content.firstChild;
+      t4.replaceWith(...t4.childNodes);
+    }
+    for (; null !== (r4 = P.nextNode()) && d3.length < u3; ) {
+      if (1 === r4.nodeType) {
+        if (r4.hasAttributes()) for (const t4 of r4.getAttributeNames()) if (t4.endsWith(h2)) {
+          const i6 = v2[a3++], s4 = r4.getAttribute(t4).split(o3), e5 = /([.?@])?(.*)/.exec(i6);
+          d3.push({ type: 1, index: l3, name: e5[2], strings: s4, ctor: "." === e5[1] ? I : "?" === e5[1] ? L : "@" === e5[1] ? z : H }), r4.removeAttribute(t4);
+        } else t4.startsWith(o3) && (d3.push({ type: 6, index: l3 }), r4.removeAttribute(t4));
+        if (y2.test(r4.tagName)) {
+          const t4 = r4.textContent.split(o3), i6 = t4.length - 1;
+          if (i6 > 0) {
+            r4.textContent = s2 ? s2.emptyScript : "";
+            for (let s4 = 0; s4 < i6; s4++) r4.append(t4[s4], c3()), P.nextNode(), d3.push({ type: 2, index: ++l3 });
+            r4.append(t4[i6], c3());
+          }
+        }
+      } else if (8 === r4.nodeType) if (r4.data === n3) d3.push({ type: 2, index: l3 });
+      else {
+        let t4 = -1;
+        for (; -1 !== (t4 = r4.data.indexOf(o3, t4 + 1)); ) d3.push({ type: 7, index: l3 }), t4 += o3.length - 1;
+      }
+      l3++;
+    }
+  }
+  static createElement(t3, i5) {
+    const s4 = l2.createElement("template");
+    return s4.innerHTML = t3, s4;
+  }
+};
+function M(t3, i5, s4 = t3, e4) {
+  if (i5 === E) return i5;
+  let h3 = void 0 !== e4 ? s4._$Co?.[e4] : s4._$Cl;
+  const o5 = a2(i5) ? void 0 : i5._$litDirective$;
+  return h3?.constructor !== o5 && (h3?._$AO?.(false), void 0 === o5 ? h3 = void 0 : (h3 = new o5(t3), h3._$AT(t3, s4, e4)), void 0 !== e4 ? (s4._$Co ??= [])[e4] = h3 : s4._$Cl = h3), void 0 !== h3 && (i5 = M(t3, h3._$AS(t3, i5.values), h3, e4)), i5;
+}
+var R = class {
+  constructor(t3, i5) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t3, this._$AM = i5;
+  }
+  get parentNode() {
+    return this._$AM.parentNode;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  u(t3) {
+    const { el: { content: i5 }, parts: s4 } = this._$AD, e4 = (t3?.creationScope ?? l2).importNode(i5, true);
+    P.currentNode = e4;
+    let h3 = P.nextNode(), o5 = 0, n4 = 0, r4 = s4[0];
+    for (; void 0 !== r4; ) {
+      if (o5 === r4.index) {
+        let i6;
+        2 === r4.type ? i6 = new k(h3, h3.nextSibling, this, t3) : 1 === r4.type ? i6 = new r4.ctor(h3, r4.name, r4.strings, this, t3) : 6 === r4.type && (i6 = new Z(h3, this, t3)), this._$AV.push(i6), r4 = s4[++n4];
+      }
+      o5 !== r4?.index && (h3 = P.nextNode(), o5++);
+    }
+    return P.currentNode = l2, e4;
+  }
+  p(t3) {
+    let i5 = 0;
+    for (const s4 of this._$AV) void 0 !== s4 && (void 0 !== s4.strings ? (s4._$AI(t3, s4, i5), i5 += s4.strings.length - 2) : s4._$AI(t3[i5])), i5++;
+  }
+};
+var k = class _k {
+  get _$AU() {
+    return this._$AM?._$AU ?? this._$Cv;
+  }
+  constructor(t3, i5, s4, e4) {
+    this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = t3, this._$AB = i5, this._$AM = s4, this.options = e4, this._$Cv = e4?.isConnected ?? true;
+  }
+  get parentNode() {
+    let t3 = this._$AA.parentNode;
+    const i5 = this._$AM;
+    return void 0 !== i5 && 11 === t3?.nodeType && (t3 = i5.parentNode), t3;
+  }
+  get startNode() {
+    return this._$AA;
+  }
+  get endNode() {
+    return this._$AB;
+  }
+  _$AI(t3, i5 = this) {
+    t3 = M(this, t3, i5), a2(t3) ? t3 === A || null == t3 || "" === t3 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t3 !== this._$AH && t3 !== E && this._(t3) : void 0 !== t3._$litType$ ? this.$(t3) : void 0 !== t3.nodeType ? this.T(t3) : d2(t3) ? this.k(t3) : this._(t3);
+  }
+  O(t3) {
+    return this._$AA.parentNode.insertBefore(t3, this._$AB);
+  }
+  T(t3) {
+    this._$AH !== t3 && (this._$AR(), this._$AH = this.O(t3));
+  }
+  _(t3) {
+    this._$AH !== A && a2(this._$AH) ? this._$AA.nextSibling.data = t3 : this.T(l2.createTextNode(t3)), this._$AH = t3;
+  }
+  $(t3) {
+    const { values: i5, _$litType$: s4 } = t3, e4 = "number" == typeof s4 ? this._$AC(t3) : (void 0 === s4.el && (s4.el = S2.createElement(V(s4.h, s4.h[0]), this.options)), s4);
+    if (this._$AH?._$AD === e4) this._$AH.p(i5);
+    else {
+      const t4 = new R(e4, this), s5 = t4.u(this.options);
+      t4.p(i5), this.T(s5), this._$AH = t4;
+    }
+  }
+  _$AC(t3) {
+    let i5 = C.get(t3.strings);
+    return void 0 === i5 && C.set(t3.strings, i5 = new S2(t3)), i5;
+  }
+  k(t3) {
+    u2(this._$AH) || (this._$AH = [], this._$AR());
+    const i5 = this._$AH;
+    let s4, e4 = 0;
+    for (const h3 of t3) e4 === i5.length ? i5.push(s4 = new _k(this.O(c3()), this.O(c3()), this, this.options)) : s4 = i5[e4], s4._$AI(h3), e4++;
+    e4 < i5.length && (this._$AR(s4 && s4._$AB.nextSibling, e4), i5.length = e4);
+  }
+  _$AR(t3 = this._$AA.nextSibling, s4) {
+    for (this._$AP?.(false, true, s4); t3 !== this._$AB; ) {
+      const s5 = i3(t3).nextSibling;
+      i3(t3).remove(), t3 = s5;
+    }
+  }
+  setConnected(t3) {
+    void 0 === this._$AM && (this._$Cv = t3, this._$AP?.(t3));
+  }
+};
+var H = class {
+  get tagName() {
+    return this.element.tagName;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  constructor(t3, i5, s4, e4, h3) {
+    this.type = 1, this._$AH = A, this._$AN = void 0, this.element = t3, this.name = i5, this._$AM = e4, this.options = h3, s4.length > 2 || "" !== s4[0] || "" !== s4[1] ? (this._$AH = Array(s4.length - 1).fill(new String()), this.strings = s4) : this._$AH = A;
+  }
+  _$AI(t3, i5 = this, s4, e4) {
+    const h3 = this.strings;
+    let o5 = false;
+    if (void 0 === h3) t3 = M(this, t3, i5, 0), o5 = !a2(t3) || t3 !== this._$AH && t3 !== E, o5 && (this._$AH = t3);
+    else {
+      const e5 = t3;
+      let n4, r4;
+      for (t3 = h3[0], n4 = 0; n4 < h3.length - 1; n4++) r4 = M(this, e5[s4 + n4], i5, n4), r4 === E && (r4 = this._$AH[n4]), o5 ||= !a2(r4) || r4 !== this._$AH[n4], r4 === A ? t3 = A : t3 !== A && (t3 += (r4 ?? "") + h3[n4 + 1]), this._$AH[n4] = r4;
+    }
+    o5 && !e4 && this.j(t3);
+  }
+  j(t3) {
+    t3 === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t3 ?? "");
+  }
+};
+var I = class extends H {
+  constructor() {
+    super(...arguments), this.type = 3;
+  }
+  j(t3) {
+    this.element[this.name] = t3 === A ? void 0 : t3;
+  }
+};
+var L = class extends H {
+  constructor() {
+    super(...arguments), this.type = 4;
+  }
+  j(t3) {
+    this.element.toggleAttribute(this.name, !!t3 && t3 !== A);
+  }
+};
+var z = class extends H {
+  constructor(t3, i5, s4, e4, h3) {
+    super(t3, i5, s4, e4, h3), this.type = 5;
+  }
+  _$AI(t3, i5 = this) {
+    if ((t3 = M(this, t3, i5, 0) ?? A) === E) return;
+    const s4 = this._$AH, e4 = t3 === A && s4 !== A || t3.capture !== s4.capture || t3.once !== s4.once || t3.passive !== s4.passive, h3 = t3 !== A && (s4 === A || e4);
+    e4 && this.element.removeEventListener(this.name, this, s4), h3 && this.element.addEventListener(this.name, this, t3), this._$AH = t3;
+  }
+  handleEvent(t3) {
+    "function" == typeof this._$AH ? this._$AH.call(this.options?.host ?? this.element, t3) : this._$AH.handleEvent(t3);
+  }
+};
+var Z = class {
+  constructor(t3, i5, s4) {
+    this.element = t3, this.type = 6, this._$AN = void 0, this._$AM = i5, this.options = s4;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t3) {
+    M(this, t3);
+  }
+};
+var B = t2.litHtmlPolyfillSupport;
+B?.(S2, k), (t2.litHtmlVersions ??= []).push("3.3.3");
+var D = (t3, i5, s4) => {
+  const e4 = s4?.renderBefore ?? i5;
+  let h3 = e4._$litPart$;
+  if (void 0 === h3) {
+    const t4 = s4?.renderBefore ?? null;
+    e4._$litPart$ = h3 = new k(i5.insertBefore(c3(), t4), t4, void 0, s4 ?? {});
+  }
+  return h3._$AI(t3), h3;
+};
+
+// node_modules/lit-element/lit-element.js
+var s3 = globalThis;
+var i4 = class extends y {
+  constructor() {
+    super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
+  }
+  createRenderRoot() {
+    const t3 = super.createRenderRoot();
+    return this.renderOptions.renderBefore ??= t3.firstChild, t3;
+  }
+  update(t3) {
+    const r4 = this.render();
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t3), this._$Do = D(r4, this.renderRoot, this.renderOptions);
+  }
+  connectedCallback() {
+    super.connectedCallback(), this._$Do?.setConnected(true);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback(), this._$Do?.setConnected(false);
+  }
+  render() {
+    return E;
+  }
+};
+i4._$litElement$ = true, i4["finalized"] = true, s3.litElementHydrateSupport?.({ LitElement: i4 });
+var o4 = s3.litElementPolyfillSupport;
+o4?.({ LitElement: i4 });
+(s3.litElementVersions ??= []).push("4.2.2");
+
+// custom_components/vivino_cellar/frontend/src/styles/theme.js
+var tokenStyles = i`
   :host {
-    display: block;
-    font-family: var(--paper-font-body1_-_font-family, Roboto, sans-serif);
-    -webkit-font-smoothing: antialiased;
-    color: var(--primary-text-color, #212121);
-    box-sizing: border-box;
-  }
-
-  *, *:before, *:after {
-    box-sizing: inherit;
-  }
-
-  .card-container {
-    container-type: inline-size;
-    background: var(--ha-card-background, var(--card-background-color, #ffffff));
-    border-radius: var(--ha-card-border-radius, 12px);
-    box-shadow: var(--ha-card-box-shadow, 0 2px 4px rgba(0, 0, 0, 0.1));
-    border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color, #e0e0e0));
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Header */
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--divider-color, #eee);
-  }
-
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .header-icon {
-    width: 32px;
-    height: 32px;
-    color: var(--primary-color, #8b1e3f);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .header-icon ha-icon {
-    --mdc-icon-size: 28px;
-  }
-
-  .header-titles {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .header-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    line-height: 1.3;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .bottle-badge {
-    font-size: 0.75rem;
-    font-weight: 500;
-    background: var(--primary-color, #8b1e3f);
-    color: #fff;
-    padding: 2px 8px;
-    border-radius: 12px;
-  }
-
-  .header-subtitle {
-    font-size: 0.8rem;
-    color: var(--secondary-text-color, #757575);
-    margin-top: 2px;
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .icon-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 50%;
-    color: var(--secondary-text-color, #757575);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, color 0.2s;
-  }
-
-  .icon-button:hover {
-    background: var(--secondary-background-color, rgba(0, 0, 0, 0.05));
-    color: var(--primary-text-color, #212121);
-  }
-
-  .icon-button svg {
-    width: 20px;
-    height: 20px;
-    fill: currentColor;
-  }
-
-  .icon-button.spinning svg {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    100% { transform: rotate(360deg); }
-  }
-
-  /* Error Banner */
-  .error-banner {
-    background-color: var(--error-color, #db4437);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-  }
-
-  .error-banner svg {
-    width: 20px;
-    height: 20px;
-    fill: white;
-    flex-shrink: 0;
-  }
-
-  /* Tabs Bar */
-  .tabs-bar {
-    display: flex;
-    background: var(--secondary-background-color, #f5f5f5);
-    border-radius: 8px;
-    padding: 3px;
-    margin-bottom: 16px;
-    gap: 4px;
-  }
-
-  .tab-btn {
-    flex: 1 1 0;
-    min-width: 0;
-    white-space: nowrap;
-    border: none;
-    background: transparent;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--secondary-text-color, #666);
-    cursor: pointer;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-
-  .tab-btn svg {
-    width: 16px;
-    height: 16px;
-    fill: currentColor;
-  }
-
-  .tab-btn.active {
-    background: var(--ha-card-background, var(--card-background-color, #ffffff));
-    color: var(--primary-color, #8b1e3f);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    font-weight: 600;
-  }
-
-  /* Pairing Tab */
-  .pairing-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .search-input-row {
-    display: flex;
-    gap: 8px;
-  }
-
-  .text-input {
-    flex: 1;
-    padding: 10px 14px;
-    border: 1px solid var(--divider-color, #ccc);
-    border-radius: 8px;
-    font-size: 0.95rem;
-    background: var(--input-fill-color, var(--ha-card-background, #fff));
-    color: var(--primary-text-color, #212121);
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .text-input:focus {
-    border-color: var(--primary-color, #8b1e3f);
-  }
-
-  .primary-btn {
-    background: var(--primary-color, #8b1e3f);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: opacity 0.2s;
-  }
-
-  .primary-btn:hover {
-    opacity: 0.9;
-  }
-
-  .primary-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .chips-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-  }
-
-  .chips-label {
-    font-size: 0.8rem;
-    color: var(--secondary-text-color, #757575);
-    margin-right: 4px;
-  }
-
-  .food-chip {
-    background: var(--secondary-background-color, #f0f0f0);
-    color: var(--primary-text-color, #333);
-    border: 1px solid var(--divider-color, #e0e0e0);
-    border-radius: 16px;
-    padding: 4px 12px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .food-chip:hover {
-    background: var(--divider-color, #e0e0e0);
-  }
-
-  .food-chip.selected {
-    background: var(--primary-color, #8b1e3f);
-    color: #fff;
-    border-color: var(--primary-color, #8b1e3f);
-  }
-
-  .reset-link {
-    font-size: 0.8rem;
-    color: var(--primary-color, #8b1e3f);
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-decoration: underline;
-    padding: 4px 6px;
-  }
-
-  /* Wine Card */
-  .wine-card-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .wine-card {
-    border: 1px solid var(--divider-color, #e4e4e4);
-    border-radius: 10px;
-    padding: 12px;
-    background: var(--ha-card-background, var(--card-background-color, #ffffff));
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    transition: box-shadow 0.2s ease;
-  }
-
-  .wine-card:hover {
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-  }
-
-  .wine-thumb {
-    width: 60px;
-    height: 80px;
-    object-fit: contain;
-    border-radius: 4px;
-    background: #fdfdfd;
-    flex-shrink: 0;
-  }
-
-  .wine-thumb-placeholder {
-    width: 60px;
-    height: 80px;
-    background: var(--secondary-background-color, #f0f0f0);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--secondary-text-color, #999);
-    flex-shrink: 0;
-  }
-
-  .wine-thumb-placeholder svg {
-    width: 32px;
-    height: 32px;
-    fill: currentColor;
-  }
-
-  .wine-details {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .wine-title {
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.25;
-  }
-
-  .wine-subtitle {
-    font-size: 0.85rem;
-    color: var(--secondary-text-color, #666);
-  }
-
-  .wine-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 4px 0;
-    align-items: center;
-  }
-
-  .badge {
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 4px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .badge svg {
-    width: 12px;
-    height: 12px;
-    fill: currentColor;
-    flex-shrink: 0;
-  }
-
-  .badge-rating {
-    background: #fff8e1;
-    color: #b78103;
-    border: 1px solid #ffe082;
-  }
-
-  /* Window Badges */
-  .badge-ready {
-    background: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #c8e6c9;
-  }
-
-  .badge-near_past_peak {
-    background: #fff3e0;
-    color: #e65100;
-    border: 1px solid #ffe0b2;
-  }
-
-  .badge-can_wait {
-    background: #e0f2f1;
-    color: #00695c;
-    border: 1px solid #b2dfdb;
-  }
-
-  .badge-hold {
-    background: #e3f2fd;
-    color: #1565c0;
-    border: 1px solid #bbdefb;
-  }
-
-  .badge-past_peak {
-    background: #ffebee;
-    color: #c62828;
-    border: 1px solid #ffcdd2;
-  }
-
-  .badge-unknown {
-    background: #f5f5f5;
-    color: #757575;
-    border: 1px solid #e0e0e0;
-  }
-
-  .pairing-reason {
-    font-size: 0.82rem;
-    background: var(--secondary-background-color, #f9f9f9);
-    padding: 6px 10px;
-    border-radius: 6px;
-    border-left: 3px solid var(--primary-color, #8b1e3f);
-    margin-top: 4px;
-    line-height: 1.35;
-    color: var(--primary-text-color, #333);
-  }
-
-  /* Bottles Inventory list */
-  .bottles-list {
-    margin-top: 6px;
-    border-top: 1px dashed var(--divider-color, #eee);
-    padding-top: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .bottle-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    color: var(--secondary-text-color, #555);
-  }
-
-  .bottle-loc {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .bottle-loc svg {
-    width: 14px;
-    height: 14px;
-    fill: currentColor;
-  }
-
-  .drink-btn {
-    background: transparent;
-    border: 1px solid var(--primary-color, #8b1e3f);
-    color: var(--primary-color, #8b1e3f);
-    border-radius: 6px;
-    padding: 3px 8px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    transition: all 0.2s;
-  }
-
-  .drink-btn svg {
-    width: 12px;
-    height: 12px;
-    fill: currentColor;
-  }
-
-  .drink-btn:hover {
-    background: var(--primary-color, #8b1e3f);
-    color: #fff;
-  }
-
-  /* Drinking Windows Tab */
-  .cellar-tab {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .filter-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 8px;
-  }
-
-  .filter-select {
-    min-width: 0;
-    padding: 8px 10px;
-    border: 1px solid var(--divider-color, #ccc);
-    border-radius: 8px;
-    font: inherit;
-    font-size: 0.85rem;
-    background: var(--input-fill-color, var(--ha-card-background, #fff));
-    color: var(--primary-text-color, #212121);
-    cursor: pointer;
-  }
-
-  /* Sort is not a filter: own row, never truncated. */
-  .filter-select[data-filter="sort"] {
-    grid-column: 1 / -1;
-  }
-
-  .filter-select.active {
-    border-color: var(--primary-color, #8b1e3f);
-    box-shadow: inset 0 0 0 1px var(--primary-color, #8b1e3f);
-  }
-
-  .result-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: var(--secondary-text-color, #757575);
-  }
-
-  .btn-link {
-    background: none;
-    border: none;
-    padding: 4px 0;
-    font: inherit;
-    color: var(--primary-color, #8b1e3f);
-    cursor: pointer;
-    text-decoration: underline;
-  }
-
-  .cellar-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .search-filter-row {
-    display: flex;
-    gap: 8px;
-  }
-
-  .status-chips-summary {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-
-  .status-chip {
-    padding: 4px 10px;
-    border-radius: 14px;
-    font: inherit;
-    font-size: 0.8rem;
-    font-weight: 500;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: opacity 0.15s ease;
-  }
-
-  .status-chip:disabled {
-    cursor: default;
-    opacity: 0.45;
-  }
-
-  .status-chips-summary.filtering .status-chip:not(.active) {
-    opacity: 0.45;
-  }
-
-  .status-chip.active {
-    border-color: currentColor;
-  }
-
-  .group-section {
-    border: 1px solid var(--divider-color, #e0e0e0);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 10px;
-  }
-
-  .group-header {
-    background: var(--secondary-background-color, #fafafa);
-    padding: 10px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.92rem;
-    user-select: none;
-  }
-
-  .group-header:hover {
-    background: var(--divider-color, #f0f0f0);
-  }
-
-  .group-header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .group-count {
-    background: rgba(0, 0, 0, 0.08);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
-
-  .group-chevron svg {
-    width: 18px;
-    height: 18px;
-    fill: currentColor;
-    transition: transform 0.2s;
-  }
-
-  .group-chevron.open svg {
-    transform: rotate(180deg);
-  }
-
-  .group-wines-content {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 10px;
-  }
-
-  /* Empty / Loading States */
-  .empty-state {
-    text-align: center;
-    padding: 30px 16px;
-    color: var(--secondary-text-color, #888);
-    font-size: 0.9rem;
-  }
-
-  .spinner-box {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 40px 16px;
-    gap: 10px;
-    color: var(--secondary-text-color, #777);
-  }
-
-  .spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid rgba(0, 0, 0, 0.1);
-    border-radius: 50%;
-    border-top-color: var(--primary-color, #8b1e3f);
-    animation: spin 0.8s linear infinite;
-  }
-
-  /* Modal Backdrop & Dialog */
-  /* Native <dialog> shown with showModal(): it lives in the top layer, so a
-     transformed parent (Bubble Card popup) cannot push it out of view. The
-     dialog fills the screen; clicks on its padding count as backdrop clicks. */
-  dialog.modal-layer {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    max-height: none;
-    margin: 0;
-    padding: 16px;
-    box-sizing: border-box;
-    border: none;
-    background: transparent;
-    color: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  dialog.modal-layer:not([open]) {
-    display: none;
-  }
-
-  dialog.modal-layer::backdrop {
-    background: rgba(0, 0, 0, 0.5);
-  }
-
-  .modal-dialog {
-    background: var(--ha-card-background, var(--card-background-color, #ffffff));
-    border-radius: 14px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    max-width: 440px;
-    width: 100%;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .modal-header {
-    padding: 16px;
-    border-bottom: 1px solid var(--divider-color, #eee);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-
-  .modal-header svg {
-    width: 24px;
-    height: 24px;
-    fill: var(--primary-color, #8b1e3f);
-  }
-
-  /* Wine detail sheet */
-  .wine-card.clickable {
-    cursor: pointer;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .wine-card.clickable:hover {
-    border-color: var(--primary-color, #8b1e3f);
-  }
-
-  .wine-card.clickable:focus-visible {
-    outline: 2px solid var(--primary-color, #8b1e3f);
+    --vc-gap: 12px;
+    --vc-radius: var(--ha-card-border-radius, 12px);
+    --vc-radius-sm: 8px;
+    --vc-control-height: 40px;
+    --vc-button-height: 36px;
+    --vc-font: var(--ha-font-family-body, Roboto, system-ui, sans-serif);
+    --vc-text: var(--primary-text-color, #212121);
+    --vc-muted: var(--secondary-text-color, #727272);
+    --vc-divider: var(--divider-color, rgba(0, 0, 0, 0.12));
+    --vc-surface: var(--card-background-color, var(--ha-card-background, #fff));
+    --vc-surface-2: var(--secondary-background-color, #f5f5f5);
+    --vc-accent: var(--primary-color, #03a9f4);
+    --vc-on-accent: var(--text-primary-color, #fff);
+    --vc-tint: 12%;
+
+    /* Status colours, light theme */
+    --vc-status-near_past_peak: #b26a00;
+    --vc-status-ready: #2e7d32;
+    --vc-status-can_wait: #00796b;
+    --vc-status-hold: #1565c0;
+    --vc-status-past_peak: #c62828;
+    --vc-status-unknown: #757575;
+    --vc-star: #f5a623;
+
+  }
+
+  /* Status colours, dark theme (set by the root from hass.themes.darkMode) */
+  :host([dark]) {
+    --vc-status-near_past_peak: #ffb74d;
+    --vc-status-ready: #81c784;
+    --vc-status-can_wait: #4db6ac;
+    --vc-status-hold: #64b5f6;
+    --vc-status-past_peak: #ef5350;
+    --vc-status-unknown: #9e9e9e;
+    --vc-tint: 18%;
+  }
+
+`;
+var themeStyles = i`
+  :host {
+    font-family: var(--vc-font, Roboto, sans-serif);
+    color: var(--vc-text, inherit);
+  }
+
+  .s-near_past_peak { --vc-edge: var(--vc-status-near_past_peak); }
+  .s-ready { --vc-edge: var(--vc-status-ready); }
+  .s-can_wait { --vc-edge: var(--vc-status-can_wait); }
+  .s-hold { --vc-edge: var(--vc-status-hold); }
+  .s-past_peak { --vc-edge: var(--vc-status-past_peak); }
+  .s-unknown { --vc-edge: var(--vc-status-unknown); }
+
+  * { box-sizing: border-box; }
+
+  button, input, select, textarea { font: inherit; color: inherit; }
+
+  :focus-visible {
+    outline: 2px solid var(--vc-accent);
     outline-offset: 2px;
   }
 
-  .detail-sheet {
-    max-width: 520px;
-    max-height: calc(100vh - 32px);
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: var(--vc-button-height);
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid var(--vc-divider);
+    background: transparent;
+    color: var(--vc-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn[disabled] { opacity: 0.45; cursor: default; }
+  .btn-primary { background: var(--vc-accent); border-color: var(--vc-accent); color: var(--vc-on-accent); }
+  .btn-link { border: none; background: none; padding: 0; height: auto; color: var(--vc-accent); text-decoration: underline; }
+  .btn ha-icon { --mdc-icon-size: 18px; }
+
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--vc-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex: none;
+  }
+  .icon-btn:hover { background: var(--vc-surface-2); }
+
+  .input, .select {
+    height: var(--vc-control-height);
+    width: 100%;
+    min-width: 0;
+    padding: 0 12px;
+    border-radius: var(--vc-radius-sm);
+    border: 1px solid var(--vc-divider);
+    background: var(--vc-surface);
+    color: var(--vc-text);
+    font-size: 14px;
+  }
+  .select { cursor: pointer; }
+  .select.active { border-color: var(--vc-accent); color: var(--vc-accent); }
+  textarea.input { height: auto; padding: 10px 12px; resize: vertical; }
+
+  .chip {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: var(--vc-button-height);
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--vc-divider);
+    background: var(--vc-surface);
+    color: var(--vc-text);
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .chip[aria-pressed="true"] {
+    border-color: var(--vc-accent);
+    color: var(--vc-accent);
+    background: color-mix(in srgb, var(--vc-accent) var(--vc-tint), transparent);
+    font-weight: 600;
   }
 
-  .detail-sheet .modal-body {
-    overflow-y: auto;
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 999px;
+    color: var(--vc-edge, var(--vc-muted));
+    background: color-mix(in srgb, var(--vc-edge, var(--vc-muted)) var(--vc-tint), transparent);
   }
+  .badge ha-icon { --mdc-icon-size: 14px; }
 
-  .detail-hero {
-    display: flex;
-    gap: 16px;
-    padding: 16px;
-    border-bottom: 1px solid var(--divider-color, #eee);
+  .muted { color: var(--vc-muted); }
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--vc-muted);
+    margin: 4px 4px 6px;
   }
+  .empty { padding: 24px 8px; text-align: center; color: var(--vc-muted); }
 
-  .detail-image {
-    width: 72px;
-    height: 108px;
-    object-fit: contain;
-    flex-shrink: 0;
-    border-radius: 8px;
-    background: #fff;
-  }
-
-  .detail-image.placeholder {
+  .bottle-placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--secondary-background-color, #f5f5f5);
-    color: var(--secondary-text-color, #757575);
-  }
-
-  .detail-image.placeholder svg {
-    width: 32px;
-    height: 32px;
-    fill: currentColor;
-  }
-
-  .detail-heading {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
-  }
-
-  .detail-list {
-    margin: 0;
-    display: grid;
-    gap: 10px;
-  }
-
-  .detail-row {
-    display: grid;
-    grid-template-columns: 110px 1fr;
-    gap: 8px;
-    font-size: 0.9rem;
-  }
-
-  .detail-row dt {
-    color: var(--secondary-text-color, #757575);
-  }
-
-  .detail-row dd {
-    margin: 0;
-    color: var(--primary-text-color, #212121);
-    overflow-wrap: anywhere;
-  }
-
-  .muted {
-    color: var(--secondary-text-color, #757575);
-  }
-
-  .rating-section {
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 1px solid var(--divider-color, #eee);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .rating-title {
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
-
-  .rating-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .star-picker {
-    display: flex;
-    gap: 2px;
-  }
-
-  /* One star, split into two tap targets: left half and right half. */
-  .star-slot {
-    position: relative;
-    width: 34px;
-    height: 34px;
-  }
-
-  .star-icon,
-  .star-fill {
-    position: absolute;
-    inset: 0;
-    display: block;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  .star-icon svg,
-  .star-fill svg {
-    width: 34px;
-    height: 34px;
-  }
-
-  .star-icon svg {
-    fill: var(--divider-color, #ddd);
-  }
-
-  .star-fill svg {
-    fill: #f5a623;
-  }
-
-  .star-half {
-    position: absolute;
-    top: 0;
-    width: 50%;
-    height: 100%;
-    padding: 0;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-  }
-
-  .star-half.left {
-    left: 0;
-  }
-
-  .star-half.right {
-    right: 0;
-  }
-
-  .star-half:disabled {
-    cursor: default;
-  }
-
-  .star-half:focus-visible {
-    outline: 2px solid var(--primary-color, #8b1e3f);
-    outline-offset: -2px;
-    border-radius: 4px;
-  }
-
-  .rating-value {
-    font-weight: 600;
-    min-width: 2ch;
-  }
-
-  .rating-note {
-    resize: vertical;
-    font: inherit;
-  }
-
-  .rating-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: 0.85rem;
-  }
-
-  .rating-actions .drink-btn {
-    margin-left: auto;
-  }
-
-  .rating-actions .drink-btn:disabled {
-    opacity: 0.45;
-    cursor: default;
-  }
-
-  .rating-ok {
-    color: #2e7d32;
-  }
-
-  .rating-error {
-    color: var(--error-color, #c62828);
-  }
-
-  .detail-actions {
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .detail-buttons {
-    display: flex;
-    gap: 8px;
-    margin-left: auto;
-  }
-
-  @container (max-width: 420px) {
-    .detail-row {
-      grid-template-columns: 1fr;
-      gap: 2px;
-    }
-  }
-
-  .modal-body {
-    padding: 16px;
-    font-size: 0.9rem;
-    line-height: 1.4;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .modal-wine-info {
-    background: var(--secondary-background-color, #f9f9f9);
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-  }
-
-  .modal-footer {
-    padding: 12px 16px;
-    border-top: 1px solid var(--divider-color, #eee);
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    background: var(--secondary-background-color, #fafafa);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    border: 1px solid var(--divider-color, #ccc);
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    color: var(--primary-text-color, #333);
-  }
-
-  .btn-secondary:hover {
-    background: var(--divider-color, #eee);
-  }
-
-  .btn-danger {
-    background: var(--error-color, #c62828);
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .btn-danger:hover {
-    opacity: 0.9;
-  }
-
-  .btn-danger:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Nu drinken */
-  .now-tab {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .hint-banner,
-  .warning-banner {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    background: #fff3e0;
-    color: #e65100;
-    border: 1px solid #ffe0b2;
-    text-align: left;
-  }
-
-  .warning-banner {
-    margin: 0 16px 12px;
-  }
-
-  .hint-banner {
-    cursor: pointer;
-    font: inherit;
-    font-size: 0.85rem;
-  }
-
-  .hint-banner:hover {
-    background: #ffe0b2;
-  }
-
-  .hint-banner svg,
-  .warning-banner svg {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    fill: currentColor;
-  }
-
-  /* Bottles summary: one action per wine */
-  .bottle-summary {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 8px;
-    font-size: 0.8rem;
-    color: var(--secondary-text-color, #555);
-  }
-
-  .bottle-spots {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-  }
-
-  .drink-btn {
-    flex-shrink: 0;
-  }
-
-  /* Location picker */
-  .spot-options {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 12px;
-  }
-
-  .spot-option {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    border: 1px solid var(--divider-color, #ddd);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--primary-text-color, #212121);
-    font: inherit;
-    font-size: 0.9rem;
-    cursor: pointer;
-    text-align: left;
-  }
-
-  .spot-option:hover {
-    border-color: var(--primary-color, #8b1e3f);
-    color: var(--primary-color, #8b1e3f);
-  }
-
-  .spot-option span:first-child {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .spot-option svg {
-    width: 16px;
-    height: 16px;
-    fill: currentColor;
-  }
-
-  .spot-count {
-    font-weight: 600;
-  }
-
-  /* Undo / error toasts */
-  .toast-stack {
-    position: fixed;
-    left: 50%;
-    bottom: 16px;
-    transform: translateX(-50%);
-    width: min(440px, calc(100vw - 32px));
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 1000;
-  }
-
-  .toast {
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: #323232;
-    color: #fff;
-    font-size: 0.9rem;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-  }
-
-  .toast svg {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    fill: currentColor;
-  }
-
-  .toast-error {
-    background: var(--error-color, #c62828);
-  }
-
-  .toast-text {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .toast-action {
-    background: transparent;
-    border: none;
-    color: #ffcc80;
-    font: inherit;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    cursor: pointer;
-    padding: 4px 6px;
-    flex-shrink: 0;
-  }
-
-  .toast-error .toast-action {
-    color: #fff;
-  }
-
-  .toast-progress {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    height: 3px;
-    width: 100%;
-    background: #ffcc80;
-    transform-origin: left;
-    animation-name: toast-countdown;
-    animation-timing-function: linear;
-    animation-fill-mode: forwards;
-  }
-
-  @keyframes toast-countdown {
-    from { transform: scaleX(1); }
-    to { transform: scaleX(0); }
-  }
-
-  /* Narrow cards (phone, small dashboard column) */
-  @container (max-width: 420px) {
-    .tab-btn {
-      padding: 8px 4px;
-      font-size: 0.82rem;
-    }
-
-    .tab-btn svg {
-      display: none;
-    }
+    background: var(--vc-surface-2);
+    color: var(--vc-muted);
+    border-radius: var(--vc-radius-sm);
   }
 `;
 
-// custom_components/vivino_cellar/frontend/src/vivino-cellar-card.js
-var ICON_BOTTLE = `<svg viewBox="0 0 24 24"><path d="M12,2A2,2 0 0,0 10,4V5.17C7.61,6.58 6,9.1 6,12V20A2,2 0 0,0 8,22H16A2,2 0 0,0 18,20V12C18,9.1 16.39,6.58 14,5.17V4A2,2 0 0,0 12,2M12,4A0,0 0 0,1 12,4V5H12V4M8,12C8,9.79 9.79,8 12,8C14.21,8 16,9.79 16,12V20H8V12Z" /></svg>`;
-var ICON_GLASS = `<svg viewBox="0 0 24 24"><path d="M5,2H19V4L13,10V18H18V20H6V18H11V10L5,4V2M7.4,4L10.4,7H13.6L16.6,4H7.4Z" /></svg>`;
-var ICON_REFRESH = `<svg viewBox="0 0 24 24"><path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" /></svg>`;
-var ICON_SEARCH = `<svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>`;
-var ICON_STAR = `<svg viewBox="0 0 24 24"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" /></svg>`;
-var ICON_LOCATION = `<svg viewBox="0 0 24 24"><path d="M12,2C15.31,2 18,4.66 18,7.95C18,12.41 12,19 12,19C12,19 6,12.41 6,7.95C6,4.66 8.69,2 12,2M12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8A2,2 0 0,0 12,6Z" /></svg>`;
-var ICON_CHEVRON = `<svg viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg>`;
-var ICON_ALERT = `<svg viewBox="0 0 24 24"><path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z" /></svg>`;
-var ICON_CLOCK = `<svg viewBox="0 0 24 24"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" /></svg>`;
-var STATUS_LABELS = {
-  ready: "Op dronk",
-  can_wait: "Kan nog liggen",
-  near_past_peak: "Binnenkort drinken",
-  hold: "Nog wegleggen",
-  past_peak: "Voorbij piek",
-  unknown: "Venster onbekend"
+// custom_components/vivino_cellar/frontend/src/components/events.js
+function fire(el, type, detail = {}) {
+  el.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
+}
+
+// custom_components/vivino_cellar/frontend/src/components/toast-stack.js
+var VcToastStack = class extends i4 {
+  constructor() {
+    super();
+    this.pending = [];
+    this.errors = [];
+    this.undoMs = 8e3;
+  }
+  render() {
+    const undoable = this.pending.filter(([, p3]) => !p3.committing);
+    if (!undoable.length && !this.errors.length) return b2``;
+    const now = Date.now();
+    return b2`
+      <div class="stack" role="status" aria-live="polite">
+        ${this.errors.map(
+      (e4) => b2`
+            <div class="toast error">
+              <ha-icon icon="mdi:alert"></ha-icon>
+              <span class="text">${e4.message}</span>
+              <button class="action" @click=${() => fire(this, "vc-dismiss-error", { id: e4.id })}>
+                Sluiten
+              </button>
+            </div>
+          `
+    )}
+        ${undoable.map(
+      ([id, p3]) => b2`
+            <div class="toast">
+              <ha-icon icon="mdi:glass-wine"></ha-icon>
+              <span class="text">Ontkurkt: ${p3.label}</span>
+              <button class="action" @click=${() => fire(this, "vc-undo", { bottleId: id })}>
+                Ongedaan maken
+              </button>
+              <div
+                class="progress"
+                style="animation-duration:${this.undoMs}ms;animation-delay:-${Math.min(
+        now - p3.startedAt,
+        this.undoMs
+      )}ms"
+              ></div>
+            </div>
+          `
+    )}
+      </div>
+    `;
+  }
 };
+__publicField(VcToastStack, "properties", {
+  pending: { attribute: false },
+  // [[bottleId, {label, startedAt, committing}]]
+  errors: { attribute: false },
+  // [{id, message}]
+  undoMs: { type: Number }
+});
+__publicField(VcToastStack, "styles", [
+  themeStyles,
+  i`
+      .stack {
+        position: fixed;
+        left: 50%;
+        bottom: 16px;
+        transform: translateX(-50%);
+        width: min(440px, calc(100vw - 32px));
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 10;
+      }
+      .toast {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: var(--vc-radius-sm);
+        background: var(--vc-text);
+        color: var(--vc-surface);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        font-size: 14px;
+      }
+      .toast.error { background: var(--vc-status-past_peak); color: #fff; }
+      .text { flex: 1; min-width: 0; }
+      .action {
+        border: none;
+        background: none;
+        color: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 6px;
+        text-decoration: underline;
+      }
+      .progress {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 3px;
+        width: 100%;
+        background: var(--vc-accent);
+        transform-origin: left;
+        animation-name: shrink;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
+      }
+      @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+    `
+]);
+if (!customElements.get("vc-toast-stack")) customElements.define("vc-toast-stack", VcToastStack);
+
+// custom_components/vivino_cellar/frontend/src/logic/status.js
 var STATUS_ORDER = ["near_past_peak", "ready", "can_wait", "hold", "past_peak", "unknown"];
-var DEFAULT_TABS = ["now", "pairing", "cellar"];
-var TAB_ALIASES = { windows: "cellar" };
-var WINE_TYPES = {
-  1: "Rood",
-  2: "Wit",
-  3: "Mousserend",
-  4: "Ros\xE9",
-  7: "Dessert",
-  24: "Versterkt"
+
+// custom_components/vivino_cellar/frontend/src/logic/filters.js
+var EMPTY_FILTERS = {
+  type: "",
+  country: "",
+  region: "",
+  grape: "",
+  minBottles: 0,
+  sort: "status"
 };
-var SORTS = {
-  status: "Drinkvenster",
-  drink_by: "Drinken voor",
-  rating: "Beoordeling",
-  vintage: "Jaargang (oud eerst)",
-  bottles: "Aantal flessen",
-  name: "Naam"
-};
-var MIN_BOTTLES = [0, 2, 3, 6];
-var EMPTY_FILTERS = { type: "", country: "", region: "", grape: "", minBottles: 0, sort: "status" };
-var NOW_LIMIT = 5;
-var UNDO_MS = 8e3;
-var ERROR_TOAST_MS = 8e3;
-function esc(value) {
-  return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-}
-function safeUrl(url) {
-  if (!url) return null;
-  const full = String(url).startsWith("//") ? `https:${url}` : String(url);
-  return /^https?:\/\//i.test(full) ? full : null;
-}
+
+// custom_components/vivino_cellar/frontend/src/logic/util.js
 function bottleId(bottle) {
   return bottle.bottle_id ?? bottle.id;
 }
@@ -1262,276 +857,255 @@ function vintageId(wine) {
 }
 function bottleSpots(bottles) {
   const spots = /* @__PURE__ */ new Map();
-  for (const b of bottles) {
-    const location = b.location_name || "Kelder";
-    const key = JSON.stringify([location, b.bin || null]);
-    if (!spots.has(key)) spots.set(key, { location, bin: b.bin || null, bottles: [] });
-    spots.get(key).bottles.push(b);
+  for (const b3 of bottles || []) {
+    const location = b3.location_name || "Kelder";
+    const bin = b3.bin || null;
+    const key = JSON.stringify([location, bin]);
+    if (!spots.has(key)) spots.set(key, { location, bin, bottles: [] });
+    spots.get(key).bottles.push(b3);
   }
   return [...spots.values()];
 }
-var VivinoCellarCard = class extends HTMLElement {
+function viewWines(wines, pendingIds) {
+  return (wines || []).map((wine) => {
+    const bottles = (wine.bottles || []).filter((b3) => !pendingIds.has(bottleId(b3)));
+    return { ...wine, bottles, bottle_count: bottles.length };
+  });
+}
+
+// custom_components/vivino_cellar/frontend/src/vivino-cellar-card.js
+var DEFAULT_TABS = ["now", "pairing", "cellar"];
+var TAB_ALIASES = { windows: "cellar" };
+var TAB_LABELS = { now: "Nu drinken", pairing: "Wijn & Spijs", cellar: "Kelder" };
+var DEFAULT_TITLE = "Wijnkelder";
+var DEFAULT_NOW_LIMIT = 5;
+var UNDO_MS = 8e3;
+var ERROR_TOAST_MS = 8e3;
+var VivinoCellarCard = class extends i4 {
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
-    this._hass = null;
-    this._config = {
-      default_tab: "now",
-      tabs: DEFAULT_TABS
-    };
-    this._currentTab = "now";
-    this._cellarData = null;
+    this._config = this._parseConfig({});
+    this._tab = this._config.default_tab;
+    this._data = null;
     this._loading = false;
     this._error = null;
     this._refreshing = false;
-    this._unsubscribe = null;
-    this._subscribing = false;
-    this._dishInput = "";
-    this._selectedFoodIds = /* @__PURE__ */ new Set();
-    this._pairingResults = null;
-    this._pairingLoading = false;
-    this._pairingError = null;
-    this._searchQuery = "";
-    this._statusFilter = null;
-    this._filters = { ...EMPTY_FILTERS };
-    this._expandedGroups = {
-      near_past_peak: true,
-      ready: true,
-      can_wait: false,
-      hold: false,
-      past_peak: false,
-      unknown: false
-    };
-    this._pendingDrinks = /* @__PURE__ */ new Map();
-    this._drinkErrors = [];
-    this._spotPicker = null;
-    this._detailWine = null;
+    this._pending = /* @__PURE__ */ new Map();
+    this._errors = [];
+    this._detailId = null;
+    this._pickerId = null;
     this._myRatings = /* @__PURE__ */ new Map();
     this._ratingDraft = null;
-    this._wineIndex = /* @__PURE__ */ new Map();
-    this._onPageHide = () => this._flushPendingDrinks();
-    this._onKeyDown = (e) => {
-      if (e.key !== "Escape" || this._detailWine === null && this._spotPicker === null) return;
-      this._closeModals();
+    this._statusFilter = null;
+    this._filters = { ...EMPTY_FILTERS };
+    this._query = "";
+    this._expanded = { near_past_peak: true, ready: true, can_wait: false, hold: false, past_peak: false, unknown: false };
+    this._chip = null;
+    this._chipTouched = false;
+    this._pairing = { dish: "", foodIds: /* @__PURE__ */ new Set(), results: null, loading: false, error: null };
+    this._unsubscribe = null;
+    this._subscribing = false;
+    this._onPageHide = () => this._flushPending();
+    this._onKeyDown = (e4) => {
+      if (e4.key === "Escape" && (this._pickerId !== null || this._detailId !== null)) this._closeModal();
     };
+    this._listen();
   }
+  // ---------------------------------------------------------------------------
+  // Card API
+  // ---------------------------------------------------------------------------
   setConfig(config) {
-    if (!config) {
-      throw new Error("Invalid configuration");
-    }
-    this._config = {
-      default_tab: config.default_tab || "now",
+    if (!config) throw new Error("Invalid configuration");
+    this._config = this._parseConfig(config);
+    this._tab = this._config.tabs.includes(this._config.default_tab) ? this._config.default_tab : this._config.tabs[0];
+  }
+  _parseConfig(config) {
+    const tabs = (Array.isArray(config.tabs) && config.tabs.length ? config.tabs : DEFAULT_TABS).map((t3) => TAB_ALIASES[t3] || t3).filter((t3) => TAB_LABELS[t3]);
+    return {
       ...config,
-      tabs: (Array.isArray(config.tabs) && config.tabs.length > 0 ? config.tabs : DEFAULT_TABS).map(
-        (t) => TAB_ALIASES[t] || t
-      ),
+      tabs: tabs.length ? tabs : DEFAULT_TABS,
       default_tab: TAB_ALIASES[config.default_tab] || config.default_tab || "now"
     };
-    this._currentTab = this._config.tabs.includes(this._config.default_tab) ? this._config.default_tab : this._config.tabs[0];
-    this._render();
-  }
-  set hass(hass) {
-    const firstHass = !this._hass && hass;
-    this._hass = hass;
-    if (firstHass && this.isConnected) {
-      this._subscribe();
-    }
-  }
-  connectedCallback() {
-    window.addEventListener("pagehide", this._onPageHide);
-    window.addEventListener("keydown", this._onKeyDown);
-    if (this._hass) this._subscribe();
-    this._render();
-  }
-  disconnectedCallback() {
-    window.removeEventListener("pagehide", this._onPageHide);
-    window.removeEventListener("keydown", this._onKeyDown);
-    this._flushPendingDrinks();
-    this._unsubscribeUpdates();
   }
   getCardSize() {
     return 6;
   }
+  static getStubConfig() {
+    return {};
+  }
+  get title() {
+    return this._config.title || this._data?.settings?.title || DEFAULT_TITLE;
+  }
+  get nowLimit() {
+    const n4 = Number(this._config.now_limit) || Number(this._data?.settings?.now_limit);
+    return n4 > 0 ? n4 : DEFAULT_NOW_LIMIT;
+  }
   // ---------------------------------------------------------------------------
-  // Data loading & live updates
+  // Lifecycle and data
   // ---------------------------------------------------------------------------
-  async _subscribe() {
-    if (!this._hass || this._unsubscribe || this._subscribing) return;
-    this._subscribing = true;
-    if (!this._cellarData) {
-      this._loading = true;
-      this._render();
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener("pagehide", this._onPageHide);
+    window.addEventListener("keydown", this._onKeyDown);
+    if (this.hass) this._subscribe();
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener("pagehide", this._onPageHide);
+    window.removeEventListener("keydown", this._onKeyDown);
+    this._flushPending();
+    this._unsubscribeUpdates();
+  }
+  willUpdate(changed) {
+    if (changed.has("hass") && this.hass) {
+      this.toggleAttribute("dark", Boolean(this.hass.themes?.darkMode));
+      if (this.isConnected) this._subscribe();
     }
+  }
+  async _subscribe() {
+    if (!this.hass || this._unsubscribe || this._subscribing) return;
+    this._subscribing = true;
+    if (!this._data) this._loading = true;
     try {
-      this._unsubscribe = await this._hass.connection.subscribeMessage(
+      this._unsubscribe = await this.hass.connection.subscribeMessage(
         (data) => {
-          this._cellarData = data;
+          this._data = data;
           this._loading = false;
           this._error = null;
-          this._render();
         },
         { type: "vivino_cellar/subscribe" }
       );
       if (!this.isConnected) this._unsubscribeUpdates();
-    } catch (err) {
-      await this._loadCellarData();
+    } catch {
+      await this._loadOnce();
     } finally {
       this._subscribing = false;
     }
   }
   _unsubscribeUpdates() {
-    if (this._unsubscribe) {
-      const unsub = this._unsubscribe;
-      this._unsubscribe = null;
-      Promise.resolve(unsub()).catch(() => {
-      });
-    }
+    if (!this._unsubscribe) return;
+    const unsub = this._unsubscribe;
+    this._unsubscribe = null;
+    Promise.resolve(unsub()).catch(() => {
+    });
   }
-  async _loadCellarData() {
-    if (!this._hass) return;
+  async _loadOnce() {
+    if (!this.hass) return;
     this._loading = true;
-    this._error = null;
-    this._render();
     try {
-      this._cellarData = await this._hass.callWS({ type: "vivino_cellar/cellar" });
-    } catch (err) {
-      this._error = err.message || "Fout bij ophalen van keldergegevens.";
-    } finally {
-      this._loading = false;
-      this._render();
-    }
-  }
-  async _handleRefresh() {
-    if (!this._hass || this._refreshing) return;
-    this._refreshing = true;
-    this._render();
-    try {
-      await this._hass.callWS({ type: "vivino_cellar/refresh" });
-      if (!this._unsubscribe) {
-        this._cellarData = await this._hass.callWS({ type: "vivino_cellar/cellar" });
-      }
+      this._data = await this.hass.callWS({ type: "vivino_cellar/cellar" });
       this._error = null;
     } catch (err) {
-      this._error = err.message || "Fout bij vernieuwen van kelder.";
+      this._error = err?.message || "Fout bij ophalen van keldergegevens.";
+    } finally {
+      this._loading = false;
+    }
+  }
+  async _refresh() {
+    if (!this.hass || this._refreshing) return;
+    this._refreshing = true;
+    try {
+      await this.hass.callWS({ type: "vivino_cellar/refresh" });
+      if (!this._unsubscribe) this._data = await this.hass.callWS({ type: "vivino_cellar/cellar" });
+      this._error = null;
+    } catch (err) {
+      this._error = err?.message || "Fout bij vernieuwen van kelder.";
     } finally {
       this._refreshing = false;
-      this._render();
     }
   }
-  /** Cellar wines with pending (undoable) drinks already taken out, plus counts. */
-  _viewData() {
-    const data = this._cellarData || {};
-    const wines = (data.wines || []).map((wine) => this._withoutPending(wine));
-    const counts = Object.fromEntries(STATUS_ORDER.map((s) => [s, 0]));
-    let total = 0;
-    for (const wine of wines) {
-      const n = wine.bottles.length;
-      total += n;
-      counts[wine.window_status || "unknown"] = (counts[wine.window_status || "unknown"] || 0) + n;
-    }
-    return { wines, counts, total };
+  /** Wines with bottles of pending (undoable) drinks hidden. */
+  get _wines() {
+    return viewWines(this._data?.wines, new Set(this._pending.keys()));
   }
-  _withoutPending(wine) {
-    const bottles = (wine.bottles || []).filter((b) => !this._pendingDrinks.has(bottleId(b)));
-    return { ...wine, bottles, bottle_count: bottles.length };
-  }
-  // ---------------------------------------------------------------------------
-  // Pairing
-  // ---------------------------------------------------------------------------
-  async _handlePairingSearch() {
-    if (!this._hass) return;
-    const dish = this._dishInput.trim();
-    const foodIds = Array.from(this._selectedFoodIds);
-    if (!dish && foodIds.length === 0) {
-      this._pairingResults = null;
-      this._pairingError = "Voer een gerecht in of kies een categorie.";
-      this._render();
-      return;
-    }
-    this._pairingLoading = true;
-    this._pairingError = null;
-    this._render();
-    try {
-      const payload = { type: "vivino_cellar/pairing" };
-      if (dish) {
-        payload.dish = dish;
-      } else {
-        payload.food_ids = foodIds;
-      }
-      const res = await this._hass.callWS(payload);
-      this._pairingResults = res.matches || res.pairings || [];
-    } catch (err) {
-      this._pairingError = err.message || "Fout bij zoeken naar pairing.";
-      this._pairingResults = null;
-    } finally {
-      this._pairingLoading = false;
-      this._render();
-    }
-  }
-  _handleFoodChipClick(foodId) {
-    if (this._selectedFoodIds.has(foodId)) {
-      this._selectedFoodIds.delete(foodId);
-    } else {
-      this._selectedFoodIds.add(foodId);
-    }
-    if (this._selectedFoodIds.size > 0) {
-      this._dishInput = "";
-      this._handlePairingSearch();
-    } else {
-      this._pairingResults = null;
-      this._render();
-    }
-  }
-  _handleResetPairing() {
-    this._dishInput = "";
-    this._selectedFoodIds.clear();
-    this._pairingResults = null;
-    this._pairingError = null;
-    this._render();
+  _wine(vid) {
+    return this._wines.find((w2) => vintageId(w2) === vid) || null;
   }
   // ---------------------------------------------------------------------------
   // Drinking with undo
   // ---------------------------------------------------------------------------
-  /** "Ontkurken" pressed on a wine: drink directly, or ask where when bottles differ. */
-  _handleDrinkWine(vid) {
-    const wine = this._wineIndex.get(vid);
+  _drink(vid) {
+    const wine = this._wine(vid);
     if (!wine || wine.bottles.length === 0) return;
-    const spots = bottleSpots(wine.bottles);
-    if (spots.length > 1) {
-      this._spotPicker = vid;
-      this._render();
+    this._detailId = null;
+    this._ratingDraft = null;
+    if (bottleSpots(wine.bottles).length > 1) {
+      this._pickerId = vid;
       return;
     }
     this._startDrink(wine, wine.bottles[0]);
   }
-  /**
-   * Show rendered sheets in the browser's top layer. A parent with a transform
-   * (Bubble Card popups) would otherwise trap position: fixed inside it.
-   */
-  _openDialogs() {
-    this.shadowRoot.querySelectorAll("dialog.modal-layer").forEach((dialog) => {
-      dialog.addEventListener("cancel", (e) => e.preventDefault());
-      if (!dialog.open) {
-        try {
-          dialog.showModal();
-        } catch {
-          dialog.setAttribute("open", "");
-        }
-      }
+  _pickSpot(index) {
+    const wine = this._wine(this._pickerId);
+    this._pickerId = null;
+    const spot = wine && bottleSpots(wine.bottles)[index];
+    if (spot) this._startDrink(wine, spot.bottles[0]);
+  }
+  _startDrink(wine, bottle) {
+    const id = bottleId(bottle);
+    if (this._pending.has(id)) return;
+    const name = wine.name || "Fles";
+    this._pending.set(id, {
+      timer: setTimeout(() => this._commitDrink(id), UNDO_MS),
+      startedAt: Date.now(),
+      vintageId: vintageId(wine),
+      label: wine.year ? `${name} (${wine.year})` : name,
+      committing: false
     });
+    this.requestUpdate();
   }
-  _closeModals() {
-    if (this._spotPicker !== null) this._spotPicker = null;
-    else {
-      this._detailWine = null;
-      this._ratingDraft = null;
+  _undo(id) {
+    const pending = this._pending.get(id);
+    if (!pending || pending.committing) return;
+    clearTimeout(pending.timer);
+    this._pending.delete(id);
+    this.requestUpdate();
+  }
+  async _commitDrink(id) {
+    const pending = this._pending.get(id);
+    if (!pending || pending.committing || !this.hass) return;
+    pending.committing = true;
+    clearTimeout(pending.timer);
+    this.requestUpdate();
+    try {
+      await this.hass.callWS({ type: "vivino_cellar/drink", bottle_id: id, vintage_id: pending.vintageId });
+      this._pending.delete(id);
+      if (!this._unsubscribe) await this._loadOnce();
+    } catch (err) {
+      this._pending.delete(id);
+      this._showError(`Ontkurken van ${pending.label} mislukt: ${err?.message || err}`);
     }
-    this._render();
+    this.requestUpdate();
+  }
+  _flushPending() {
+    for (const [id, pending] of this._pending) {
+      if (!pending.committing) this._commitDrink(id);
+    }
+  }
+  _showError(message) {
+    const entry = { id: Date.now() + Math.random(), message };
+    this._errors = [...this._errors, entry];
+    setTimeout(() => this._dismissError(entry.id), ERROR_TOAST_MS);
+  }
+  _dismissError(id) {
+    this._errors = this._errors.filter((e4) => e4.id !== id);
   }
   // ---------------------------------------------------------------------------
-  // Your rating (Vivino review)
+  // Detail sheet and rating
   // ---------------------------------------------------------------------------
-  async _openRating(vid) {
+  _openDetail(vid) {
+    this._detailId = vid;
+    this._loadRating(vid);
+  }
+  _closeModal() {
+    if (this._pickerId !== null) {
+      this._pickerId = null;
+      return;
+    }
+    this._detailId = null;
+    this._ratingDraft = null;
+  }
+  async _loadRating(vid) {
     const known = this._myRatings.get(vid);
     this._ratingDraft = {
       vid,
@@ -1540,799 +1114,303 @@ var VivinoCellarCard = class extends HTMLElement {
       status: this._myRatings.has(vid) ? "idle" : "loading",
       error: null
     };
-    if (this._myRatings.has(vid) || !this._hass) return;
+    if (this._myRatings.has(vid) || !this.hass) return;
     try {
-      const res = await this._hass.callWS({ type: "vivino_cellar/rating", vintage_id: vid });
+      const res = await this.hass.callWS({ type: "vivino_cellar/rating", vintage_id: vid });
       const mine = res && res.rating !== null ? { rating: res.rating, note: res.note || "" } : null;
       this._myRatings.set(vid, mine);
-      const d = this._ratingDraft;
-      if (d && d.vid === vid && d.status === "loading") {
-        Object.assign(d, { rating: mine?.rating ?? null, note: mine?.note ?? "", status: "idle" });
+      if (this._ratingDraft?.vid === vid && this._ratingDraft.status === "loading") {
+        this._ratingDraft = { ...this._ratingDraft, rating: mine?.rating ?? null, note: mine?.note ?? "", status: "idle" };
       }
     } catch (err) {
-      const d = this._ratingDraft;
-      if (d && d.vid === vid) Object.assign(d, { status: "error", error: err?.message || String(err) });
+      if (this._ratingDraft?.vid === vid) {
+        this._ratingDraft = { ...this._ratingDraft, status: "error", error: err?.message || String(err) };
+      }
     }
-    this._render();
   }
-  _ratingChanged() {
-    const d = this._ratingDraft;
-    if (!d || d.rating === null) return false;
-    const mine = this._myRatings.get(d.vid);
-    return !mine || mine.rating !== d.rating || (mine.note || "") !== (d.note || "");
-  }
-  async _saveRating() {
-    const d = this._ratingDraft;
-    if (!d || !this._ratingChanged() || d.status === "saving") return;
-    d.status = "saving";
-    d.error = null;
-    this._render();
+  async _saveRating({ vintageId: vid, rating, note }) {
+    if (!this.hass || this._ratingDraft?.status === "saving") return;
+    this._ratingDraft = { vid, rating, note, status: "saving", error: null };
     try {
-      const res = await this._hass.callWS({
-        type: "vivino_cellar/rate",
-        vintage_id: d.vid,
-        rating: d.rating,
-        note: d.note || ""
-      });
-      this._myRatings.set(d.vid, { rating: res.rating ?? d.rating, note: res.note ?? d.note });
-      if (this._ratingDraft === d) d.status = "saved";
+      const res = await this.hass.callWS({ type: "vivino_cellar/rate", vintage_id: vid, rating, note: note || "" });
+      this._myRatings.set(vid, { rating: res.rating ?? rating, note: res.note ?? note });
+      if (this._ratingDraft?.vid === vid) this._ratingDraft = { ...this._ratingDraft, status: "saved" };
     } catch (err) {
-      if (this._ratingDraft === d) {
-        d.status = "error";
-        d.error = err?.message || String(err);
+      if (this._ratingDraft?.vid === vid) {
+        this._ratingDraft = { ...this._ratingDraft, status: "error", error: err?.message || String(err) };
       }
     }
-    this._render();
   }
-  _renderStars(rating) {
-    return [1, 2, 3, 4, 5].map((n) => {
-      const fill = rating >= n ? 100 : rating >= n - 0.5 ? 50 : 0;
-      const label = (v) => `${String(v).replace(".", ",")} ${v === 1 ? "ster" : "sterren"}`;
-      return `
-          <span class="star-slot">
-            <span class="star-icon">${ICON_STAR}<span class="star-fill" style="width:${fill}%">${ICON_STAR}</span></span>
-            <button class="star-half left" data-rate="${n - 0.5}" aria-label="${label(n - 0.5)}" ${n === 1 ? "disabled" : ""}></button>
-            <button class="star-half right" data-rate="${n}" aria-label="${label(n)}"></button>
-          </span>`;
-    }).join("");
-  }
-  _renderRatingSection(vid) {
-    const d = this._ratingDraft;
-    if (!d || d.vid !== vid) return "";
-    if (d.status === "loading") {
-      return `<div class="rating-section"><div class="rating-title">Jouw beoordeling</div><div class="muted">Laden\u2026</div></div>`;
+  // ---------------------------------------------------------------------------
+  // Pairing
+  // ---------------------------------------------------------------------------
+  async _pairingSearch({ dish, foodIds }) {
+    if (!this.hass) return;
+    const cleanDish = (dish || "").trim();
+    const ids = [...foodIds || []];
+    const state = { ...this._pairing, dish: cleanDish, foodIds: new Set(ids) };
+    if (!cleanDish && ids.length === 0) {
+      this._pairing = { ...state, results: null, error: "Voer een gerecht in of kies een categorie." };
+      return;
     }
-    const value = d.rating ?? 0;
-    const status = {
-      saving: `<span class="muted">Opslaan\u2026</span>`,
-      saved: `<span class="rating-ok">Opgeslagen op Vivino</span>`,
-      error: `<span class="rating-error">${esc(d.error || "Mislukt")}</span>`
-    }[d.status] || (this._myRatings.get(vid) ? "" : `<span class="muted">Nog niet beoordeeld</span>`);
-    return `
-      <div class="rating-section">
-        <div class="rating-title">Jouw beoordeling</div>
-        <div class="rating-row">
-          <div class="star-picker" role="group" aria-label="Kies een beoordeling">${this._renderStars(value)}</div>
-          <span class="rating-value">${d.rating ? String(d.rating).replace(".", ",") : "\u2013"}</span>
-        </div>
-        <textarea class="text-input rating-note" id="rating-note" rows="2"
-          placeholder="Notitie (optioneel)">${esc(d.note || "")}</textarea>
-        <div class="rating-actions">
-          ${status}
-          <button class="drink-btn" id="btn-save-rating" ${this._ratingChanged() && d.status !== "saving" ? "" : "disabled"}>Opslaan</button>
-        </div>
-      </div>`;
-  }
-  _handlePickSpot(index) {
-    const wine = this._wineIndex.get(this._spotPicker);
-    this._spotPicker = null;
-    const spot = wine && bottleSpots(wine.bottles)[index];
-    if (spot) {
-      this._startDrink(wine, spot.bottles[0]);
-    } else {
-      this._render();
+    this._pairing = { ...state, loading: true, error: null };
+    try {
+      const payload = cleanDish ? { type: "vivino_cellar/pairing", dish: cleanDish } : { type: "vivino_cellar/pairing", food_ids: ids };
+      const res = await this.hass.callWS(payload);
+      this._pairing = { ...this._pairing, loading: false, results: res.matches || res.pairings || [] };
+    } catch (err) {
+      this._pairing = { ...this._pairing, loading: false, results: null, error: err?.message || "Fout bij zoeken naar pairing." };
     }
   }
-  _startDrink(wine, bottle) {
-    const id = bottleId(bottle);
-    if (this._pendingDrinks.has(id)) return;
-    const name = wine.name || wine.wine_name || "Fles";
-    this._pendingDrinks.set(id, {
-      timer: setTimeout(() => this._commitDrink(id), UNDO_MS),
-      startedAt: Date.now(),
-      vintageId: vintageId(wine),
-      label: wine.year ? `${name} (${wine.year})` : name,
-      committing: false
+  // ---------------------------------------------------------------------------
+  // Events from child elements
+  // ---------------------------------------------------------------------------
+  _listen() {
+    const on = (type, fn) => this.addEventListener(type, (e4) => fn(e4.detail || {}));
+    on("vc-drink", ({ vintageId: vid }) => this._drink(vid));
+    on("vc-pick-spot", ({ index }) => this._pickSpot(index));
+    on("vc-open", ({ vintageId: vid }) => this._openDetail(vid));
+    on("vc-close", () => this._closeModal());
+    on("vc-undo", ({ bottleId: id }) => this._undo(id));
+    on("vc-dismiss-error", ({ id }) => this._dismissError(id));
+    on("vc-rate", (detail) => this._saveRating(detail));
+    on("vc-rating-draft", (draft) => {
+      this._ratingDraft = { ...this._ratingDraft, ...draft, status: "idle", error: null };
     });
-    this._render();
-  }
-  _undoDrink(id) {
-    const pending = this._pendingDrinks.get(id);
-    if (!pending || pending.committing) return;
-    clearTimeout(pending.timer);
-    this._pendingDrinks.delete(id);
-    this._render();
-  }
-  async _commitDrink(id) {
-    const pending = this._pendingDrinks.get(id);
-    if (!pending || pending.committing || !this._hass) return;
-    pending.committing = true;
-    clearTimeout(pending.timer);
-    this._render();
-    try {
-      await this._hass.callWS({
-        type: "vivino_cellar/drink",
-        bottle_id: id,
-        vintage_id: pending.vintageId
-      });
-      this._pendingDrinks.delete(id);
-      if (!this._unsubscribe) await this._loadCellarData();
-    } catch (err) {
-      this._pendingDrinks.delete(id);
-      this._showDrinkError(`Ontkurken van ${pending.label} mislukt: ${err.message || err}`);
-    }
-    this._render();
-  }
-  _flushPendingDrinks() {
-    for (const [id, pending] of this._pendingDrinks) {
-      if (!pending.committing) this._commitDrink(id);
-    }
-  }
-  _showDrinkError(message) {
-    const entry = { id: Date.now() + Math.random(), message };
-    this._drinkErrors.push(entry);
-    setTimeout(() => this._dismissError(entry.id), ERROR_TOAST_MS);
-  }
-  _dismissError(id) {
-    this._drinkErrors = this._drinkErrors.filter((e) => e.id !== id);
-    this._render();
+    on("vc-tab", ({ tab, statusFilter }) => {
+      if (!this._config.tabs.includes(tab)) return;
+      this._tab = tab;
+      if (statusFilter !== void 0) this._statusFilter = statusFilter;
+    });
+    on("vc-chip", ({ chip }) => {
+      this._chipTouched = true;
+      this._chip = chip;
+    });
+    on("vc-filters", ({ filters, statusFilter, query }) => {
+      if (filters) this._filters = filters;
+      if (statusFilter !== void 0) this._statusFilter = statusFilter;
+      if (query !== void 0) this._query = query;
+    });
+    on("vc-toggle-group", ({ status }) => {
+      this._expanded = { ...this._expanded, [status]: !this._expanded[status] };
+    });
+    on("vc-pairing-search", (detail) => this._pairingSearch(detail));
+    on("vc-pairing-reset", () => {
+      this._pairing = { dish: "", foodIds: /* @__PURE__ */ new Set(), results: null, loading: false, error: null };
+    });
   }
   // ---------------------------------------------------------------------------
   // Rendering
   // ---------------------------------------------------------------------------
-  _toggleStatusFilter(status) {
-    this._statusFilter = this._statusFilter === status ? null : status;
-    this._render();
+  _lastRefresh() {
+    const iso = this._data?.last_refresh_time;
+    if (!iso) return "Nooit";
+    const d3 = new Date(iso);
+    return Number.isNaN(d3.getTime()) ? iso : d3.toLocaleDateString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   }
-  _toggleGroup(status) {
-    this._expandedGroups[status] = !this._expandedGroups[status];
-    this._render();
-  }
-  _formatLastRefresh(isoString) {
-    if (!isoString) return "Nooit";
-    try {
-      const d = new Date(isoString);
-      return d.toLocaleDateString("nl-NL", {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-    } catch {
-      return isoString;
-    }
-  }
-  _render() {
-    const shadow = this.shadowRoot;
-    if (!shadow) return;
-    const active = shadow.activeElement;
-    const focusId = active && active.id;
-    const selection = active && typeof active.selectionStart === "number" ? [active.selectionStart, active.selectionEnd] : null;
-    const data = this._cellarData || {};
-    const view = this._viewData();
-    this._wineIndex = new Map(view.wines.map((w) => [vintageId(w), w]));
-    const lastRefresh = this._formatLastRefresh(data.last_refresh_time);
-    const staleWarning = data.last_update_success === false ? `<div class="warning-banner">${ICON_ALERT} <span>Laatste update van Vivino mislukt. Gegevens kunnen verouderd zijn; controleer de Vivino-sessie.</span></div>` : "";
-    shadow.innerHTML = `
-      <style>${cardStyles}</style>
-      <div class="card-container">
-        <div class="card-header">
-          <div class="header-left">
-            <div class="header-icon"><ha-icon icon="mdi:barrel"></ha-icon></div>
-            <div class="header-titles">
-              <div class="header-title">
-                ${esc(this._title(data))}
-                <span class="bottle-badge">${view.total} flessen</span>
-              </div>
-              <div class="header-subtitle">Laatst bijgewerkt: ${esc(lastRefresh)}</div>
+  render() {
+    const wines = this._wines;
+    const total = wines.reduce((n4, w2) => n4 + w2.bottles.length, 0);
+    return b2`
+      <ha-card>
+        <div class="card">
+          <header class="hdr">
+            <div class="logo"><ha-icon icon="mdi:barrel"></ha-icon></div>
+            <div class="titles">
+              <div class="title">${this.title}</div>
+              <div class="muted sub">${total} flessen · bijgewerkt ${this._lastRefresh()}</div>
             </div>
-          </div>
-          <div class="header-actions">
-            <button class="icon-button ${this._refreshing ? "spinning" : ""}" id="btn-refresh" title="Vernieuw kelder">
-              ${ICON_REFRESH}
+            <button
+              class="icon-btn ${this._refreshing ? "spinning" : ""}"
+              title="Vernieuwen"
+              aria-label="Vernieuwen"
+              ?disabled=${this._refreshing}
+              @click=${this._refresh}
+            >
+              <ha-icon icon="mdi:refresh"></ha-icon>
             </button>
-          </div>
-        </div>
+          </header>
 
-        ${this._error ? `<div class="error-banner">${ICON_ALERT} <span>${esc(this._error)}</span></div>` : ""}
-        ${staleWarning}
+          ${this._data?.last_update_success === false ? b2`<div class="banner warn">
+                <ha-icon icon="mdi:alert"></ha-icon>
+                Laatste update van Vivino mislukt. Gegevens kunnen verouderd zijn; controleer de Vivino-sessie.
+              </div>` : A}
+          ${this._error ? b2`<div class="banner error"><ha-icon icon="mdi:alert-circle"></ha-icon>${this._error}</div>` : A}
 
-        ${this._renderTabsBar()}
-
-        ${this._loading ? `<div class="spinner-box"><div class="spinner"></div><span>Kelder laden...</span></div>` : this._renderCurrentTab(view)}
-
-        ${this._renderDetailSheet()}
-        ${this._renderSpotPicker()}
-      </div>
-      ${this._renderToasts()}
-    `;
-    this._attachEventListeners();
-    this._openDialogs();
-    if (focusId) {
-      const el = shadow.getElementById(focusId);
-      if (el) {
-        el.focus();
-        if (selection && typeof el.setSelectionRange === "function") {
-          el.setSelectionRange(selection[0], selection[1]);
-        }
-      }
-    }
-  }
-  _renderCurrentTab(view) {
-    switch (this._currentTab) {
-      case "pairing":
-        return this._renderPairingTab();
-      case "cellar":
-        return this._renderCellarTab(view);
-      default:
-        return this._renderNowTab(view);
-    }
-  }
-  _renderTabsBar() {
-    const tabs = this._config.tabs || DEFAULT_TABS;
-    if (tabs.length <= 1) return "";
-    const defs = {
-      now: `${ICON_CLOCK} Nu drinken`,
-      pairing: `${ICON_GLASS} Wijn & Spijs`,
-      cellar: `${ICON_BOTTLE} Kelder`
-    };
-    return `
-      <div class="tabs-bar">
-        ${tabs.filter((t) => defs[t]).map(
-      (t) => `<button class="tab-btn ${this._currentTab === t ? "active" : ""}" data-tab="${t}">${defs[t]}</button>`
-    ).join("")}
-      </div>
-    `;
-  }
-  _title(data) {
-    return this._config.title || data.settings?.title || "Wijnkelder";
-  }
-  _nowLimit() {
-    const limit = Number(this._config.now_limit) || Number(this._cellarData?.settings?.now_limit);
-    return limit > 0 ? limit : NOW_LIMIT;
-  }
-  _renderNowTab(view) {
-    const year = (/* @__PURE__ */ new Date()).getFullYear();
-    const rank = { near_past_peak: 0, ready: 1, can_wait: 2 };
-    const candidates = view.wines.filter((w) => w.bottles.length > 0 && w.window_status in rank).sort(
-      (a, b) => rank[a.window_status] - rank[b.window_status] || (a.end_year ?? Infinity) - (b.end_year ?? Infinity) || (b.rating || 0) - (a.rating || 0)
-    ).slice(0, this._nowLimit());
-    const pastPeak = view.counts.past_peak || 0;
-    const pastPeakHint = pastPeak ? `<button class="hint-banner" id="btn-show-past-peak">
-           ${ICON_ALERT}
-           <span>${pastPeak} ${pastPeak === 1 ? "fles is" : "flessen zijn"} voorbij de piek. Bekijken</span>
-         </button>` : "";
-    if (candidates.length === 0) {
-      return `
-        <div class="now-tab">
-          ${pastPeakHint}
-          <div class="empty-state">Niets dringends: alles ligt nog te rijpen.</div>
-        </div>
-      `;
-    }
-    return `
-      <div class="now-tab">
-        ${pastPeakHint}
-        <div class="wine-card-list">
-          ${candidates.map((w) => this._renderWineCard(w, this._nowReason(w, year))).join("")}
-        </div>
-      </div>
-    `;
-  }
-  _nowReason(wine, year) {
-    if (wine.window_status === "near_past_peak") {
-      return `Laatste jaar van het drinkvenster: drink deze in ${year}.`;
-    }
-    if (wine.end_year) {
-      return `Op dronk tot ${wine.end_year} (nog ${wine.end_year - year} jaar).`;
-    }
-    return "Op dronk.";
-  }
-  _renderPairingTab() {
-    const data = this._cellarData || {};
-    const categories = data.food_categories || [];
-    return `
-      <div class="pairing-tab">
-        <div class="pairing-controls">
-          <div class="search-input-row">
-            <input
-              type="text"
-              class="text-input"
-              id="dish-input"
-              placeholder="Wat eten we vanavond? (bijv. steak, pasta, risotto)..."
-              value="${esc(this._dishInput)}"
-            />
-            <button class="primary-btn" id="btn-search-dish" ${this._pairingLoading ? "disabled" : ""}>
-              ${ICON_SEARCH} Zoek
-            </button>
-          </div>
-          ${categories.length > 0 ? `
-            <div class="chips-container">
-              <span class="chips-label">Of kies categorie\xEBn:</span>
-              ${categories.map(
-      (cat) => `
-                <button class="food-chip ${this._selectedFoodIds.has(cat.id) ? "selected" : ""}" data-food-id="${esc(cat.id)}">
-                  ${esc(cat.name)}
-                </button>`
-    ).join("")}
-              ${this._dishInput || this._selectedFoodIds.size > 0 ? `<button class="reset-link" id="btn-reset-pairing">Wissen</button>` : ""}
-            </div>` : ""}
-        </div>
-
-        ${this._pairingError ? `<div class="error-banner">${ICON_ALERT} <span>${esc(this._pairingError)}</span></div>` : ""}
-
-        ${this._pairingLoading ? `<div class="spinner-box"><div class="spinner"></div><span>Pairing suggesties berekenen...</span></div>` : this._renderPairingResults()}
-      </div>
-    `;
-  }
-  _renderPairingResults() {
-    if (!this._pairingResults) {
-      return `<div class="empty-state">Voer een gerecht in of kies een spijscategorie hierboven om passende wijnen uit je kelder te vinden.</div>`;
-    }
-    const matches = this._pairingResults.map((match) => {
-      const cellarWine = this._wineIndex.get(vintageId(match));
-      return cellarWine ? { ...cellarWine, ...match, bottles: cellarWine.bottles } : this._withoutPending(match);
-    }).filter((w) => w.bottles.length > 0);
-    if (matches.length === 0) {
-      return `<div class="empty-state">Geen passende wijnen gevonden in je kelder voor dit gerecht.</div>`;
-    }
-    for (const m of matches) {
-      if (!this._wineIndex.has(vintageId(m))) this._wineIndex.set(vintageId(m), m);
-    }
-    return `
-      <div class="wine-card-list">
-        ${matches.map((wine) => this._renderWineCard(wine, wine.explanation || wine.reason)).join("")}
-      </div>
-    `;
-  }
-  /** Does a wine pass every Kelder filter except the ones named in `skip`? */
-  _matchesFilters(wine, skip = []) {
-    const f = this._filters;
-    const query = (this._searchQuery || "").toLowerCase();
-    if (wine.bottles.length === 0) return false;
-    if (wine.bottles.length < f.minBottles) return false;
-    if (query && ![wine.name, wine.winery, wine.region, ...wine.grapes || []].some(
-      (v) => (v || "").toLowerCase().includes(query)
-    )) return false;
-    if (!skip.includes("type") && f.type && String(wine.type_id) !== f.type) return false;
-    if (!skip.includes("country") && f.country && wine.country !== f.country) return false;
-    if (!skip.includes("region") && f.region && wine.region !== f.region) return false;
-    if (!skip.includes("grape") && f.grape && !(wine.grapes || []).includes(f.grape)) return false;
-    if (!skip.includes("status") && this._statusFilter && wine.window_status !== this._statusFilter)
-      return false;
-    return true;
-  }
-  /** Options for one filter, counted (in bottles) over the wines the other filters leave. */
-  _filterOptions(wines, key, valuesOf, labelOf = (v) => v, alsoSkip = []) {
-    const counts = /* @__PURE__ */ new Map();
-    for (const wine of wines) {
-      if (!this._matchesFilters(wine, [key, ...alsoSkip])) continue;
-      for (const v of valuesOf(wine)) {
-        if (v === null || v === void 0 || v === "") continue;
-        counts.set(String(v), (counts.get(String(v)) || 0) + wine.bottles.length);
-      }
-    }
-    const selected = this._filters[key];
-    if (selected && !counts.has(selected)) counts.set(selected, 0);
-    return [...counts.entries()].map(([value, n]) => ({ value, label: labelOf(value), n })).sort((a, b) => a.label.localeCompare(b.label, "nl"));
-  }
-  _renderSelect(key, allLabel, options) {
-    const current = this._filters[key];
-    return `
-      <select class="filter-select ${current ? "active" : ""}" data-filter="${key}" aria-label="${esc(allLabel)}">
-        <option value="">${esc(allLabel)}</option>
-        ${options.map(
-      (o) => `<option value="${esc(o.value)}" ${o.value === current ? "selected" : ""}>${esc(o.label)} (${o.n})</option>`
-    ).join("")}
-      </select>`;
-  }
-  _sortWines(wines) {
-    const by = {
-      drink_by: (a, b) => (a.end_year ?? Infinity) - (b.end_year ?? Infinity),
-      rating: (a, b) => (b.rating || 0) - (a.rating || 0),
-      vintage: (a, b) => (a.year ?? Infinity) - (b.year ?? Infinity),
-      bottles: (a, b) => b.bottles.length - a.bottles.length,
-      name: (a, b) => (a.name || "").localeCompare(b.name || "", "nl")
-    }[this._filters.sort];
-    const byName = (a, b) => (a.name || "").localeCompare(b.name || "", "nl");
-    return [...wines].sort((a, b) => (by ? by(a, b) : 0) || byName(a, b));
-  }
-  _hasActiveFilters() {
-    const f = this._filters;
-    return Boolean(
-      this._statusFilter || this._searchQuery || f.type || f.country || f.region || f.grape || f.minBottles
-    );
-  }
-  _renderCellarTab(view) {
-    const f = this._filters;
-    const wines = view.wines.filter((w) => this._matchesFilters(w));
-    const bottles = wines.reduce((n, w) => n + w.bottles.length, 0);
-    const statusCounts = Object.fromEntries(STATUS_ORDER.map((st) => [st, 0]));
-    for (const wine of view.wines) {
-      if (!this._matchesFilters(wine, ["status"])) continue;
-      const st = wine.window_status || "unknown";
-      statusCounts[st] = (statusCounts[st] || 0) + wine.bottles.length;
-    }
-    const typeOptions = this._filterOptions(
-      view.wines,
-      "type",
-      (w) => [w.type_id],
-      (v) => WINE_TYPES[v] || `Type ${v}`
-    );
-    const countryOptions = this._filterOptions(
-      view.wines,
-      "country",
-      (w) => [w.country],
-      (v) => v,
-      ["region"]
-    );
-    const regionOptions = this._filterOptions(view.wines, "region", (w) => [w.region]);
-    const grapeOptions = this._filterOptions(view.wines, "grape", (w) => w.grapes || []);
-    let list;
-    if (f.sort === "status") {
-      list = STATUS_ORDER.map((status) => {
-        if (this._statusFilter && status !== this._statusFilter) return "";
-        const groupWines = this._sortWines(
-          wines.filter((w) => (w.window_status || "unknown") === status)
-        );
-        if (groupWines.length === 0) return "";
-        const isOpen = this._statusFilter === status || !!this._expandedGroups[status];
-        const groupBottles = groupWines.reduce((n, w) => n + w.bottles.length, 0);
-        return `
-          <div class="group-section">
-            <div class="group-header" data-status="${status}">
-              <div class="group-header-left">
-                <span class="badge badge-${status}">${STATUS_LABELS[status]}</span>
-                <span class="group-count">${groupBottles} flessen</span>
-              </div>
-              <div class="group-chevron ${isOpen ? "open" : ""}">${ICON_CHEVRON}</div>
-            </div>
-            ${isOpen ? `<div class="group-wines-content">
-                    ${groupWines.map((wine) => this._renderWineCard(wine)).join("")}
-                  </div>` : ""}
-          </div>`;
-      }).join("");
-    } else {
-      list = `<div class="cellar-list">${this._sortWines(wines).map((wine) => this._renderWineCard(wine)).join("")}</div>`;
-    }
-    return `
-      <div class="cellar-tab">
-        <div class="search-filter-row">
-          <input
-            type="text"
-            class="text-input"
-            id="cellar-search-input"
-            placeholder="Zoek op wijn, wijnhuis, regio of druif..."
-            value="${esc(this._searchQuery)}"
-          />
-        </div>
-
-        <div class="status-chips-summary ${this._statusFilter ? "filtering" : ""}">
-          ${STATUS_ORDER.map((status) => {
-      const count = statusCounts[status] || 0;
-      const active = this._statusFilter === status;
-      return `<button class="status-chip badge-${status} ${active ? "active" : ""}"
-                data-status="${status}" aria-pressed="${active}" ${count === 0 && !active ? "disabled" : ""}>
-                ${STATUS_LABELS[status]}: ${count}
-              </button>`;
-    }).join("")}
-        </div>
-
-        <div class="filter-grid">
-          ${this._renderSelect("type", "Alle soorten", typeOptions)}
-          ${this._renderSelect("country", "Alle landen", countryOptions)}
-          ${this._renderSelect("region", "Alle regio's", regionOptions)}
-          ${this._renderSelect("grape", "Alle druiven", grapeOptions)}
-          <select class="filter-select ${f.minBottles ? "active" : ""}" data-filter="minBottles" aria-label="Aantal flessen">
-            ${MIN_BOTTLES.map(
-      (n) => `<option value="${n}" ${n === f.minBottles ? "selected" : ""}>${n ? `${n}+ flessen` : "Elk aantal"}</option>`
-    ).join("")}
-          </select>
-          <select class="filter-select" data-filter="sort" aria-label="Sorteren">
-            ${Object.entries(SORTS).map(([k, label]) => `<option value="${k}" ${k === f.sort ? "selected" : ""}>Sorteer: ${label}</option>`).join("")}
-          </select>
-        </div>
-
-        <div class="result-bar">
-          <span>${wines.length} ${wines.length === 1 ? "wijn" : "wijnen"} \xB7 ${bottles} flessen</span>
-          ${this._hasActiveFilters() ? `<button class="btn-link" id="btn-clear-filters">Wis filters</button>` : ""}
-        </div>
-
-        ${wines.length === 0 ? `<div class="empty-state">Geen wijnen voor deze filters.</div>` : list}
-      </div>
-    `;
-  }
-  _renderWineCard(wine, reason = null) {
-    const wineName = wine.name || wine.wine_name || "Onbekende wijn";
-    const rating = typeof wine.rating === "number" ? wine.rating.toFixed(1) : null;
-    const windowStatus = wine.window_status || "unknown";
-    const { start_year: startYear, end_year: endYear } = wine;
-    const windowYearsText = startYear && endYear ? `${startYear} - ${endYear}` : startYear ? `Vanaf ${startYear}` : endYear ? `Tot ${endYear}` : null;
-    const image = safeUrl(wine.image_url);
-    const bottles = wine.bottles || [];
-    const spots = bottleSpots(bottles);
-    return `
-      <div class="wine-card clickable" role="button" tabindex="0"
-        data-detail-id="${esc(vintageId(wine))}" aria-label="Details: ${esc(wineName)}">
-        ${image ? `<img class="wine-thumb" src="${esc(image)}" alt="${esc(wineName)}" onerror="this.style.display='none'" />` : `<div class="wine-thumb-placeholder">${ICON_BOTTLE}</div>`}
-        <div class="wine-details">
-          <div class="wine-title">${esc(wineName)} ${wine.year ? `(${esc(wine.year)})` : ""}</div>
-          ${wine.winery ? `<div class="wine-subtitle">${esc(wine.winery)}</div>` : ""}
-          <div class="wine-badges">
-            ${rating ? `<span class="badge badge-rating">${ICON_STAR} ${rating}</span>` : ""}
-            <span class="badge badge-${windowStatus}">${STATUS_LABELS[windowStatus] || esc(windowStatus)}</span>
-            ${windowYearsText ? `<span class="badge badge-unknown">${windowYearsText}</span>` : ""}
-          </div>
-
-          ${reason ? `<div class="pairing-reason">${esc(reason)}</div>` : ""}
-
-          <div class="bottles-list">
-            ${bottles.length > 0 ? `<div class="bottle-summary">
-                    <div class="bottle-spots">
-                      ${spots.map(
-      (s) => `
-                        <span class="bottle-loc">
-                          ${ICON_LOCATION} ${esc(s.location)}${s.bin ? ` \xB7 vak ${esc(s.bin)}` : ""}${s.bottles.length > 1 ? ` <strong>${s.bottles.length}\xD7</strong>` : ""}
-                        </span>`
-    ).join("")}
-                    </div>
-                    <button class="drink-btn btn-drink-action" data-vintage-id="${esc(vintageId(wine))}">
-                      ${ICON_GLASS} Ontkurken
-                    </button>
-                  </div>` : `<div class="bottle-row"><span>Geen flessen op voorraad</span></div>`}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  _renderDetailSheet() {
-    if (this._detailWine === null) return "";
-    const wine = this._wineIndex.get(this._detailWine);
-    if (!wine) {
-      this._detailWine = null;
-      return "";
-    }
-    const name = wine.name || wine.wine_name || "Onbekende wijn";
-    const status = wine.window_status || "unknown";
-    const image = safeUrl(wine.image_url);
-    const vivinoUrl = safeUrl(wine.vivino_url);
-    const rating = typeof wine.rating === "number" ? wine.rating.toFixed(1) : null;
-    const origin = [wine.region, wine.country].filter(Boolean).join(", ");
-    const windowText = wine.start_year && wine.end_year ? `${wine.start_year} \u2013 ${wine.end_year}` : wine.start_year ? `vanaf ${wine.start_year}` : wine.end_year ? `tot ${wine.end_year}` : "onbekend";
-    const source = { vivino: "volgens Vivino", ai_estimate: "AI-schatting" }[wine.window_source];
-    const foods = (wine.foods || []).map((f) => f.name).filter(Boolean);
-    const spots = bottleSpots(wine.bottles || []);
-    const row = (label, value) => value ? `<div class="detail-row"><dt>${label}</dt><dd>${value}</dd></div>` : "";
-    return `
-      <dialog class="modal-layer" id="detail-backdrop" aria-labelledby="detail-title">
-        <div class="modal-dialog detail-sheet">
-          <div class="detail-hero">
-            ${image ? `<img class="detail-image" src="${esc(image)}" alt="" onerror="this.style.display='none'" />` : `<div class="detail-image placeholder">${ICON_BOTTLE}</div>`}
-            <div class="detail-heading">
-              <div class="wine-title" id="detail-title">${esc(name)} ${wine.year ? `(${esc(wine.year)})` : ""}</div>
-              ${wine.winery ? `<div class="wine-subtitle">${esc(wine.winery)}</div>` : ""}
-              <div class="wine-badges">
-                ${rating ? `<span class="badge badge-rating">${ICON_STAR} ${rating}${wine.ratings_count ? ` \xB7 ${esc(wine.ratings_count)} beoordelingen` : ""}</span>` : ""}
-                <span class="badge badge-${status}">${STATUS_LABELS[status] || esc(status)}</span>
-              </div>
-            </div>
-          </div>
-          <div class="modal-body">
-            <dl class="detail-list">
-              ${row("Drinkvenster", `${esc(windowText)}${source ? ` <span class="muted">(${source})</span>` : ""}`)}
-              ${row("Soort", esc(WINE_TYPES[wine.type_id] || ""))}
-              ${row("Herkomst", esc(origin))}
-              ${row("Druiven", esc((wine.grapes || []).join(", ")))}
-              ${row("Stijl", esc(wine.style || ""))}
-              ${row("Past bij", esc(foods.join(", ")))}
-              ${row(
-      "Flessen",
-      spots.length ? spots.map(
-        (sp) => `<div>${esc(sp.location)}${sp.bin ? ` \xB7 vak ${esc(sp.bin)}` : ""}: ${sp.bottles.length}\xD7</div>`
-      ).join("") : "Geen flessen op voorraad"
+          ${this._config.tabs.length > 1 ? b2`<nav class="tabs" role="tablist">
+                ${this._config.tabs.map(
+      (t3) => b2`<button
+                    role="tab"
+                    class="tab"
+                    aria-selected=${this._tab === t3}
+                    @click=${() => this._tab = t3}
+                  >
+                    ${TAB_LABELS[t3]}
+                  </button>`
     )}
-            </dl>
-            ${this._renderRatingSection(vintageId(wine))}
-          </div>
-          <div class="modal-footer detail-actions">
-            ${vivinoUrl ? `<a class="btn-link" href="${esc(vivinoUrl)}" target="_blank" rel="noopener noreferrer">Bekijk op Vivino</a>` : "<span></span>"}
-            <div class="detail-buttons">
-              <button class="btn-secondary" id="btn-close-detail">Sluiten</button>
-              ${wine.bottles.length ? `<button class="drink-btn btn-drink-action" data-vintage-id="${esc(vintageId(wine))}">${ICON_GLASS} Ontkurken</button>` : ""}
-            </div>
-          </div>
+              </nav>` : A}
+
+          ${this._loading && !this._data ? b2`<div class="empty">Kelder laden…</div>` : this._renderTab(wines)}
         </div>
-      </dialog>
+      </ha-card>
+      ${this._renderModals(wines)}
+      <vc-toast-stack .pending=${[...this._pending.entries()]} .errors=${this._errors} .undoMs=${UNDO_MS}></vc-toast-stack>
     `;
   }
-  _renderSpotPicker() {
-    if (this._spotPicker === null) return "";
-    const wine = this._wineIndex.get(this._spotPicker);
-    if (!wine) return "";
-    const name = wine.name || wine.wine_name || "Wijn";
-    return `
-      <dialog class="modal-layer" id="modal-backdrop" aria-label="Welke fles pak je?">
-        <div class="modal-dialog">
-          <div class="modal-header">
-            ${ICON_GLASS}
-            <span>Welke fles pak je?</span>
-          </div>
-          <div class="modal-body">
-            <div><strong>${esc(name)}</strong> ${wine.year ? `(${esc(wine.year)})` : ""}</div>
-            <div class="spot-options">
-              ${bottleSpots(wine.bottles).map(
-      (s, i) => `
-                <button class="spot-option" data-spot-index="${i}">
-                  <span>${ICON_LOCATION} ${esc(s.location)}${s.bin ? ` \xB7 vak ${esc(s.bin)}` : ""}</span>
-                  <span class="spot-count">${s.bottles.length}\xD7</span>
-                </button>`
-    ).join("")}
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn-secondary" id="btn-cancel-picker">Annuleren</button>
-          </div>
-        </div>
-      </dialog>
-    `;
+  _renderTab(wines) {
+    return b2`<div class="empty" data-tab=${this._tab} data-wines=${wines.length}>${TAB_LABELS[this._tab]}</div>`;
   }
-  _renderToasts() {
-    const undoable = [...this._pendingDrinks.entries()].filter(([, p]) => !p.committing);
-    if (undoable.length === 0 && this._drinkErrors.length === 0) return "";
-    const now = Date.now();
-    return `
-      <div class="toast-stack">
-        ${this._drinkErrors.map(
-      (e) => `
-          <div class="toast toast-error">
-            ${ICON_ALERT}
-            <span class="toast-text">${esc(e.message)}</span>
-            <button class="toast-action" data-dismiss-error="${e.id}">Sluiten</button>
-          </div>`
-    ).join("")}
-        ${undoable.map(
-      ([id, p]) => `
-          <div class="toast">
-            ${ICON_GLASS}
-            <span class="toast-text">Ontkurkt: ${esc(p.label)}</span>
-            <button class="toast-action" data-undo-bottle="${esc(id)}">Ongedaan maken</button>
-            <div class="toast-progress" style="animation-duration:${UNDO_MS}ms;animation-delay:-${Math.min(now - p.startedAt, UNDO_MS)}ms"></div>
-          </div>`
-    ).join("")}
-      </div>
-    `;
-  }
-  // ---------------------------------------------------------------------------
-  // Events
-  // ---------------------------------------------------------------------------
-  _attachEventListeners() {
-    const shadow = this.shadowRoot;
-    if (!shadow) return;
-    const on = (selector, handler) => shadow.querySelectorAll(selector).forEach((el) => el.addEventListener("click", (e) => handler(el, e)));
-    on("#btn-refresh", () => this._handleRefresh());
-    on(".tab-btn", (el) => {
-      this._currentTab = el.dataset.tab;
-      this._render();
-    });
-    on("#btn-show-past-peak", () => {
-      this._currentTab = "cellar";
-      this._statusFilter = "past_peak";
-      this._render();
-    });
-    const dishInput = shadow.getElementById("dish-input");
-    if (dishInput) {
-      dishInput.addEventListener("input", (e) => {
-        this._dishInput = e.target.value;
-      });
-      dishInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") this._handlePairingSearch();
-      });
-    }
-    on("#btn-search-dish", () => this._handlePairingSearch());
-    on(".food-chip", (el) => this._handleFoodChipClick(parseInt(el.dataset.foodId, 10)));
-    on("#btn-reset-pairing", () => this._handleResetPairing());
-    const cellarSearch = shadow.getElementById("cellar-search-input");
-    if (cellarSearch) {
-      cellarSearch.addEventListener("input", (e) => {
-        this._searchQuery = e.target.value;
-        this._render();
-      });
-    }
-    on(".group-header", (el) => this._toggleGroup(el.dataset.status));
-    on(".status-chip", (el) => this._toggleStatusFilter(el.dataset.status));
-    shadow.querySelectorAll(".filter-select").forEach(
-      (el) => el.addEventListener("change", () => {
-        const key = el.dataset.filter;
-        this._filters[key] = key === "minBottles" ? Number(el.value) : el.value;
-        if (key === "country") this._filters.region = "";
-        this._render();
-      })
-    );
-    on("#btn-clear-filters", () => {
-      this._filters = { ...EMPTY_FILTERS, sort: this._filters.sort };
-      this._statusFilter = null;
-      this._searchQuery = "";
-      this._render();
-    });
-    on(".btn-drink-action", (el, e) => {
-      e.stopPropagation();
-      this._detailWine = null;
-      this._handleDrinkWine(Number(el.dataset.vintageId));
-    });
-    shadow.querySelectorAll("[data-detail-id]").forEach((el) => {
-      const open = () => {
-        this._detailWine = Number(el.dataset.detailId);
-        this._openRating(this._detailWine);
-        this._render();
-        this.shadowRoot.getElementById("btn-close-detail")?.focus();
-      };
-      el.addEventListener("click", open);
-      el.addEventListener("keydown", (e) => {
-        if (e.target === el && (e.key === "Enter" || e.key === " ")) {
-          e.preventDefault();
-          open();
-        }
-      });
-    });
-    on("#btn-close-detail", () => this._closeModals());
-    on("[data-rate]", (el) => {
-      const d = this._ratingDraft;
-      if (!d || d.status === "loading") return;
-      d.rating = Number(el.dataset.rate);
-      d.status = "idle";
-      this._render();
-    });
-    const ratingNote = shadow.getElementById("rating-note");
-    if (ratingNote) {
-      ratingNote.addEventListener("input", (e) => {
-        const d = this._ratingDraft;
-        if (!d) return;
-        d.note = e.target.value;
-        if (d.status === "saved" || d.status === "error") d.status = "idle";
-        const save = shadow.getElementById("btn-save-rating");
-        if (save) save.disabled = !this._ratingChanged();
-      });
-    }
-    on("#btn-save-rating", () => this._saveRating());
-    on("#detail-backdrop", (el, e) => {
-      if (e.target === el) this._closeModals();
-    });
-    on(".spot-option", (el) => this._handlePickSpot(Number(el.dataset.spotIndex)));
-    on("#btn-cancel-picker", () => {
-      this._spotPicker = null;
-      this._render();
-    });
-    on("#modal-backdrop", (el, e) => {
-      if (e.target === el) {
-        this._spotPicker = null;
-        this._render();
-      }
-    });
-    on("[data-undo-bottle]", (el) => this._undoDrink(Number(el.dataset.undoBottle)));
-    on("[data-dismiss-error]", (el) => this._dismissError(Number(el.dataset.dismissError)));
+  _renderModals() {
+    return A;
   }
 };
+__publicField(VivinoCellarCard, "properties", {
+  hass: { attribute: false },
+  narrow: { type: Boolean },
+  panel: { attribute: false },
+  _config: { state: true },
+  _data: { state: true },
+  _loading: { state: true },
+  _error: { state: true },
+  _refreshing: { state: true },
+  _tab: { state: true },
+  _errors: { state: true },
+  _detailId: { state: true },
+  _pickerId: { state: true },
+  _ratingDraft: { state: true },
+  _statusFilter: { state: true },
+  _filters: { state: true },
+  _query: { state: true },
+  _expanded: { state: true },
+  _chip: { state: true },
+  _pairing: { state: true }
+});
+__publicField(VivinoCellarCard, "styles", [
+  tokenStyles,
+  themeStyles,
+  i`
+      :host { display: block; }
+      ha-card { overflow: visible; }
+      .card { padding: 16px; container-type: inline-size; }
+      .hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+      .logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--vc-accent);
+        background: color-mix(in srgb, var(--vc-accent) var(--vc-tint), transparent);
+        flex: none;
+      }
+      .titles { flex: 1; min-width: 0; }
+      .title { font-size: 18px; font-weight: 600; line-height: 1.2; }
+      .sub { font-size: 12.5px; }
+      .spinning ha-icon { animation: spin 1s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .banner {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: var(--vc-radius-sm);
+        margin-bottom: 12px;
+      }
+      .banner ha-icon { --mdc-icon-size: 18px; flex: none; }
+      .banner.warn {
+        color: var(--vc-status-near_past_peak);
+        background: color-mix(in srgb, var(--vc-status-near_past_peak) var(--vc-tint), transparent);
+      }
+      .banner.error {
+        color: var(--vc-status-past_peak);
+        background: color-mix(in srgb, var(--vc-status-past_peak) var(--vc-tint), transparent);
+      }
+      .tabs {
+        display: flex;
+        gap: 2px;
+        padding: 3px;
+        margin-bottom: 12px;
+        border-radius: 12px;
+        background: var(--vc-surface-2);
+      }
+      .tab {
+        flex: 1 1 0;
+        min-width: 0;
+        height: 34px;
+        border: none;
+        border-radius: 9px;
+        background: transparent;
+        color: var(--vc-muted);
+        font-size: 13.5px;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tab[aria-selected="true"] {
+        background: var(--vc-surface);
+        color: var(--vc-text);
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+      }
+      @container (max-width: 360px) {
+        .card { padding: 12px; }
+        .tab { font-size: 12.5px; }
+      }
+    `
+]);
 if (!customElements.get("vivino-cellar-card")) {
   customElements.define("vivino-cellar-card", VivinoCellarCard);
 }
 window.customCards = window.customCards || [];
-if (!window.customCards.some((card) => card.type === "vivino-cellar-card")) {
+if (!window.customCards.some((c4) => c4.type === "vivino-cellar-card")) {
   window.customCards.push({
     type: "vivino-cellar-card",
     name: "Vivino Cellar Card",
-    description: "Vivino cellar wine pairing and drinking windows overview"
+    description: "Vivino cellar: what to drink tonight, food pairing and the whole cellar",
+    preview: false
   });
 }
 export {
+  STATUS_ORDER,
   VivinoCellarCard
 };
+/*! Bundled license information:
+
+@lit/reactive-element/css-tag.js:
+  (**
+   * @license
+   * Copyright 2019 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/reactive-element.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+lit-html/lit-html.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+lit-element/lit-element.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+lit-html/is-server.js:
+  (**
+   * @license
+   * Copyright 2022 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+*/
