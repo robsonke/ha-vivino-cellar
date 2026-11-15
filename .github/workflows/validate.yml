@@ -26,5 +26,3 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # No brand icon yet (custom_components/vivino_cellar/brand/icon.png).
-          ignore: brands
