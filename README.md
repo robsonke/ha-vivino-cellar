@@ -115,6 +115,7 @@ Because Vivino does not provide a public developer API for private cellars, this
 | Refresh interval | 6 h | How often the cellar is fetched from Vivino (1–24 h). |
 | Show in sidebar | on | Turn off if you only use the dashboard card. |
 | Wines in "Drink now" | 5 | How many wines the **Nu drinken** tab lists (1–20). |
+| Weather entity | none | Suggests a mood chip from the temperature (≥ 24 °C Verfrissend, ≤ 8 °C Winteravond). |
 | Storage locations | Locatie 1, 2, … | Second page of Configure. Vivino's web data only has a number per location, so name each one here (e.g. Kelder, Koelkast). |
 
 Changes apply right away; the integration reloads itself.
@@ -158,7 +159,15 @@ tabs:
 
 ### Tabs
 
-- **Nu drinken**: a short list of what to open now: wines in their last year first, then the rest of what's ready.
+- **Nu drinken**: what to open tonight. One top pick with the reason ("Laatste jaar: drink in 2026") and an Ontkurken button, then "Ook goed vanavond". Mood chips narrow it down:
+  - 🥂 **Borrelen**: bubbles, rosé, whites and lighter reds; skips your best bottles.
+  - 🧊 **Verfrissend**: whites, rosé and bubbles with fresh acidity.
+  - 🔥 **Winteravond**: full-bodied reds, port and dessert wines.
+  - 🍽 **Bij het eten**: jumps to Wijn & Spijs.
+  - ✨ **Iets bijzonders**: your highest-rated, oldest bottles.
+  - ⏳ **Moet op**: last-year wines, then past peak.
+
+  When Vivino has no body score, the grape decides (Cabernet, Syrah, Nebbiolo… count as full; Pinot Noir, Gamay… as light). With a weather entity set in Configure, the card suggests Verfrissend from 24 °C and Winteravond at 8 °C or below.
 - **Wijn & Spijs**: food pairing from Vivino food categories, or free text via your AI task.
 - **Kelder**: every wine in the cellar. Filter by drinking-window status (tap a pill), type, country, region, grape and number of bottles, and search by name, winery, region or grape. Sort by drinking window (grouped), drink-by year, rating, vintage, bottle count or name. Each filter's counts follow the other filters.
 
@@ -252,12 +261,14 @@ Vivino Cellar supports Home Assistant's built-in **Download Diagnostics** featur
 
 ```bash
 uv sync --group dev
-uv run pytest            # unit tests
+uv run pytest            # backend tests
 uvx ruff check . && uvx ruff format --check .
-scripts/build_frontend.sh  # rebuild frontend/vivino-cellar-card.js from frontend/src/
+npm install              # Lit + esbuild
+npm test                 # card logic tests (node --test)
+npm run build            # bundle frontend/src/ into frontend/vivino-cellar-card.js
 ```
 
-Edit the card in `custom_components/vivino_cellar/frontend/src/` and run `scripts/build_frontend.sh`; Home Assistant serves the bundled `frontend/vivino-cellar-card.js`. Bump `version` in `manifest.json` (and `VERSION` in `panel.py`) for each release so browsers load the new card. Release tags must match the manifest version (`v0.2.0` ↔ `0.2.0`).
+The card is written in [Lit](https://lit.dev) under `custom_components/vivino_cellar/frontend/src/` (logic in `logic/`, elements in `components/`). `npm run build` bundles it, Lit included, into `frontend/vivino-cellar-card.js`, which Home Assistant serves; commit the built file (CI checks it matches the sources). Bump `version` in `manifest.json` (and `VERSION` in `panel.py`) for each release so browsers load the new card. Release tags must match the manifest version (`v0.2.0` ↔ `0.2.0`).
 
 ## Disclaimer
 
