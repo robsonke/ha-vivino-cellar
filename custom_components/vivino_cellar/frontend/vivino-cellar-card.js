@@ -1,12 +1,5 @@
-/**
- * Vivino Cellar Custom Lovelace Card and Sidebar Panel Component.
- */
-
-/**
- * Styles for the Vivino Cellar Lovelace Card & Sidebar Panel.
- */
-
-export const cardStyles = `
+// custom_components/vivino_cellar/frontend/src/styles.js
+var cardStyles = `
   :host {
     display: block;
     font-family: var(--paper-font-body1_-_font-family, Roboto, sans-serif);
@@ -1211,79 +1204,64 @@ export const cardStyles = `
   }
 `;
 
-// SVG Icons
-const ICON_BOTTLE = `<svg viewBox="0 0 24 24"><path d="M12,2A2,2 0 0,0 10,4V5.17C7.61,6.58 6,9.1 6,12V20A2,2 0 0,0 8,22H16A2,2 0 0,0 18,20V12C18,9.1 16.39,6.58 14,5.17V4A2,2 0 0,0 12,2M12,4A0,0 0 0,1 12,4V5H12V4M8,12C8,9.79 9.79,8 12,8C14.21,8 16,9.79 16,12V20H8V12Z" /></svg>`;
-const ICON_GLASS = `<svg viewBox="0 0 24 24"><path d="M5,2H19V4L13,10V18H18V20H6V18H11V10L5,4V2M7.4,4L10.4,7H13.6L16.6,4H7.4Z" /></svg>`;
-const ICON_REFRESH = `<svg viewBox="0 0 24 24"><path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" /></svg>`;
-const ICON_SEARCH = `<svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>`;
-const ICON_STAR = `<svg viewBox="0 0 24 24"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" /></svg>`;
-const ICON_LOCATION = `<svg viewBox="0 0 24 24"><path d="M12,2C15.31,2 18,4.66 18,7.95C18,12.41 12,19 12,19C12,19 6,12.41 6,7.95C6,4.66 8.69,2 12,2M12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8A2,2 0 0,0 12,6Z" /></svg>`;
-const ICON_CHEVRON = `<svg viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg>`;
-const ICON_ALERT = `<svg viewBox="0 0 24 24"><path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z" /></svg>`;
-const ICON_CLOCK = `<svg viewBox="0 0 24 24"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" /></svg>`;
-
-const STATUS_LABELS = {
+// custom_components/vivino_cellar/frontend/src/vivino-cellar-card.js
+var ICON_BOTTLE = `<svg viewBox="0 0 24 24"><path d="M12,2A2,2 0 0,0 10,4V5.17C7.61,6.58 6,9.1 6,12V20A2,2 0 0,0 8,22H16A2,2 0 0,0 18,20V12C18,9.1 16.39,6.58 14,5.17V4A2,2 0 0,0 12,2M12,4A0,0 0 0,1 12,4V5H12V4M8,12C8,9.79 9.79,8 12,8C14.21,8 16,9.79 16,12V20H8V12Z" /></svg>`;
+var ICON_GLASS = `<svg viewBox="0 0 24 24"><path d="M5,2H19V4L13,10V18H18V20H6V18H11V10L5,4V2M7.4,4L10.4,7H13.6L16.6,4H7.4Z" /></svg>`;
+var ICON_REFRESH = `<svg viewBox="0 0 24 24"><path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" /></svg>`;
+var ICON_SEARCH = `<svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>`;
+var ICON_STAR = `<svg viewBox="0 0 24 24"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" /></svg>`;
+var ICON_LOCATION = `<svg viewBox="0 0 24 24"><path d="M12,2C15.31,2 18,4.66 18,7.95C18,12.41 12,19 12,19C12,19 6,12.41 6,7.95C6,4.66 8.69,2 12,2M12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8A2,2 0 0,0 12,6Z" /></svg>`;
+var ICON_CHEVRON = `<svg viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg>`;
+var ICON_ALERT = `<svg viewBox="0 0 24 24"><path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z" /></svg>`;
+var ICON_CLOCK = `<svg viewBox="0 0 24 24"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" /></svg>`;
+var STATUS_LABELS = {
   ready: "Op dronk",
   can_wait: "Kan nog liggen",
   near_past_peak: "Binnenkort drinken",
   hold: "Nog wegleggen",
   past_peak: "Voorbij piek",
-  unknown: "Venster onbekend",
+  unknown: "Venster onbekend"
 };
-const STATUS_ORDER = ["near_past_peak", "ready", "can_wait", "hold", "past_peak", "unknown"];
-const DEFAULT_TABS = ["now", "pairing", "cellar"];
-// "windows" was the old name of the Kelder tab; keep YAML configs working.
-const TAB_ALIASES = { windows: "cellar" };
-const WINE_TYPES = {
+var STATUS_ORDER = ["near_past_peak", "ready", "can_wait", "hold", "past_peak", "unknown"];
+var DEFAULT_TABS = ["now", "pairing", "cellar"];
+var TAB_ALIASES = { windows: "cellar" };
+var WINE_TYPES = {
   1: "Rood",
   2: "Wit",
   3: "Mousserend",
-  4: "Rosé",
+  4: "Ros\xE9",
   7: "Dessert",
-  24: "Versterkt",
+  24: "Versterkt"
 };
-const SORTS = {
+var SORTS = {
   status: "Drinkvenster",
   drink_by: "Drinken voor",
   rating: "Beoordeling",
   vintage: "Jaargang (oud eerst)",
   bottles: "Aantal flessen",
-  name: "Naam",
+  name: "Naam"
 };
-const MIN_BOTTLES = [0, 2, 3, 6];
-const EMPTY_FILTERS = { type: "", country: "", region: "", grape: "", minBottles: 0, sort: "status" };
-const NOW_LIMIT = 5;
-const UNDO_MS = 8000;
-const ERROR_TOAST_MS = 8000;
-
-/** Escape text for safe use in HTML content and attribute values. */
+var MIN_BOTTLES = [0, 2, 3, 6];
+var EMPTY_FILTERS = { type: "", country: "", region: "", grape: "", minBottles: 0, sort: "status" };
+var NOW_LIMIT = 5;
+var UNDO_MS = 8e3;
+var ERROR_TOAST_MS = 8e3;
 function esc(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+  return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
-
-/** Only allow http(s) image URLs (Vivino uses protocol-relative "//images..." too). */
 function safeUrl(url) {
   if (!url) return null;
   const full = String(url).startsWith("//") ? `https:${url}` : String(url);
   return /^https?:\/\//i.test(full) ? full : null;
 }
-
 function bottleId(bottle) {
   return bottle.bottle_id ?? bottle.id;
 }
-
 function vintageId(wine) {
   return wine.vintage_id ?? wine.id;
 }
-
-/** Distinct (location, bin) spots of a wine's bottles, each with its bottles. */
 function bottleSpots(bottles) {
-  const spots = new Map();
+  const spots = /* @__PURE__ */ new Map();
   for (const b of bottles) {
     const location = b.location_name || "Kelder";
     const key = JSON.stringify([location, b.bin || null]);
@@ -1292,40 +1270,29 @@ function bottleSpots(bottles) {
   }
   return [...spots.values()];
 }
-
-export class VivinoCellarCard extends HTMLElement {
+var VivinoCellarCard = class extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-
     this._hass = null;
-    // title / now_limit stay unset unless given in YAML; then the
-    // integration's settings (cellar payload) apply.
     this._config = {
       default_tab: "now",
-      tabs: DEFAULT_TABS,
+      tabs: DEFAULT_TABS
     };
-
     this._currentTab = "now";
     this._cellarData = null;
     this._loading = false;
     this._error = null;
     this._refreshing = false;
-
-    // Live updates
     this._unsubscribe = null;
     this._subscribing = false;
-
-    // Pairing tab state
     this._dishInput = "";
-    this._selectedFoodIds = new Set();
+    this._selectedFoodIds = /* @__PURE__ */ new Set();
     this._pairingResults = null;
     this._pairingLoading = false;
     this._pairingError = null;
-
-    // Drinking Windows tab state
     this._searchQuery = "";
-    this._statusFilter = null; // status pill that filters the list, or null
+    this._statusFilter = null;
     this._filters = { ...EMPTY_FILTERS };
     this._expandedGroups = {
       near_past_peak: true,
@@ -1333,27 +1300,21 @@ export class VivinoCellarCard extends HTMLElement {
       can_wait: false,
       hold: false,
       past_peak: false,
-      unknown: false,
+      unknown: false
     };
-
-    // Drinking: bottle id -> { timer, startedAt, vintageId, label, committing }
-    this._pendingDrinks = new Map();
+    this._pendingDrinks = /* @__PURE__ */ new Map();
     this._drinkErrors = [];
-    this._spotPicker = null; // vintage id whose location picker is open
-    this._detailWine = null; // vintage id whose detail sheet is open
-    // Your own Vivino rating, loaded when a sheet opens: vintage id -> {rating, note} | null
-    this._myRatings = new Map();
-    // Edits in the open sheet: {vid, rating, note, status: idle|loading|saving|saved|error, error}
+    this._spotPicker = null;
+    this._detailWine = null;
+    this._myRatings = /* @__PURE__ */ new Map();
     this._ratingDraft = null;
-    this._wineIndex = new Map();
-
+    this._wineIndex = /* @__PURE__ */ new Map();
     this._onPageHide = () => this._flushPendingDrinks();
     this._onKeyDown = (e) => {
-      if (e.key !== "Escape" || (this._detailWine === null && this._spotPicker === null)) return;
+      if (e.key !== "Escape" || this._detailWine === null && this._spotPicker === null) return;
       this._closeModals();
     };
   }
-
   setConfig(config) {
     if (!config) {
       throw new Error("Invalid configuration");
@@ -1364,14 +1325,11 @@ export class VivinoCellarCard extends HTMLElement {
       tabs: (Array.isArray(config.tabs) && config.tabs.length > 0 ? config.tabs : DEFAULT_TABS).map(
         (t) => TAB_ALIASES[t] || t
       ),
-      default_tab: TAB_ALIASES[config.default_tab] || config.default_tab || "now",
+      default_tab: TAB_ALIASES[config.default_tab] || config.default_tab || "now"
     };
-    this._currentTab = this._config.tabs.includes(this._config.default_tab)
-      ? this._config.default_tab
-      : this._config.tabs[0];
+    this._currentTab = this._config.tabs.includes(this._config.default_tab) ? this._config.default_tab : this._config.tabs[0];
     this._render();
   }
-
   set hass(hass) {
     const firstHass = !this._hass && hass;
     this._hass = hass;
@@ -1379,29 +1337,24 @@ export class VivinoCellarCard extends HTMLElement {
       this._subscribe();
     }
   }
-
   connectedCallback() {
     window.addEventListener("pagehide", this._onPageHide);
     window.addEventListener("keydown", this._onKeyDown);
     if (this._hass) this._subscribe();
     this._render();
   }
-
   disconnectedCallback() {
     window.removeEventListener("pagehide", this._onPageHide);
     window.removeEventListener("keydown", this._onKeyDown);
     this._flushPendingDrinks();
     this._unsubscribeUpdates();
   }
-
   getCardSize() {
     return 6;
   }
-
   // ---------------------------------------------------------------------------
   // Data loading & live updates
   // ---------------------------------------------------------------------------
-
   async _subscribe() {
     if (!this._hass || this._unsubscribe || this._subscribing) return;
     this._subscribing = true;
@@ -1409,7 +1362,6 @@ export class VivinoCellarCard extends HTMLElement {
       this._loading = true;
       this._render();
     }
-
     try {
       this._unsubscribe = await this._hass.connection.subscribeMessage(
         (data) => {
@@ -1422,27 +1374,24 @@ export class VivinoCellarCard extends HTMLElement {
       );
       if (!this.isConnected) this._unsubscribeUpdates();
     } catch (err) {
-      // Older backend without the subscribe command: load once.
       await this._loadCellarData();
     } finally {
       this._subscribing = false;
     }
   }
-
   _unsubscribeUpdates() {
     if (this._unsubscribe) {
       const unsub = this._unsubscribe;
       this._unsubscribe = null;
-      Promise.resolve(unsub()).catch(() => {});
+      Promise.resolve(unsub()).catch(() => {
+      });
     }
   }
-
   async _loadCellarData() {
     if (!this._hass) return;
     this._loading = true;
     this._error = null;
     this._render();
-
     try {
       this._cellarData = await this._hass.callWS({ type: "vivino_cellar/cellar" });
     } catch (err) {
@@ -1452,12 +1401,10 @@ export class VivinoCellarCard extends HTMLElement {
       this._render();
     }
   }
-
   async _handleRefresh() {
     if (!this._hass || this._refreshing) return;
     this._refreshing = true;
     this._render();
-
     try {
       await this._hass.callWS({ type: "vivino_cellar/refresh" });
       if (!this._unsubscribe) {
@@ -1471,7 +1418,6 @@ export class VivinoCellarCard extends HTMLElement {
       this._render();
     }
   }
-
   /** Cellar wines with pending (undoable) drinks already taken out, plus counts. */
   _viewData() {
     const data = this._cellarData || {};
@@ -1485,32 +1431,26 @@ export class VivinoCellarCard extends HTMLElement {
     }
     return { wines, counts, total };
   }
-
   _withoutPending(wine) {
     const bottles = (wine.bottles || []).filter((b) => !this._pendingDrinks.has(bottleId(b)));
     return { ...wine, bottles, bottle_count: bottles.length };
   }
-
   // ---------------------------------------------------------------------------
   // Pairing
   // ---------------------------------------------------------------------------
-
   async _handlePairingSearch() {
     if (!this._hass) return;
     const dish = this._dishInput.trim();
     const foodIds = Array.from(this._selectedFoodIds);
-
     if (!dish && foodIds.length === 0) {
       this._pairingResults = null;
       this._pairingError = "Voer een gerecht in of kies een categorie.";
       this._render();
       return;
     }
-
     this._pairingLoading = true;
     this._pairingError = null;
     this._render();
-
     try {
       const payload = { type: "vivino_cellar/pairing" };
       if (dish) {
@@ -1518,7 +1458,6 @@ export class VivinoCellarCard extends HTMLElement {
       } else {
         payload.food_ids = foodIds;
       }
-
       const res = await this._hass.callWS(payload);
       this._pairingResults = res.matches || res.pairings || [];
     } catch (err) {
@@ -1529,14 +1468,12 @@ export class VivinoCellarCard extends HTMLElement {
       this._render();
     }
   }
-
   _handleFoodChipClick(foodId) {
     if (this._selectedFoodIds.has(foodId)) {
       this._selectedFoodIds.delete(foodId);
     } else {
       this._selectedFoodIds.add(foodId);
     }
-    // Food chips and dish text are mutually exclusive for the WS call
     if (this._selectedFoodIds.size > 0) {
       this._dishInput = "";
       this._handlePairingSearch();
@@ -1545,7 +1482,6 @@ export class VivinoCellarCard extends HTMLElement {
       this._render();
     }
   }
-
   _handleResetPairing() {
     this._dishInput = "";
     this._selectedFoodIds.clear();
@@ -1553,11 +1489,9 @@ export class VivinoCellarCard extends HTMLElement {
     this._pairingError = null;
     this._render();
   }
-
   // ---------------------------------------------------------------------------
   // Drinking with undo
   // ---------------------------------------------------------------------------
-
   /** "Ontkurken" pressed on a wine: drink directly, or ask where when bottles differ. */
   _handleDrinkWine(vid) {
     const wine = this._wineIndex.get(vid);
@@ -1570,27 +1504,23 @@ export class VivinoCellarCard extends HTMLElement {
     }
     this._startDrink(wine, wine.bottles[0]);
   }
-
   /**
    * Show rendered sheets in the browser's top layer. A parent with a transform
    * (Bubble Card popups) would otherwise trap position: fixed inside it.
    */
   _openDialogs() {
     this.shadowRoot.querySelectorAll("dialog.modal-layer").forEach((dialog) => {
-      // Esc is handled by our own keydown listener, which knows picker vs sheet.
       dialog.addEventListener("cancel", (e) => e.preventDefault());
       if (!dialog.open) {
         try {
           dialog.showModal();
         } catch {
-          dialog.setAttribute("open", ""); // not connected yet; show inline
+          dialog.setAttribute("open", "");
         }
       }
     });
   }
-
   _closeModals() {
-    // The picker opens from the sheet, so close it first and go back to the sheet.
     if (this._spotPicker !== null) this._spotPicker = null;
     else {
       this._detailWine = null;
@@ -1598,11 +1528,9 @@ export class VivinoCellarCard extends HTMLElement {
     }
     this._render();
   }
-
   // ---------------------------------------------------------------------------
   // Your rating (Vivino review)
   // ---------------------------------------------------------------------------
-
   async _openRating(vid) {
     const known = this._myRatings.get(vid);
     this._ratingDraft = {
@@ -1610,7 +1538,7 @@ export class VivinoCellarCard extends HTMLElement {
       rating: known?.rating ?? null,
       note: known?.note ?? "",
       status: this._myRatings.has(vid) ? "idle" : "loading",
-      error: null,
+      error: null
     };
     if (this._myRatings.has(vid) || !this._hass) return;
     try {
@@ -1627,14 +1555,12 @@ export class VivinoCellarCard extends HTMLElement {
     }
     this._render();
   }
-
   _ratingChanged() {
     const d = this._ratingDraft;
     if (!d || d.rating === null) return false;
     const mine = this._myRatings.get(d.vid);
     return !mine || mine.rating !== d.rating || (mine.note || "") !== (d.note || "");
   }
-
   async _saveRating() {
     const d = this._ratingDraft;
     if (!d || !this._ratingChanged() || d.status === "saving") return;
@@ -1646,7 +1572,7 @@ export class VivinoCellarCard extends HTMLElement {
         type: "vivino_cellar/rate",
         vintage_id: d.vid,
         rating: d.rating,
-        note: d.note || "",
+        note: d.note || ""
       });
       this._myRatings.set(d.vid, { rating: res.rating ?? d.rating, note: res.note ?? d.note });
       if (this._ratingDraft === d) d.status = "saved";
@@ -1658,40 +1584,36 @@ export class VivinoCellarCard extends HTMLElement {
     }
     this._render();
   }
-
   _renderStars(rating) {
-    return [1, 2, 3, 4, 5]
-      .map((n) => {
-        const fill = rating >= n ? 100 : rating >= n - 0.5 ? 50 : 0;
-        const label = (v) => `${String(v).replace(".", ",")} ${v === 1 ? "ster" : "sterren"}`;
-        return `
+    return [1, 2, 3, 4, 5].map((n) => {
+      const fill = rating >= n ? 100 : rating >= n - 0.5 ? 50 : 0;
+      const label = (v) => `${String(v).replace(".", ",")} ${v === 1 ? "ster" : "sterren"}`;
+      return `
           <span class="star-slot">
             <span class="star-icon">${ICON_STAR}<span class="star-fill" style="width:${fill}%">${ICON_STAR}</span></span>
             <button class="star-half left" data-rate="${n - 0.5}" aria-label="${label(n - 0.5)}" ${n === 1 ? "disabled" : ""}></button>
             <button class="star-half right" data-rate="${n}" aria-label="${label(n)}"></button>
           </span>`;
-      })
-      .join("");
+    }).join("");
   }
-
   _renderRatingSection(vid) {
     const d = this._ratingDraft;
     if (!d || d.vid !== vid) return "";
     if (d.status === "loading") {
-      return `<div class="rating-section"><div class="rating-title">Jouw beoordeling</div><div class="muted">Laden…</div></div>`;
+      return `<div class="rating-section"><div class="rating-title">Jouw beoordeling</div><div class="muted">Laden\u2026</div></div>`;
     }
     const value = d.rating ?? 0;
     const status = {
-      saving: `<span class="muted">Opslaan…</span>`,
+      saving: `<span class="muted">Opslaan\u2026</span>`,
       saved: `<span class="rating-ok">Opgeslagen op Vivino</span>`,
-      error: `<span class="rating-error">${esc(d.error || "Mislukt")}</span>`,
+      error: `<span class="rating-error">${esc(d.error || "Mislukt")}</span>`
     }[d.status] || (this._myRatings.get(vid) ? "" : `<span class="muted">Nog niet beoordeeld</span>`);
     return `
       <div class="rating-section">
         <div class="rating-title">Jouw beoordeling</div>
         <div class="rating-row">
           <div class="star-picker" role="group" aria-label="Kies een beoordeling">${this._renderStars(value)}</div>
-          <span class="rating-value">${d.rating ? String(d.rating).replace(".", ",") : "–"}</span>
+          <span class="rating-value">${d.rating ? String(d.rating).replace(".", ",") : "\u2013"}</span>
         </div>
         <textarea class="text-input rating-note" id="rating-note" rows="2"
           placeholder="Notitie (optioneel)">${esc(d.note || "")}</textarea>
@@ -1701,7 +1623,6 @@ export class VivinoCellarCard extends HTMLElement {
         </div>
       </div>`;
   }
-
   _handlePickSpot(index) {
     const wine = this._wineIndex.get(this._spotPicker);
     this._spotPicker = null;
@@ -1712,7 +1633,6 @@ export class VivinoCellarCard extends HTMLElement {
       this._render();
     }
   }
-
   _startDrink(wine, bottle) {
     const id = bottleId(bottle);
     if (this._pendingDrinks.has(id)) return;
@@ -1722,11 +1642,10 @@ export class VivinoCellarCard extends HTMLElement {
       startedAt: Date.now(),
       vintageId: vintageId(wine),
       label: wine.year ? `${name} (${wine.year})` : name,
-      committing: false,
+      committing: false
     });
     this._render();
   }
-
   _undoDrink(id) {
     const pending = this._pendingDrinks.get(id);
     if (!pending || pending.committing) return;
@@ -1734,21 +1653,17 @@ export class VivinoCellarCard extends HTMLElement {
     this._pendingDrinks.delete(id);
     this._render();
   }
-
   async _commitDrink(id) {
     const pending = this._pendingDrinks.get(id);
     if (!pending || pending.committing || !this._hass) return;
     pending.committing = true;
     clearTimeout(pending.timer);
     this._render();
-
     try {
-      // The backend refreshes the cellar before replying, so the subscription
-      // has already pushed the new data by the time this resolves.
       await this._hass.callWS({
         type: "vivino_cellar/drink",
         bottle_id: id,
-        vintage_id: pending.vintageId,
+        vintage_id: pending.vintageId
       });
       this._pendingDrinks.delete(id);
       if (!this._unsubscribe) await this._loadCellarData();
@@ -1758,38 +1673,31 @@ export class VivinoCellarCard extends HTMLElement {
     }
     this._render();
   }
-
   _flushPendingDrinks() {
     for (const [id, pending] of this._pendingDrinks) {
       if (!pending.committing) this._commitDrink(id);
     }
   }
-
   _showDrinkError(message) {
     const entry = { id: Date.now() + Math.random(), message };
     this._drinkErrors.push(entry);
     setTimeout(() => this._dismissError(entry.id), ERROR_TOAST_MS);
   }
-
   _dismissError(id) {
     this._drinkErrors = this._drinkErrors.filter((e) => e.id !== id);
     this._render();
   }
-
   // ---------------------------------------------------------------------------
   // Rendering
   // ---------------------------------------------------------------------------
-
   _toggleStatusFilter(status) {
     this._statusFilter = this._statusFilter === status ? null : status;
     this._render();
   }
-
   _toggleGroup(status) {
     this._expandedGroups[status] = !this._expandedGroups[status];
     this._render();
   }
-
   _formatLastRefresh(isoString) {
     if (!isoString) return "Nooit";
     try {
@@ -1798,34 +1706,23 @@ export class VivinoCellarCard extends HTMLElement {
         day: "numeric",
         month: "short",
         hour: "2-digit",
-        minute: "2-digit",
+        minute: "2-digit"
       });
     } catch {
       return isoString;
     }
   }
-
   _render() {
     const shadow = this.shadowRoot;
     if (!shadow) return;
-
-    // Keep focus and caret in text inputs across full re-renders (live updates).
     const active = shadow.activeElement;
     const focusId = active && active.id;
-    const selection =
-      active && typeof active.selectionStart === "number"
-        ? [active.selectionStart, active.selectionEnd]
-        : null;
-
+    const selection = active && typeof active.selectionStart === "number" ? [active.selectionStart, active.selectionEnd] : null;
     const data = this._cellarData || {};
     const view = this._viewData();
     this._wineIndex = new Map(view.wines.map((w) => [vintageId(w), w]));
     const lastRefresh = this._formatLastRefresh(data.last_refresh_time);
-    const staleWarning =
-      data.last_update_success === false
-        ? `<div class="warning-banner">${ICON_ALERT} <span>Laatste update van Vivino mislukt. Gegevens kunnen verouderd zijn; controleer de Vivino-sessie.</span></div>`
-        : "";
-
+    const staleWarning = data.last_update_success === false ? `<div class="warning-banner">${ICON_ALERT} <span>Laatste update van Vivino mislukt. Gegevens kunnen verouderd zijn; controleer de Vivino-sessie.</span></div>` : "";
     shadow.innerHTML = `
       <style>${cardStyles}</style>
       <div class="card-container">
@@ -1852,11 +1749,7 @@ export class VivinoCellarCard extends HTMLElement {
 
         ${this._renderTabsBar()}
 
-        ${
-          this._loading
-            ? `<div class="spinner-box"><div class="spinner"></div><span>Kelder laden...</span></div>`
-            : this._renderCurrentTab(view)
-        }
+        ${this._loading ? `<div class="spinner-box"><div class="spinner"></div><span>Kelder laden...</span></div>` : this._renderCurrentTab(view)}
 
         ${this._renderDetailSheet()}
         ${this._renderSpotPicker()}
@@ -1865,7 +1758,6 @@ export class VivinoCellarCard extends HTMLElement {
     `;
     this._attachEventListeners();
     this._openDialogs();
-
     if (focusId) {
       const el = shadow.getElementById(focusId);
       if (el) {
@@ -1876,7 +1768,6 @@ export class VivinoCellarCard extends HTMLElement {
       }
     }
   }
-
   _renderCurrentTab(view) {
     switch (this._currentTab) {
       case "pairing":
@@ -1887,58 +1778,40 @@ export class VivinoCellarCard extends HTMLElement {
         return this._renderNowTab(view);
     }
   }
-
   _renderTabsBar() {
     const tabs = this._config.tabs || DEFAULT_TABS;
     if (tabs.length <= 1) return "";
     const defs = {
       now: `${ICON_CLOCK} Nu drinken`,
       pairing: `${ICON_GLASS} Wijn & Spijs`,
-      cellar: `${ICON_BOTTLE} Kelder`,
+      cellar: `${ICON_BOTTLE} Kelder`
     };
     return `
       <div class="tabs-bar">
-        ${tabs
-          .filter((t) => defs[t])
-          .map(
-            (t) => `<button class="tab-btn ${this._currentTab === t ? "active" : ""}" data-tab="${t}">${defs[t]}</button>`
-          )
-          .join("")}
+        ${tabs.filter((t) => defs[t]).map(
+      (t) => `<button class="tab-btn ${this._currentTab === t ? "active" : ""}" data-tab="${t}">${defs[t]}</button>`
+    ).join("")}
       </div>
     `;
   }
-
   _title(data) {
     return this._config.title || data.settings?.title || "Wijnkelder";
   }
-
   _nowLimit() {
-    const limit =
-      Number(this._config.now_limit) || Number(this._cellarData?.settings?.now_limit);
+    const limit = Number(this._config.now_limit) || Number(this._cellarData?.settings?.now_limit);
     return limit > 0 ? limit : NOW_LIMIT;
   }
-
   _renderNowTab(view) {
-    const year = new Date().getFullYear();
+    const year = (/* @__PURE__ */ new Date()).getFullYear();
     const rank = { near_past_peak: 0, ready: 1, can_wait: 2 };
-    const candidates = view.wines
-      .filter((w) => w.bottles.length > 0 && w.window_status in rank)
-      .sort(
-        (a, b) =>
-          rank[a.window_status] - rank[b.window_status] ||
-          (a.end_year ?? Infinity) - (b.end_year ?? Infinity) ||
-          (b.rating || 0) - (a.rating || 0)
-      )
-      .slice(0, this._nowLimit());
-
+    const candidates = view.wines.filter((w) => w.bottles.length > 0 && w.window_status in rank).sort(
+      (a, b) => rank[a.window_status] - rank[b.window_status] || (a.end_year ?? Infinity) - (b.end_year ?? Infinity) || (b.rating || 0) - (a.rating || 0)
+    ).slice(0, this._nowLimit());
     const pastPeak = view.counts.past_peak || 0;
-    const pastPeakHint = pastPeak
-      ? `<button class="hint-banner" id="btn-show-past-peak">
+    const pastPeakHint = pastPeak ? `<button class="hint-banner" id="btn-show-past-peak">
            ${ICON_ALERT}
            <span>${pastPeak} ${pastPeak === 1 ? "fles is" : "flessen zijn"} voorbij de piek. Bekijken</span>
-         </button>`
-      : "";
-
+         </button>` : "";
     if (candidates.length === 0) {
       return `
         <div class="now-tab">
@@ -1947,7 +1820,6 @@ export class VivinoCellarCard extends HTMLElement {
         </div>
       `;
     }
-
     return `
       <div class="now-tab">
         ${pastPeakHint}
@@ -1957,7 +1829,6 @@ export class VivinoCellarCard extends HTMLElement {
       </div>
     `;
   }
-
   _nowReason(wine, year) {
     if (wine.window_status === "near_past_peak") {
       return `Laatste jaar van het drinkvenster: drink deze in ${year}.`;
@@ -1967,11 +1838,9 @@ export class VivinoCellarCard extends HTMLElement {
     }
     return "Op dronk.";
   }
-
   _renderPairingTab() {
     const data = this._cellarData || {};
     const categories = data.food_categories || [];
-
     return `
       <div class="pairing-tab">
         <div class="pairing-controls">
@@ -1987,77 +1856,52 @@ export class VivinoCellarCard extends HTMLElement {
               ${ICON_SEARCH} Zoek
             </button>
           </div>
-          ${
-            categories.length > 0
-              ? `
+          ${categories.length > 0 ? `
             <div class="chips-container">
-              <span class="chips-label">Of kies categorieën:</span>
-              ${categories
-                .map(
-                  (cat) => `
+              <span class="chips-label">Of kies categorie\xEBn:</span>
+              ${categories.map(
+      (cat) => `
                 <button class="food-chip ${this._selectedFoodIds.has(cat.id) ? "selected" : ""}" data-food-id="${esc(cat.id)}">
                   ${esc(cat.name)}
                 </button>`
-                )
-                .join("")}
-              ${
-                this._dishInput || this._selectedFoodIds.size > 0
-                  ? `<button class="reset-link" id="btn-reset-pairing">Wissen</button>`
-                  : ""
-              }
-            </div>`
-              : ""
-          }
+    ).join("")}
+              ${this._dishInput || this._selectedFoodIds.size > 0 ? `<button class="reset-link" id="btn-reset-pairing">Wissen</button>` : ""}
+            </div>` : ""}
         </div>
 
         ${this._pairingError ? `<div class="error-banner">${ICON_ALERT} <span>${esc(this._pairingError)}</span></div>` : ""}
 
-        ${
-          this._pairingLoading
-            ? `<div class="spinner-box"><div class="spinner"></div><span>Pairing suggesties berekenen...</span></div>`
-            : this._renderPairingResults()
-        }
+        ${this._pairingLoading ? `<div class="spinner-box"><div class="spinner"></div><span>Pairing suggesties berekenen...</span></div>` : this._renderPairingResults()}
       </div>
     `;
   }
-
   _renderPairingResults() {
     if (!this._pairingResults) {
       return `<div class="empty-state">Voer een gerecht in of kies een spijscategorie hierboven om passende wijnen uit je kelder te vinden.</div>`;
     }
-
-    // Enrich matches with live cellar data (window years, bottles after drinks).
-    const matches = this._pairingResults
-      .map((match) => {
-        const cellarWine = this._wineIndex.get(vintageId(match));
-        return cellarWine
-          ? { ...cellarWine, ...match, bottles: cellarWine.bottles }
-          : this._withoutPending(match);
-      })
-      .filter((w) => w.bottles.length > 0);
-
+    const matches = this._pairingResults.map((match) => {
+      const cellarWine = this._wineIndex.get(vintageId(match));
+      return cellarWine ? { ...cellarWine, ...match, bottles: cellarWine.bottles } : this._withoutPending(match);
+    }).filter((w) => w.bottles.length > 0);
     if (matches.length === 0) {
       return `<div class="empty-state">Geen passende wijnen gevonden in je kelder voor dit gerecht.</div>`;
     }
-
     for (const m of matches) {
       if (!this._wineIndex.has(vintageId(m))) this._wineIndex.set(vintageId(m), m);
     }
-
     return `
       <div class="wine-card-list">
         ${matches.map((wine) => this._renderWineCard(wine, wine.explanation || wine.reason)).join("")}
       </div>
     `;
   }
-
   /** Does a wine pass every Kelder filter except the ones named in `skip`? */
   _matchesFilters(wine, skip = []) {
     const f = this._filters;
     const query = (this._searchQuery || "").toLowerCase();
     if (wine.bottles.length === 0) return false;
     if (wine.bottles.length < f.minBottles) return false;
-    if (query && ![wine.name, wine.winery, wine.region, ...(wine.grapes || [])].some(
+    if (query && ![wine.name, wine.winery, wine.region, ...wine.grapes || []].some(
       (v) => (v || "").toLowerCase().includes(query)
     )) return false;
     if (!skip.includes("type") && f.type && String(wine.type_id) !== f.type) return false;
@@ -2068,86 +1912,72 @@ export class VivinoCellarCard extends HTMLElement {
       return false;
     return true;
   }
-
   /** Options for one filter, counted (in bottles) over the wines the other filters leave. */
   _filterOptions(wines, key, valuesOf, labelOf = (v) => v, alsoSkip = []) {
-    const counts = new Map();
+    const counts = /* @__PURE__ */ new Map();
     for (const wine of wines) {
       if (!this._matchesFilters(wine, [key, ...alsoSkip])) continue;
       for (const v of valuesOf(wine)) {
-        if (v === null || v === undefined || v === "") continue;
+        if (v === null || v === void 0 || v === "") continue;
         counts.set(String(v), (counts.get(String(v)) || 0) + wine.bottles.length);
       }
     }
     const selected = this._filters[key];
     if (selected && !counts.has(selected)) counts.set(selected, 0);
-    return [...counts.entries()]
-      .map(([value, n]) => ({ value, label: labelOf(value), n }))
-      .sort((a, b) => a.label.localeCompare(b.label, "nl"));
+    return [...counts.entries()].map(([value, n]) => ({ value, label: labelOf(value), n })).sort((a, b) => a.label.localeCompare(b.label, "nl"));
   }
-
   _renderSelect(key, allLabel, options) {
     const current = this._filters[key];
     return `
       <select class="filter-select ${current ? "active" : ""}" data-filter="${key}" aria-label="${esc(allLabel)}">
         <option value="">${esc(allLabel)}</option>
-        ${options
-          .map(
-            (o) => `<option value="${esc(o.value)}" ${o.value === current ? "selected" : ""}>${esc(o.label)} (${o.n})</option>`
-          )
-          .join("")}
+        ${options.map(
+      (o) => `<option value="${esc(o.value)}" ${o.value === current ? "selected" : ""}>${esc(o.label)} (${o.n})</option>`
+    ).join("")}
       </select>`;
   }
-
   _sortWines(wines) {
     const by = {
       drink_by: (a, b) => (a.end_year ?? Infinity) - (b.end_year ?? Infinity),
       rating: (a, b) => (b.rating || 0) - (a.rating || 0),
       vintage: (a, b) => (a.year ?? Infinity) - (b.year ?? Infinity),
       bottles: (a, b) => b.bottles.length - a.bottles.length,
-      name: (a, b) => (a.name || "").localeCompare(b.name || "", "nl"),
+      name: (a, b) => (a.name || "").localeCompare(b.name || "", "nl")
     }[this._filters.sort];
     const byName = (a, b) => (a.name || "").localeCompare(b.name || "", "nl");
     return [...wines].sort((a, b) => (by ? by(a, b) : 0) || byName(a, b));
   }
-
   _hasActiveFilters() {
     const f = this._filters;
     return Boolean(
-      this._statusFilter ||
-        this._searchQuery ||
-        f.type ||
-        f.country ||
-        f.region ||
-        f.grape ||
-        f.minBottles
+      this._statusFilter || this._searchQuery || f.type || f.country || f.region || f.grape || f.minBottles
     );
   }
-
   _renderCellarTab(view) {
     const f = this._filters;
     const wines = view.wines.filter((w) => this._matchesFilters(w));
     const bottles = wines.reduce((n, w) => n + w.bottles.length, 0);
-
-    // Pill counts follow the other filters, so they show what a tap would leave.
     const statusCounts = Object.fromEntries(STATUS_ORDER.map((st) => [st, 0]));
     for (const wine of view.wines) {
       if (!this._matchesFilters(wine, ["status"])) continue;
       const st = wine.window_status || "unknown";
       statusCounts[st] = (statusCounts[st] || 0) + wine.bottles.length;
     }
-
     const typeOptions = this._filterOptions(
-      view.wines, "type", (w) => [w.type_id], (v) => WINE_TYPES[v] || `Type ${v}`
+      view.wines,
+      "type",
+      (w) => [w.type_id],
+      (v) => WINE_TYPES[v] || `Type ${v}`
     );
-    // Region sits under country: picking a region must not hide the other countries.
     const countryOptions = this._filterOptions(
-      view.wines, "country", (w) => [w.country], (v) => v, ["region"]
+      view.wines,
+      "country",
+      (w) => [w.country],
+      (v) => v,
+      ["region"]
     );
-    // Follows the country filter, so it only lists that country's regions.
     const regionOptions = this._filterOptions(view.wines, "region", (w) => [w.region]);
     const grapeOptions = this._filterOptions(view.wines, "grape", (w) => w.grapes || []);
-
     let list;
     if (f.sort === "status") {
       list = STATUS_ORDER.map((status) => {
@@ -2156,7 +1986,6 @@ export class VivinoCellarCard extends HTMLElement {
           wines.filter((w) => (w.window_status || "unknown") === status)
         );
         if (groupWines.length === 0) return "";
-        // A filtered group is always open: that is what the pill asked for.
         const isOpen = this._statusFilter === status || !!this._expandedGroups[status];
         const groupBottles = groupWines.reduce((n, w) => n + w.bottles.length, 0);
         return `
@@ -2168,21 +1997,14 @@ export class VivinoCellarCard extends HTMLElement {
               </div>
               <div class="group-chevron ${isOpen ? "open" : ""}">${ICON_CHEVRON}</div>
             </div>
-            ${
-              isOpen
-                ? `<div class="group-wines-content">
+            ${isOpen ? `<div class="group-wines-content">
                     ${groupWines.map((wine) => this._renderWineCard(wine)).join("")}
-                  </div>`
-                : ""
-            }
+                  </div>` : ""}
           </div>`;
       }).join("");
     } else {
-      list = `<div class="cellar-list">${this._sortWines(wines)
-        .map((wine) => this._renderWineCard(wine))
-        .join("")}</div>`;
+      list = `<div class="cellar-list">${this._sortWines(wines).map((wine) => this._renderWineCard(wine)).join("")}</div>`;
     }
-
     return `
       <div class="cellar-tab">
         <div class="search-filter-row">
@@ -2197,13 +2019,13 @@ export class VivinoCellarCard extends HTMLElement {
 
         <div class="status-chips-summary ${this._statusFilter ? "filtering" : ""}">
           ${STATUS_ORDER.map((status) => {
-            const count = statusCounts[status] || 0;
-            const active = this._statusFilter === status;
-            return `<button class="status-chip badge-${status} ${active ? "active" : ""}"
+      const count = statusCounts[status] || 0;
+      const active = this._statusFilter === status;
+      return `<button class="status-chip badge-${status} ${active ? "active" : ""}"
                 data-status="${status}" aria-pressed="${active}" ${count === 0 && !active ? "disabled" : ""}>
                 ${STATUS_LABELS[status]}: ${count}
               </button>`;
-          }).join("")}
+    }).join("")}
         </div>
 
         <div class="filter-grid">
@@ -2213,18 +2035,16 @@ export class VivinoCellarCard extends HTMLElement {
           ${this._renderSelect("grape", "Alle druiven", grapeOptions)}
           <select class="filter-select ${f.minBottles ? "active" : ""}" data-filter="minBottles" aria-label="Aantal flessen">
             ${MIN_BOTTLES.map(
-              (n) => `<option value="${n}" ${n === f.minBottles ? "selected" : ""}>${n ? `${n}+ flessen` : "Elk aantal"}</option>`
-            ).join("")}
+      (n) => `<option value="${n}" ${n === f.minBottles ? "selected" : ""}>${n ? `${n}+ flessen` : "Elk aantal"}</option>`
+    ).join("")}
           </select>
           <select class="filter-select" data-filter="sort" aria-label="Sorteren">
-            ${Object.entries(SORTS)
-              .map(([k, label]) => `<option value="${k}" ${k === f.sort ? "selected" : ""}>Sorteer: ${label}</option>`)
-              .join("")}
+            ${Object.entries(SORTS).map(([k, label]) => `<option value="${k}" ${k === f.sort ? "selected" : ""}>Sorteer: ${label}</option>`).join("")}
           </select>
         </div>
 
         <div class="result-bar">
-          <span>${wines.length} ${wines.length === 1 ? "wijn" : "wijnen"} · ${bottles} flessen</span>
+          <span>${wines.length} ${wines.length === 1 ? "wijn" : "wijnen"} \xB7 ${bottles} flessen</span>
           ${this._hasActiveFilters() ? `<button class="btn-link" id="btn-clear-filters">Wis filters</button>` : ""}
         </div>
 
@@ -2232,32 +2052,19 @@ export class VivinoCellarCard extends HTMLElement {
       </div>
     `;
   }
-
   _renderWineCard(wine, reason = null) {
     const wineName = wine.name || wine.wine_name || "Onbekende wijn";
     const rating = typeof wine.rating === "number" ? wine.rating.toFixed(1) : null;
     const windowStatus = wine.window_status || "unknown";
     const { start_year: startYear, end_year: endYear } = wine;
-    const windowYearsText =
-      startYear && endYear
-        ? `${startYear} - ${endYear}`
-        : startYear
-        ? `Vanaf ${startYear}`
-        : endYear
-        ? `Tot ${endYear}`
-        : null;
+    const windowYearsText = startYear && endYear ? `${startYear} - ${endYear}` : startYear ? `Vanaf ${startYear}` : endYear ? `Tot ${endYear}` : null;
     const image = safeUrl(wine.image_url);
     const bottles = wine.bottles || [];
     const spots = bottleSpots(bottles);
-
     return `
       <div class="wine-card clickable" role="button" tabindex="0"
         data-detail-id="${esc(vintageId(wine))}" aria-label="Details: ${esc(wineName)}">
-        ${
-          image
-            ? `<img class="wine-thumb" src="${esc(image)}" alt="${esc(wineName)}" onerror="this.style.display='none'" />`
-            : `<div class="wine-thumb-placeholder">${ICON_BOTTLE}</div>`
-        }
+        ${image ? `<img class="wine-thumb" src="${esc(image)}" alt="${esc(wineName)}" onerror="this.style.display='none'" />` : `<div class="wine-thumb-placeholder">${ICON_BOTTLE}</div>`}
         <div class="wine-details">
           <div class="wine-title">${esc(wineName)} ${wine.year ? `(${esc(wine.year)})` : ""}</div>
           ${wine.winery ? `<div class="wine-subtitle">${esc(wine.winery)}</div>` : ""}
@@ -2270,31 +2077,24 @@ export class VivinoCellarCard extends HTMLElement {
           ${reason ? `<div class="pairing-reason">${esc(reason)}</div>` : ""}
 
           <div class="bottles-list">
-            ${
-              bottles.length > 0
-                ? `<div class="bottle-summary">
+            ${bottles.length > 0 ? `<div class="bottle-summary">
                     <div class="bottle-spots">
-                      ${spots
-                        .map(
-                          (s) => `
+                      ${spots.map(
+      (s) => `
                         <span class="bottle-loc">
-                          ${ICON_LOCATION} ${esc(s.location)}${s.bin ? ` · vak ${esc(s.bin)}` : ""}${s.bottles.length > 1 ? ` <strong>${s.bottles.length}×</strong>` : ""}
+                          ${ICON_LOCATION} ${esc(s.location)}${s.bin ? ` \xB7 vak ${esc(s.bin)}` : ""}${s.bottles.length > 1 ? ` <strong>${s.bottles.length}\xD7</strong>` : ""}
                         </span>`
-                        )
-                        .join("")}
+    ).join("")}
                     </div>
                     <button class="drink-btn btn-drink-action" data-vintage-id="${esc(vintageId(wine))}">
                       ${ICON_GLASS} Ontkurken
                     </button>
-                  </div>`
-                : `<div class="bottle-row"><span>Geen flessen op voorraad</span></div>`
-            }
+                  </div>` : `<div class="bottle-row"><span>Geen flessen op voorraad</span></div>`}
           </div>
         </div>
       </div>
     `;
   }
-
   _renderDetailSheet() {
     if (this._detailWine === null) return "";
     const wine = this._wineIndex.get(this._detailWine);
@@ -2308,34 +2108,21 @@ export class VivinoCellarCard extends HTMLElement {
     const vivinoUrl = safeUrl(wine.vivino_url);
     const rating = typeof wine.rating === "number" ? wine.rating.toFixed(1) : null;
     const origin = [wine.region, wine.country].filter(Boolean).join(", ");
-    const windowText =
-      wine.start_year && wine.end_year
-        ? `${wine.start_year} – ${wine.end_year}`
-        : wine.start_year
-        ? `vanaf ${wine.start_year}`
-        : wine.end_year
-        ? `tot ${wine.end_year}`
-        : "onbekend";
+    const windowText = wine.start_year && wine.end_year ? `${wine.start_year} \u2013 ${wine.end_year}` : wine.start_year ? `vanaf ${wine.start_year}` : wine.end_year ? `tot ${wine.end_year}` : "onbekend";
     const source = { vivino: "volgens Vivino", ai_estimate: "AI-schatting" }[wine.window_source];
     const foods = (wine.foods || []).map((f) => f.name).filter(Boolean);
     const spots = bottleSpots(wine.bottles || []);
-    const row = (label, value) =>
-      value ? `<div class="detail-row"><dt>${label}</dt><dd>${value}</dd></div>` : "";
-
+    const row = (label, value) => value ? `<div class="detail-row"><dt>${label}</dt><dd>${value}</dd></div>` : "";
     return `
       <dialog class="modal-layer" id="detail-backdrop" aria-labelledby="detail-title">
         <div class="modal-dialog detail-sheet">
           <div class="detail-hero">
-            ${
-              image
-                ? `<img class="detail-image" src="${esc(image)}" alt="" onerror="this.style.display='none'" />`
-                : `<div class="detail-image placeholder">${ICON_BOTTLE}</div>`
-            }
+            ${image ? `<img class="detail-image" src="${esc(image)}" alt="" onerror="this.style.display='none'" />` : `<div class="detail-image placeholder">${ICON_BOTTLE}</div>`}
             <div class="detail-heading">
               <div class="wine-title" id="detail-title">${esc(name)} ${wine.year ? `(${esc(wine.year)})` : ""}</div>
               ${wine.winery ? `<div class="wine-subtitle">${esc(wine.winery)}</div>` : ""}
               <div class="wine-badges">
-                ${rating ? `<span class="badge badge-rating">${ICON_STAR} ${rating}${wine.ratings_count ? ` · ${esc(wine.ratings_count)} beoordelingen` : ""}</span>` : ""}
+                ${rating ? `<span class="badge badge-rating">${ICON_STAR} ${rating}${wine.ratings_count ? ` \xB7 ${esc(wine.ratings_count)} beoordelingen` : ""}</span>` : ""}
                 <span class="badge badge-${status}">${STATUS_LABELS[status] || esc(status)}</span>
               </div>
             </div>
@@ -2349,44 +2136,30 @@ export class VivinoCellarCard extends HTMLElement {
               ${row("Stijl", esc(wine.style || ""))}
               ${row("Past bij", esc(foods.join(", ")))}
               ${row(
-                "Flessen",
-                spots.length
-                  ? spots
-                      .map(
-                        (sp) => `<div>${esc(sp.location)}${sp.bin ? ` · vak ${esc(sp.bin)}` : ""}: ${sp.bottles.length}×</div>`
-                      )
-                      .join("")
-                  : "Geen flessen op voorraad"
-              )}
+      "Flessen",
+      spots.length ? spots.map(
+        (sp) => `<div>${esc(sp.location)}${sp.bin ? ` \xB7 vak ${esc(sp.bin)}` : ""}: ${sp.bottles.length}\xD7</div>`
+      ).join("") : "Geen flessen op voorraad"
+    )}
             </dl>
             ${this._renderRatingSection(vintageId(wine))}
           </div>
           <div class="modal-footer detail-actions">
-            ${
-              vivinoUrl
-                ? `<a class="btn-link" href="${esc(vivinoUrl)}" target="_blank" rel="noopener noreferrer">Bekijk op Vivino</a>`
-                : "<span></span>"
-            }
+            ${vivinoUrl ? `<a class="btn-link" href="${esc(vivinoUrl)}" target="_blank" rel="noopener noreferrer">Bekijk op Vivino</a>` : "<span></span>"}
             <div class="detail-buttons">
               <button class="btn-secondary" id="btn-close-detail">Sluiten</button>
-              ${
-                wine.bottles.length
-                  ? `<button class="drink-btn btn-drink-action" data-vintage-id="${esc(vintageId(wine))}">${ICON_GLASS} Ontkurken</button>`
-                  : ""
-              }
+              ${wine.bottles.length ? `<button class="drink-btn btn-drink-action" data-vintage-id="${esc(vintageId(wine))}">${ICON_GLASS} Ontkurken</button>` : ""}
             </div>
           </div>
         </div>
       </dialog>
     `;
   }
-
   _renderSpotPicker() {
     if (this._spotPicker === null) return "";
     const wine = this._wineIndex.get(this._spotPicker);
     if (!wine) return "";
     const name = wine.name || wine.wine_name || "Wijn";
-
     return `
       <dialog class="modal-layer" id="modal-backdrop" aria-label="Welke fles pak je?">
         <div class="modal-dialog">
@@ -2397,15 +2170,13 @@ export class VivinoCellarCard extends HTMLElement {
           <div class="modal-body">
             <div><strong>${esc(name)}</strong> ${wine.year ? `(${esc(wine.year)})` : ""}</div>
             <div class="spot-options">
-              ${bottleSpots(wine.bottles)
-                .map(
-                  (s, i) => `
+              ${bottleSpots(wine.bottles).map(
+      (s, i) => `
                 <button class="spot-option" data-spot-index="${i}">
-                  <span>${ICON_LOCATION} ${esc(s.location)}${s.bin ? ` · vak ${esc(s.bin)}` : ""}</span>
-                  <span class="spot-count">${s.bottles.length}×</span>
+                  <span>${ICON_LOCATION} ${esc(s.location)}${s.bin ? ` \xB7 vak ${esc(s.bin)}` : ""}</span>
+                  <span class="spot-count">${s.bottles.length}\xD7</span>
                 </button>`
-                )
-                .join("")}
+    ).join("")}
             </div>
           </div>
           <div class="modal-footer">
@@ -2415,63 +2186,49 @@ export class VivinoCellarCard extends HTMLElement {
       </dialog>
     `;
   }
-
   _renderToasts() {
     const undoable = [...this._pendingDrinks.entries()].filter(([, p]) => !p.committing);
     if (undoable.length === 0 && this._drinkErrors.length === 0) return "";
     const now = Date.now();
-
     return `
       <div class="toast-stack">
-        ${this._drinkErrors
-          .map(
-            (e) => `
+        ${this._drinkErrors.map(
+      (e) => `
           <div class="toast toast-error">
             ${ICON_ALERT}
             <span class="toast-text">${esc(e.message)}</span>
             <button class="toast-action" data-dismiss-error="${e.id}">Sluiten</button>
           </div>`
-          )
-          .join("")}
-        ${undoable
-          .map(
-            ([id, p]) => `
+    ).join("")}
+        ${undoable.map(
+      ([id, p]) => `
           <div class="toast">
             ${ICON_GLASS}
             <span class="toast-text">Ontkurkt: ${esc(p.label)}</span>
             <button class="toast-action" data-undo-bottle="${esc(id)}">Ongedaan maken</button>
             <div class="toast-progress" style="animation-duration:${UNDO_MS}ms;animation-delay:-${Math.min(now - p.startedAt, UNDO_MS)}ms"></div>
           </div>`
-          )
-          .join("")}
+    ).join("")}
       </div>
     `;
   }
-
   // ---------------------------------------------------------------------------
   // Events
   // ---------------------------------------------------------------------------
-
   _attachEventListeners() {
     const shadow = this.shadowRoot;
     if (!shadow) return;
-    const on = (selector, handler) =>
-      shadow.querySelectorAll(selector).forEach((el) => el.addEventListener("click", (e) => handler(el, e)));
-
+    const on = (selector, handler) => shadow.querySelectorAll(selector).forEach((el) => el.addEventListener("click", (e) => handler(el, e)));
     on("#btn-refresh", () => this._handleRefresh());
-
     on(".tab-btn", (el) => {
       this._currentTab = el.dataset.tab;
       this._render();
     });
-
     on("#btn-show-past-peak", () => {
       this._currentTab = "cellar";
       this._statusFilter = "past_peak";
       this._render();
     });
-
-    // Pairing
     const dishInput = shadow.getElementById("dish-input");
     if (dishInput) {
       dishInput.addEventListener("input", (e) => {
@@ -2484,8 +2241,6 @@ export class VivinoCellarCard extends HTMLElement {
     on("#btn-search-dish", () => this._handlePairingSearch());
     on(".food-chip", (el) => this._handleFoodChipClick(parseInt(el.dataset.foodId, 10)));
     on("#btn-reset-pairing", () => this._handleResetPairing());
-
-    // Windows
     const cellarSearch = shadow.getElementById("cellar-search-input");
     if (cellarSearch) {
       cellarSearch.addEventListener("input", (e) => {
@@ -2495,11 +2250,10 @@ export class VivinoCellarCard extends HTMLElement {
     }
     on(".group-header", (el) => this._toggleGroup(el.dataset.status));
     on(".status-chip", (el) => this._toggleStatusFilter(el.dataset.status));
-    shadow.querySelectorAll(".filter-select").forEach((el) =>
-      el.addEventListener("change", () => {
+    shadow.querySelectorAll(".filter-select").forEach(
+      (el) => el.addEventListener("change", () => {
         const key = el.dataset.filter;
         this._filters[key] = key === "minBottles" ? Number(el.value) : el.value;
-        // A region belongs to one country: drop it when the country changes.
         if (key === "country") this._filters.region = "";
         this._render();
       })
@@ -2510,15 +2264,11 @@ export class VivinoCellarCard extends HTMLElement {
       this._searchQuery = "";
       this._render();
     });
-
-    // Drinking
     on(".btn-drink-action", (el, e) => {
       e.stopPropagation();
       this._detailWine = null;
       this._handleDrinkWine(Number(el.dataset.vintageId));
     });
-
-    // Wine details
     shadow.querySelectorAll("[data-detail-id]").forEach((el) => {
       const open = () => {
         this._detailWine = Number(el.dataset.detailId);
@@ -2571,19 +2321,18 @@ export class VivinoCellarCard extends HTMLElement {
     on("[data-undo-bottle]", (el) => this._undoDrink(Number(el.dataset.undoBottle)));
     on("[data-dismiss-error]", (el) => this._dismissError(Number(el.dataset.dismissError)));
   }
-}
-
-// Define Custom Element
+};
 if (!customElements.get("vivino-cellar-card")) {
   customElements.define("vivino-cellar-card", VivinoCellarCard);
 }
-
-// Register in Home Assistant customCards registry
 window.customCards = window.customCards || [];
 if (!window.customCards.some((card) => card.type === "vivino-cellar-card")) {
   window.customCards.push({
     type: "vivino-cellar-card",
     name: "Vivino Cellar Card",
-    description: "Vivino cellar wine pairing and drinking windows overview",
+    description: "Vivino cellar wine pairing and drinking windows overview"
   });
 }
+export {
+  VivinoCellarCard
+};
