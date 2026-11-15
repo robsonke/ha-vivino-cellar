@@ -8,6 +8,9 @@ import logging
 from typing import Any
 
 from .const import (
+    CONF_NOW_LIMIT,
+    DEFAULT_NOW_LIMIT,
+    DEFAULT_TITLE,
     DOMAIN,
     WS_TYPE_CELLAR,
     WS_TYPE_DRINK,
@@ -326,8 +329,13 @@ def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
         wines.append(wine_item)
         grouped.setdefault(status, []).append(wine_item)
 
+    settings = getattr(coordinator, "settings", None) or {}
     return {
         "cellar_id": cellar_data.cellar_id if cellar_data else None,
+        "settings": {
+            "title": settings.get("title") or DEFAULT_TITLE,
+            "now_limit": settings.get(CONF_NOW_LIMIT) or DEFAULT_NOW_LIMIT,
+        },
         "total_bottles": sum(w["bottle_count"] for w in wines),
         "last_refresh_time": _last_refresh_iso(coordinator),
         "last_update_success": bool(getattr(coordinator, "last_update_success", True)),

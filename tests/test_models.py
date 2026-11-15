@@ -89,5 +89,5 @@ def test_manifest():
     assert manifest_path.exists()
     data = json.loads(manifest_path.read_text())
     assert data["domain"] == "vivino_cellar"
-    assert data["version"] == "0.2.0"
+    assert data["version"] == "0.3.0"
     assert data["codeowners"] == ["@robsonke"]

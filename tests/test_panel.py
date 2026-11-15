@@ -291,3 +291,22 @@ async def test_setup_and_unload_entry_panel_integration(mock_hass):
         unload_success = await async_unload_entry(mock_hass, entry)
         assert unload_success is True
         assert "vivino_cellar" not in mock_hass.components.frontend.panels
+
+
+@pytest.mark.asyncio
+async def test_register_frontend_uses_cellar_title(mock_hass):
+    """The sidebar shows the cellar name."""
+    await async_register_frontend(mock_hass, title="Kelder Kerkstraat")
+    kwargs = mock_hass.components.frontend.async_register_panel.call_args[1]
+    assert kwargs["sidebar_title"] == "Kelder Kerkstraat"
+
+
+@pytest.mark.asyncio
+async def test_register_frontend_hidden_panel_still_serves_card(mock_hass):
+    """With the panel off, the card stays available for dashboards."""
+    await async_register_frontend(mock_hass, show_panel=False)
+    frontend = mock_hass.components.frontend
+    assert not frontend.async_register_panel.called
+    assert "vivino_cellar" not in frontend.panels
+    assert frontend.extra_js_urls == [CARD_URL]
+    assert mock_hass.data["lovelace"].resources.async_create_item.called

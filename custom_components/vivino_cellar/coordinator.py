@@ -231,16 +231,18 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
         hass: HomeAssistant,
         client: VivinoClient,
         ai_task_entity: str | None = None,
+        update_interval: timedelta = timedelta(hours=6),
     ) -> None:
         """Initialize the Vivino Cellar coordinator."""
         super().__init__(
             hass,
             _LOGGER,
             name="Vivino Cellar",
-            update_interval=timedelta(hours=6),
+            update_interval=update_interval,
         )
         self.client = client
         self.ai_task_entity = ai_task_entity
+        self.settings: dict[str, Any] = {}
         self.last_refresh_time: datetime | None = None
 
         cellar_key = getattr(client, "cellar_id", "default")

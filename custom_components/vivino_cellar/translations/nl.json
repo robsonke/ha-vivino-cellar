@@ -29,6 +29,26 @@
       "reauth_successful": "Herauthenticatie is geslaagd."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Kelderinstellingen",
+        "description": "Wijzig de naam van de kelder met Naam wijzigen in het menu van deze integratie. De naam staat in de zijbalk en op de kaart.",
+        "data": {
+          "ai_task": "AI-taakentiteit",
+          "scan_interval_hours": "Verversinterval",
+          "show_panel": "Tonen in zijbalk",
+          "now_limit": "Wijnen in \"Nu drinken\""
+        },
+        "data_description": {
+          "ai_task": "Schat drinkvensters en stelt wijn-spijscombinaties voor. Laat leeg om AI uit te zetten.",
+          "scan_interval_hours": "Hoe vaak de kelder bij Vivino wordt opgehaald.",
+          "show_panel": "Zet uit als je alleen de dashboardkaart gebruikt.",
+          "now_limit": "Hoeveel wijnen het tabblad \"Nu drinken\" toont."
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "total_bottles": {

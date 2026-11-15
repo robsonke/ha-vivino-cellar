@@ -29,6 +29,26 @@
       "reauth_successful": "Re-authentication was successful."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Cellar settings",
+        "description": "To rename the cellar, use Rename in this integration's menu. The name appears in the sidebar and the card.",
+        "data": {
+          "ai_task": "AI task entity",
+          "scan_interval_hours": "Refresh interval",
+          "show_panel": "Show in sidebar",
+          "now_limit": "Wines in \"Drink now\""
+        },
+        "data_description": {
+          "ai_task": "Estimates drinking windows and suggests food pairings. Leave empty to turn AI off.",
+          "scan_interval_hours": "How often the cellar is fetched from Vivino.",
+          "show_panel": "Turn off if you only use the dashboard card.",
+          "now_limit": "How many wines the \"Drink now\" tab shows."
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "total_bottles": {

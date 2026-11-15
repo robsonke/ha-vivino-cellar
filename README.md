@@ -103,6 +103,20 @@ Because Vivino does not provide a public developer API for private cellars, this
    - **AI Task Entity (Optional)**: Select an `ai_task` entity (from e.g. OpenAI, Google Generative AI, Anthropic or Ollama) to enable free-text dish pairing and drinking window estimation for vintages without a Vivino window.
 4. Click **Submit**. The initial cellar sync will begin immediately.
 
+### Step 3: Name and settings (optional)
+
+- **Name:** open the integration's ⋮ menu and choose **Rename**. The name appears in the sidebar and in the card header. Until you rename it, both show "Wijnkelder".
+- **Settings:** click **Configure** on the integration:
+
+| Setting | Default | What it does |
+|---|---|---|
+| AI task entity | (from setup) | Drinking-window estimates and dish pairing. Clear it to turn AI off. |
+| Refresh interval | 6 h | How often the cellar is fetched from Vivino (1–24 h). |
+| Show in sidebar | on | Turn off if you only use the dashboard card. |
+| Wines in "Drink now" | 5 | How many wines the **Nu drinken** tab lists (1–20). |
+
+Changes apply right away; the integration reloads itself.
+
 > **Note on Session Expiry:** Vivino session cookies typically remain active for weeks or months. The integration automatically captures cookie rotations during normal requests to extend session longevity. If your session eventually expires, Home Assistant will prompt you to re-authenticate via a notification and config entry repair flow.
 
 ---
@@ -122,6 +136,7 @@ type: custom:vivino-cellar-card
 ```yaml
 type: custom:vivino-cellar-card
 title: Mijn Wijnkelder
+now_limit: 8
 default_tab: now    # Options: "now", "pairing" or "windows"
 tabs:
   - now
@@ -134,7 +149,8 @@ tabs:
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `type` | string | **Required** | Must be `custom:vivino-cellar-card` |
-| `title` | string | `"Wijnkelder"` | Header title for the card |
+| `title` | string | Integration name | Header title. Overrides the integration's name for this card only |
+| `now_limit` | number | Integration setting (5) | Wines on the **Nu drinken** tab, for this card only |
 | `default_tab` | string | `"now"` | Initial tab to open (`"now"`, `"pairing"` or `"windows"`) |
 | `tabs` | list | `["now", "pairing", "windows"]` | Which tabs to display |
 

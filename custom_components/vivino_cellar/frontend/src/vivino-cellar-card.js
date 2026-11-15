@@ -71,8 +71,9 @@ export class VivinoCellarCard extends HTMLElement {
     this.attachShadow({ mode: "open" });
 
     this._hass = null;
+    // title / now_limit stay unset unless given in YAML; then the
+    // integration's settings (cellar payload) apply.
     this._config = {
-      title: "Wijnkelder",
       default_tab: "now",
       tabs: DEFAULT_TABS,
     };
@@ -118,7 +119,6 @@ export class VivinoCellarCard extends HTMLElement {
       throw new Error("Invalid configuration");
     }
     this._config = {
-      title: config.title || "Wijnkelder",
       default_tab: config.default_tab || "now",
       tabs: Array.isArray(config.tabs) && config.tabs.length > 0 ? config.tabs : DEFAULT_TABS,
       ...config,
@@ -453,7 +453,7 @@ export class VivinoCellarCard extends HTMLElement {
             <div class="header-icon">${ICON_BOTTLE}</div>
             <div class="header-titles">
               <div class="header-title">
-                ${esc(this._config.title)}
+                ${esc(this._title(data))}
                 <span class="bottle-badge">${view.total} flessen</span>
               </div>
               <div class="header-subtitle">Laatst bijgewerkt: ${esc(lastRefresh)}</div>
@@ -525,6 +525,16 @@ export class VivinoCellarCard extends HTMLElement {
     `;
   }
 
+  _title(data) {
+    return this._config.title || data.settings?.title || "Wijnkelder";
+  }
+
+  _nowLimit() {
+    const limit =
+      Number(this._config.now_limit) || Number(this._cellarData?.settings?.now_limit);
+    return limit > 0 ? limit : NOW_LIMIT;
+  }
+
   _renderNowTab(view) {
     const year = new Date().getFullYear();
     const rank = { near_past_peak: 0, ready: 1 };
@@ -536,7 +546,7 @@ export class VivinoCellarCard extends HTMLElement {
           (a.end_year ?? Infinity) - (b.end_year ?? Infinity) ||
           (b.rating || 0) - (a.rating || 0)
       )
-      .slice(0, NOW_LIMIT);
+      .slice(0, this._nowLimit());
 
     const pastPeak = view.counts.past_peak || 0;
     const pastPeakHint = pastPeak

@@ -6,7 +6,16 @@ from collections.abc import Mapping
 import logging
 from typing import Any
 
-from .const import CONF_AI_TASK, CONF_CELLAR_URL, CONF_COOKIE, DOMAIN
+from .const import (
+    CONF_AI_TASK,
+    CONF_CELLAR_URL,
+    CONF_COOKIE,
+    CONF_NOW_LIMIT,
+    CONF_SCAN_INTERVAL,
+    CONF_SHOW_PANEL,
+    DOMAIN,
+    cellar_settings,
+)
 from .exceptions import (
     VivinoAuthError,
     VivinoConnectionError,
@@ -17,11 +26,16 @@ _LOGGER = logging.getLogger(__name__)
 
 try:
     from homeassistant import config_entries
+    from homeassistant.core import callback
     from homeassistant.data_entry_flow import AbortFlow, FlowResult
     from homeassistant.helpers.aiohttp_client import async_get_clientsession
     from homeassistant.helpers.selector import (
+        BooleanSelector,
         EntitySelector,
         EntitySelectorConfig,
+        NumberSelector,
+        NumberSelectorConfig,
+        NumberSelectorMode,
     )
     import voluptuous as vol
 except ImportError:
@@ -37,6 +51,34 @@ except ImportError:
             self.description_placeholders = description_placeholders
 
     FlowResult = dict[str, Any]  # type: ignore[misc,assignment]
+
+    def callback(func: Any) -> Any:  # type: ignore[no-redef]
+        """Stub callback decorator."""
+        return func
+
+    class NumberSelectorMode:  # type: ignore[no-redef]
+        """Stub NumberSelectorMode."""
+
+        BOX = "box"
+        SLIDER = "slider"
+
+    class NumberSelectorConfig:  # type: ignore[no-redef]
+        """Stub NumberSelectorConfig."""
+
+        def __init__(self, **kwargs: Any) -> None:
+            self.kwargs = kwargs
+
+    class NumberSelector:  # type: ignore[no-redef]
+        """Stub NumberSelector."""
+
+        def __init__(self, config: Any = None) -> None:
+            self.config = config
+
+    class BooleanSelector:  # type: ignore[no-redef]
+        """Stub BooleanSelector."""
+
+        def __init__(self, config: Any = None) -> None:
+            self.config = config
 
     def async_get_clientsession(hass: Any) -> Any:  # type: ignore[no-redef]
         """Stub get clientsession."""
@@ -97,6 +139,26 @@ except ImportError:
 
     class config_entries:  # type: ignore[no-redef]
         """Stub config_entries module."""
+
+        class OptionsFlow:
+            """Stub OptionsFlow."""
+
+            config_entry: Any = None
+
+            def add_suggested_values_to_schema(
+                self, data_schema: Any, suggested_values: Mapping[str, Any] | None
+            ) -> Any:
+                return data_schema
+
+            def async_show_form(
+                self, *, step_id: str, data_schema: Any = None, **kwargs: Any
+            ) -> FlowResult:
+                return {"type": "form", "step_id": step_id, "data_schema": data_schema}
+
+            def async_create_entry(
+                self, *, data: dict[str, Any], title: str = ""
+            ) -> FlowResult:
+                return {"type": "create_entry", "title": title, "data": data}
 
         class ConfigFlow:
             """Stub ConfigFlow."""
@@ -233,10 +295,69 @@ async def _async_validate_vivino(
     return client
 
 
+OPTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Optional(CONF_AI_TASK): EntitySelector(
+            EntitySelectorConfig(domain="ai_task")
+        ),
+        vol.Required(CONF_SCAN_INTERVAL): NumberSelector(
+            NumberSelectorConfig(
+                min=1,
+                max=24,
+                step=1,
+                unit_of_measurement="h",
+                mode=NumberSelectorMode.BOX,
+            )
+        ),
+        vol.Required(CONF_SHOW_PANEL): BooleanSelector(),
+        vol.Required(CONF_NOW_LIMIT): NumberSelector(
+            NumberSelectorConfig(min=1, max=20, step=1, mode=NumberSelectorMode.BOX)
+        ),
+    }
+)
+
+
+class VivinoCellarOptionsFlow(config_entries.OptionsFlow):
+    """Configure screen: AI task, refresh interval, panel and list size.
+
+    The cellar name is the entry title, changed with Home Assistant's Rename.
+    """
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Show and save the options."""
+        if user_input is not None:
+            return self.async_create_entry(
+                data={
+                    # Stored even when cleared, so it overrides the setup value.
+                    CONF_AI_TASK: user_input.get(CONF_AI_TASK) or None,
+                    CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL]),
+                    CONF_SHOW_PANEL: bool(user_input[CONF_SHOW_PANEL]),
+                    CONF_NOW_LIMIT: int(user_input[CONF_NOW_LIMIT]),
+                }
+            )
+
+        settings = cellar_settings(self.config_entry)
+        suggested = {
+            k: v for k, v in settings.items() if k != "title" and v is not None
+        }
+        return self.async_show_form(
+            step_id="init",
+            data_schema=self.add_suggested_values_to_schema(OPTIONS_SCHEMA, suggested),
+        )
+
+
 class VivinoCellarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Vivino Cellar."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: Any) -> VivinoCellarOptionsFlow:
+        """Return the options flow (the integration's Configure button)."""
+        return VivinoCellarOptionsFlow()
 
     def __init__(self) -> None:
         """Initialize the Vivino Cellar config flow."""
