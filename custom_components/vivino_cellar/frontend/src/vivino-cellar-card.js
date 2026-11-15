@@ -10,6 +10,7 @@ import { LitElement, css, html, nothing } from "lit";
 import "./components/cellar-tab.js";
 import "./components/detail-sheet.js";
 import "./components/now-tab.js";
+import "./components/pairing-tab.js";
 import "./components/spot-picker.js";
 import "./components/toast-stack.js";
 import "./components/wine-row.js";
@@ -478,7 +479,10 @@ export class VivinoCellarCard extends LitElement {
                     role="tab"
                     class="tab"
                     aria-selected=${this._tab === t}
-                    @click=${() => (this._tab = t)}
+                    @click=${() => {
+                      this._tab = t;
+                      this._focusDish = false;
+                    }}
                   >
                     ${TAB_LABELS[t]}
                   </button>`
@@ -519,8 +523,12 @@ export class VivinoCellarCard extends LitElement {
         .expanded=${this._expanded}
       ></vc-cellar-tab>`;
     }
-    // Wijn & Spijs (Task 8).
-    return html`<div class="empty" data-tab=${this._tab}>${TAB_LABELS[this._tab]}</div>`;
+    return html`<vc-pairing-tab
+      .wines=${wines}
+      .categories=${this._data?.food_categories || []}
+      .pairing=${this._pairing}
+      ?focusDish=${this._focusDish}
+    ></vc-pairing-tab>`;
   }
 
   _renderModals() {

@@ -1720,6 +1720,112 @@ __publicField(VcNowTab, "styles", [
 ]);
 if (!customElements.get("vc-now-tab")) customElements.define("vc-now-tab", VcNowTab);
 
+// custom_components/vivino_cellar/frontend/src/components/pairing-tab.js
+var VcPairingTab = class extends i4 {
+  willUpdate(changed) {
+    if (changed.has("pairing") && this._dish === void 0) this._dish = this.pairing?.dish || "";
+  }
+  updated(changed) {
+    if (changed.has("focusDish") && this.focusDish) this.renderRoot.querySelector("#dish")?.focus();
+  }
+  _search() {
+    fire(this, "vc-pairing-search", { dish: this._dish || "", foodIds: [] });
+  }
+  _toggleFood(id) {
+    const ids = new Set(this.pairing?.foodIds || []);
+    if (ids.has(id)) ids.delete(id);
+    else ids.add(id);
+    this._dish = "";
+    if (ids.size) fire(this, "vc-pairing-search", { dish: "", foodIds: [...ids] });
+    else fire(this, "vc-pairing-reset");
+  }
+  _reset() {
+    this._dish = "";
+    fire(this, "vc-pairing-reset");
+  }
+  _results() {
+    const p3 = this.pairing || {};
+    if (p3.loading) return b2`<div class="empty">Zoeken…</div>`;
+    if (p3.error) return b2`<div class="error">${p3.error}</div>`;
+    if (!p3.results) return A;
+    if (!p3.results.length) return b2`<div class="empty">Geen passende wijn in je kelder.</div>`;
+    const byId = new Map((this.wines || []).map((w2) => [vintageId(w2), w2]));
+    return b2`
+      <div class="section-label">Past erbij</div>
+      <div class="list">
+        ${p3.results.map((match) => {
+      const wine = { ...match, ...byId.get(vintageId(match)) || {} };
+      if (!(wine.bottles || []).length) return A;
+      const status = wine.window_status || "unknown";
+      const when = [STATUS_LABELS[status], wine.end_year ? `tot ${wine.end_year}` : ""].filter(Boolean).join(" \xB7 ");
+      return b2`<vc-wine-row .wine=${wine} .lines=${[match.explanation, when]}></vc-wine-row>`;
+    })}
+      </div>
+    `;
+  }
+  render() {
+    const p3 = this.pairing || {};
+    const selected = p3.foodIds || /* @__PURE__ */ new Set();
+    const categories = this.categories || [];
+    return b2`
+      <div class="search">
+        <input
+          id="dish"
+          class="input"
+          type="search"
+          placeholder="Wat eet je? Bijv. pasta met truffel"
+          .value=${this._dish ?? ""}
+          @input=${(e4) => this._dish = e4.target.value}
+          @keydown=${(e4) => e4.key === "Enter" && this._search()}
+        />
+        <button class="btn btn-primary" ?disabled=${!(this._dish || "").trim()} @click=${this._search}>
+          Zoek
+        </button>
+      </div>
+
+      ${categories.length ? b2`<div class="foods" role="group" aria-label="Of kies een categorie">
+            ${categories.map(
+      (c4) => b2`<button class="chip" aria-pressed=${selected.has(c4.id)} @click=${() => this._toggleFood(c4.id)}>
+                ${c4.name}
+              </button>`
+    )}
+          </div>` : A}
+
+      ${p3.results || p3.error || (this._dish || "") || selected.size ? b2`<button class="btn btn-link reset" @click=${this._reset}>Opnieuw</button>` : A}
+
+      ${this._results()}
+    `;
+  }
+};
+__publicField(VcPairingTab, "properties", {
+  wines: { attribute: false },
+  // cellar wines (pending drinks hidden)
+  categories: { attribute: false },
+  pairing: { attribute: false },
+  // {dish, foodIds:Set, results, loading, error}
+  focusDish: { type: Boolean },
+  _dish: { state: true }
+});
+__publicField(VcPairingTab, "styles", [
+  themeStyles,
+  i`
+      :host { display: flex; flex-direction: column; gap: 12px; }
+      .search { display: flex; gap: 8px; }
+      .search .input { flex: 1; -webkit-appearance: none; }
+      .foods { display: flex; flex-wrap: wrap; gap: 6px; }
+      .reset { align-self: flex-start; font-size: 13px; }
+      .list { display: flex; flex-direction: column; gap: 8px; }
+      .error {
+        color: var(--vc-status-past_peak);
+        background: color-mix(in srgb, var(--vc-status-past_peak) var(--vc-tint), transparent);
+        padding: 10px 12px;
+        border-radius: var(--vc-radius-sm);
+        font-size: 13px;
+      }
+    `
+]);
+if (!customElements.get("vc-pairing-tab")) customElements.define("vc-pairing-tab", VcPairingTab);
+
 // custom_components/vivino_cellar/frontend/src/components/spot-picker.js
 var VcSpotPicker = class extends VcModal {
   render() {
@@ -2293,7 +2399,10 @@ var VivinoCellarCard = class extends i4 {
                     role="tab"
                     class="tab"
                     aria-selected=${this._tab === t3}
-                    @click=${() => this._tab = t3}
+                    @click=${() => {
+        this._tab = t3;
+        this._focusDish = false;
+      }}
                   >
                     ${TAB_LABELS[t3]}
                   </button>`
@@ -2328,7 +2437,12 @@ var VivinoCellarCard = class extends i4 {
         .expanded=${this._expanded}
       ></vc-cellar-tab>`;
     }
-    return b2`<div class="empty" data-tab=${this._tab}>${TAB_LABELS[this._tab]}</div>`;
+    return b2`<vc-pairing-tab
+      .wines=${wines}
+      .categories=${this._data?.food_categories || []}
+      .pairing=${this._pairing}
+      ?focusDish=${this._focusDish}
+    ></vc-pairing-tab>`;
   }
   _renderModals() {
     const detail = this._detailId !== null ? this._wine(this._detailId) : null;
