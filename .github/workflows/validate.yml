@@ -19,12 +19,12 @@ jobs:
       - uses: actions/checkout@v5
       - uses: home-assistant/actions/hassfest@master
 
-  hacs:
-    name: HACS
+  marketplace:
+    name: Marketplace
     runs-on: ubuntu-latest
     steps:
       - uses: hacs/action@main
         with:
           category: integration
-          # Brand images live in home-assistant/brands; not submitted yet.
+          # No brand icon yet (custom_components/vivino_cellar/brand/icon.png).
           ignore: brands

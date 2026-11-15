@@ -1,6 +1,6 @@
 # Vivino Cellar for Home Assistant 🍷
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/default)
+[![Marketplace](https://img.shields.io/badge/HA%20Marketplace-Custom-41BDF5.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=robsonke&repository=ha-vivino-cellar&category=integration)
 [![GitHub Release](https://img.shields.io/github/v/release/robsonke/ha-vivino-cellar?include_prereleases&color=blue)](https://github.com/robsonke/ha-vivino-cellar/releases)
 [![Validate](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/validate.yml/badge.svg)](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/validate.yml)
 [![Tests](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/tests.yml/badge.svg)](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/tests.yml)
@@ -44,20 +44,24 @@
 
 ## Installation
 
-### Method 1: HACS (Custom Repository)
+<!-- ha-marketplace:exclude-start -->
+### Method 1: Home Assistant Marketplace (2026.11+)
 
-1. Open **HACS** in your Home Assistant interface.
-2. Click the three dots in the top right corner and select **Custom repositories**.
-3. Enter `https://github.com/robsonke/ha-vivino-cellar` in the **Repository** field.
-4. Select **Integration** as the category.
-5. Click **Add**, then find **Vivino Cellar** in the list and click **Download**.
-6. Restart Home Assistant.
+[![Open your Home Assistant instance and open a repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=robsonke&repository=ha-vivino-cellar&category=integration)
+
+1. Click the badge above, or go to **Settings** → **Marketplace** → **Add from link** and enter `https://github.com/robsonke/ha-vivino-cellar` (category **Integration**).
+2. Click **Download** on **Vivino Cellar**.
+3. Restart Home Assistant.
+
+On Home Assistant 2026.10 or older, add the same URL as a custom repository in HACS.
 
 ### Method 2: Manual Installation
 
 1. Download the latest release from the [Releases](https://github.com/robsonke/ha-vivino-cellar/releases) page.
 2. Copy the `custom_components/vivino_cellar` folder into your Home Assistant `<config_dir>/custom_components/` directory.
 3. Restart Home Assistant.
+
+<!-- ha-marketplace:exclude-end -->
 
 ---
 
