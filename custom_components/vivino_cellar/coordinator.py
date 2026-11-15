@@ -9,7 +9,9 @@ import json
 import logging
 from typing import Any
 
+from .const import CONF_LOCATION_NAMES
 from .exceptions import VivinoAuthError, VivinoError
+from .locations import apply_location_names
 from .models import CellarData, Vintage
 from .pairing import PairingResult, score_vintages
 from .vivino_client import VivinoClient
@@ -270,6 +272,10 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
             raise UpdateFailed(
                 f"Error fetching cellar data from Vivino: {err}"
             ) from err
+
+        apply_location_names(
+            cellar_data, getattr(self, "settings", {}).get(CONF_LOCATION_NAMES) or {}
+        )
 
         vintages_needing_estimate: list[Vintage] = []
 

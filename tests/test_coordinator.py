@@ -438,3 +438,29 @@ async def test_background_ai_estimation_handles_service_error(
     v2 = next(v for v in coordinator.data.vintages if v.id == 1002)
     assert v2.start_year is None
     assert v2.window_source == "none"
+
+
+async def test_coordinator_names_storage_locations(
+    mock_hass: MockHass, mock_client: MagicMock
+) -> None:
+    """Every refresh fills in location names from the integration's settings."""
+    coordinator = VivinoCellarCoordinator(mock_hass, mock_client, ai_task_entity=None)
+    bottles = [
+        b
+        for v in mock_client.async_fetch_cellar.return_value.vintages
+        for b in v.bottles
+    ]
+    loc_id = next(
+        b.storage_location_id for b in bottles if b.storage_location_id is not None
+    )
+    coordinator.settings = {"location_names": {str(loc_id): "Kelder"}}
+
+    await coordinator.async_refresh()
+
+    named = [
+        b.location_name
+        for v in coordinator.data.vintages
+        for b in v.bottles
+        if b.storage_location_id == loc_id
+    ]
+    assert named and set(named) == {"Kelder"}

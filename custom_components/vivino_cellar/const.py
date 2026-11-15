@@ -15,6 +15,8 @@ CONF_AI_TASK = "ai_task"
 CONF_SCAN_INTERVAL = "scan_interval_hours"
 CONF_SHOW_PANEL = "show_panel"
 CONF_NOW_LIMIT = "now_limit"
+# {"<storage_location_id>": "name"}; Vivino's web data has no location names
+CONF_LOCATION_NAMES = "location_names"
 
 DEFAULT_TITLE = "Wijnkelder"
 DEFAULT_SCAN_INTERVAL = 6
@@ -47,6 +49,7 @@ def cellar_settings(entry: Any) -> dict[str, Any]:
         CONF_SCAN_INTERVAL: int(options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)),
         CONF_SHOW_PANEL: bool(options.get(CONF_SHOW_PANEL, True)),
         CONF_NOW_LIMIT: int(options.get(CONF_NOW_LIMIT, DEFAULT_NOW_LIMIT)),
+        CONF_LOCATION_NAMES: dict(options.get(CONF_LOCATION_NAMES) or {}),
     }
 
 

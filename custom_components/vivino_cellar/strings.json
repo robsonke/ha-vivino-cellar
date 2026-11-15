@@ -46,6 +46,10 @@
           "show_panel": "Turn off if you only use the dashboard card.",
           "now_limit": "How many wines the \"Drink now\" tab shows."
         }
+      },
+      "locations": {
+        "title": "Storage locations",
+        "description": "Vivino only shares a number for each storage location. Give each one a name, like Cellar or Fridge. Leave a field empty to show it as \"Locatie 1\", \"Locatie 2\" and so on."
       }
     }
   },

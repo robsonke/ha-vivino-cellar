@@ -115,6 +115,7 @@ Because Vivino does not provide a public developer API for private cellars, this
 | Refresh interval | 6 h | How often the cellar is fetched from Vivino (1–24 h). |
 | Show in sidebar | on | Turn off if you only use the dashboard card. |
 | Wines in "Drink now" | 5 | How many wines the **Nu drinken** tab lists (1–20). |
+| Storage locations | Locatie 1, 2, … | Second page of Configure. Vivino's web data only has a number per location, so name each one here (e.g. Kelder, Koelkast). |
 
 Changes apply right away; the integration reloads itself.
 

@@ -46,6 +46,10 @@
           "show_panel": "Zet uit als je alleen de dashboardkaart gebruikt.",
           "now_limit": "Hoeveel wijnen het tabblad \"Nu drinken\" toont."
         }
+      },
+      "locations": {
+        "title": "Opslaglocaties",
+        "description": "Vivino geeft per opslaglocatie alleen een nummer. Geef elke locatie een naam, zoals Kelder of Koelkast. Laat een veld leeg om hem als \"Locatie 1\", \"Locatie 2\" enzovoort te tonen."
       }
     }
   },

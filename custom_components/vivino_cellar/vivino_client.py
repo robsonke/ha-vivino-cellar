@@ -295,9 +295,8 @@ class VivinoClient:
             bottle_id = b["id"]
             size_id = b.get("bottle_size_id") or b.get("size_id") or 1
             loc_id = b.get("storage_location_id")
-            loc_name = b.get("location_name")
-            if not loc_name:
-                loc_name = f"Location {loc_id}" if loc_id is not None else "Unknown"
+            # Vivino's web data has no names; the coordinator fills them in.
+            loc_name = b.get("location_name") or ""
             bin_val = b.get("bin")
             created_at = str(b.get("created_at", ""))
             bottles.append(

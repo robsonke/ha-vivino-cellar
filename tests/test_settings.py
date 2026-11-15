@@ -67,6 +67,7 @@ def test_cellar_settings_defaults():
         CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
         CONF_SHOW_PANEL: True,
         CONF_NOW_LIMIT: DEFAULT_NOW_LIMIT,
+        "location_names": {},
     }
 
 

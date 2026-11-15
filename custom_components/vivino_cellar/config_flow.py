@@ -10,6 +10,7 @@ from .const import (
     CONF_AI_TASK,
     CONF_CELLAR_URL,
     CONF_COOKIE,
+    CONF_LOCATION_NAMES,
     CONF_NOW_LIMIT,
     CONF_SCAN_INTERVAL,
     CONF_SHOW_PANEL,
@@ -20,6 +21,7 @@ from .exceptions import (
     VivinoAuthError,
     VivinoConnectionError,
 )
+from .locations import location_counts
 from .vivino_client import VivinoClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -323,20 +325,26 @@ class VivinoCellarOptionsFlow(config_entries.OptionsFlow):
     The cellar name is the entry title, changed with Home Assistant's Rename.
     """
 
+    _options: dict[str, Any]
+
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Show and save the options."""
+        """Show and save the options; then name storage locations, if any."""
         if user_input is not None:
-            return self.async_create_entry(
-                data={
-                    # Stored even when cleared, so it overrides the setup value.
-                    CONF_AI_TASK: user_input.get(CONF_AI_TASK) or None,
-                    CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL]),
-                    CONF_SHOW_PANEL: bool(user_input[CONF_SHOW_PANEL]),
-                    CONF_NOW_LIMIT: int(user_input[CONF_NOW_LIMIT]),
-                }
-            )
+            self._options = {
+                # Stored even when cleared, so it overrides the setup value.
+                CONF_AI_TASK: user_input.get(CONF_AI_TASK) or None,
+                CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL]),
+                CONF_SHOW_PANEL: bool(user_input[CONF_SHOW_PANEL]),
+                CONF_NOW_LIMIT: int(user_input[CONF_NOW_LIMIT]),
+            }
+            if self._location_fields():
+                return await self.async_step_locations()
+            existing = (self.config_entry.options or {}).get(CONF_LOCATION_NAMES)
+            if existing:
+                self._options[CONF_LOCATION_NAMES] = dict(existing)
+            return self.async_create_entry(data=self._options)
 
         settings = cellar_settings(self.config_entry)
         suggested = {
@@ -345,6 +353,50 @@ class VivinoCellarOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="init",
             data_schema=self.add_suggested_values_to_schema(OPTIONS_SCHEMA, suggested),
+        )
+
+    def _location_fields(self) -> dict[str, int]:
+        """Form label -> storage location id, for the locations in the cellar.
+
+        Vivino only gives ids, so the label itself names the location and its
+        bottle count (dynamic fields have no translation).
+        """
+        hass = getattr(self, "hass", None)
+        domain_data = getattr(hass, "data", {}).get(DOMAIN, {}) if hass else {}
+        coordinator = domain_data.get(self.config_entry.entry_id)
+        counts = location_counts(getattr(coordinator, "data", None))
+        return {
+            f"Locatie {loc_id} · {n} {'fles' if n == 1 else 'flessen'}": loc_id
+            for loc_id, n in counts.items()
+        }
+
+    async def async_step_locations(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Name each storage location (e.g. Kelder, Koelkast)."""
+        fields = self._location_fields()
+        if user_input is not None:
+            names = {
+                str(loc_id): str(user_input.get(label) or "").strip()
+                for label, loc_id in fields.items()
+            }
+            return self.async_create_entry(
+                data={
+                    **self._options,
+                    CONF_LOCATION_NAMES: {k: v for k, v in names.items() if v},
+                }
+            )
+
+        current = cellar_settings(self.config_entry)[CONF_LOCATION_NAMES]
+        schema = vol.Schema({vol.Optional(label): str for label in fields})
+        suggested = {
+            label: current[str(loc_id)]
+            for label, loc_id in fields.items()
+            if current.get(str(loc_id))
+        }
+        return self.async_show_form(
+            step_id="locations",
+            data_schema=self.add_suggested_values_to_schema(schema, suggested),
         )
 
 
