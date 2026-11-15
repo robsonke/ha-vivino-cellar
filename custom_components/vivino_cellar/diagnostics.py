@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from .const import CONF_COOKIE, DOMAIN
@@ -88,7 +88,7 @@ async def async_get_config_entry_diagnostics(
             ),
         }
         if cellar_data and cellar_data.vintages is not None:
-            current_year = datetime.now().year
+            current_year = datetime.now(UTC).year
             total_bottles = sum(len(v.bottles) for v in cellar_data.vintages)
             coord_diag["cellar"] = {
                 "cellar_id": cellar_data.cellar_id,
@@ -107,9 +107,7 @@ async def async_get_config_entry_diagnostics(
                         "country": v.country,
                         "type_id": v.type_id,
                         "bottle_count": len(v.bottles),
-                        "window_status": compute_vintage_window_status(
-                            v, current_year
-                        ),
+                        "window_status": compute_vintage_window_status(v, current_year),
                         "window_source": v.window_source,
                         "start_year": v.start_year,
                         "end_year": v.end_year,

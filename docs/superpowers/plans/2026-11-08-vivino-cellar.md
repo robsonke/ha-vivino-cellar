@@ -65,10 +65,23 @@ Create `pyproject.toml` configuring pytest with `asyncio_mode = "auto"`.
 
 Create `tests/test_models.py`:
 ```python
-from custom_components.vivino_cellar.models import Bottle, FoodCategory, Vintage, CellarData
+from custom_components.vivino_cellar.models import (
+    Bottle,
+    FoodCategory,
+    Vintage,
+    CellarData,
+)
+
 
 def test_models_instantiation():
-    bottle = Bottle(id=1, size_id=1, storage_location_id=10, location_name="Rack A", bin="3B", created_at="2026-01-01")
+    bottle = Bottle(
+        id=1,
+        size_id=1,
+        storage_location_id=10,
+        location_name="Rack A",
+        bin="3B",
+        created_at="2026-01-01",
+    )
     food = FoodCategory(id=101, name="Rundvlees", seo_name="beef", weight=0.5)
     vintage = Vintage(
         id=2001,
@@ -89,7 +102,13 @@ def test_models_instantiation():
         end_year=2030,
         window_source="vivino",
     )
-    cellar = CellarData(cellar_id="651553", locale="nl", total_count=1, vintages=[vintage], food_categories=[food])
+    cellar = CellarData(
+        cellar_id="651553",
+        locale="nl",
+        total_count=1,
+        vintages=[vintage],
+        food_categories=[food],
+    )
     assert cellar.vintages[0].bottles[0].bin == "3B"
     assert cellar.food_categories[0].name == "Rundvlees"
 ```
@@ -149,17 +168,22 @@ from custom_components.vivino_cellar.window_engine import (
     WINDOW_STATUS_UNKNOWN,
 )
 
+
 def test_window_status_hold():
     assert compute_window_status(2028, 2035, 2026) == WINDOW_STATUS_HOLD
+
 
 def test_window_status_ready():
     assert compute_window_status(2024, 2028, 2026) == WINDOW_STATUS_READY
 
+
 def test_window_status_near_past_peak():
     assert compute_window_status(2020, 2026, 2026) == WINDOW_STATUS_NEAR_PAST_PEAK
 
+
 def test_window_status_past_peak():
     assert compute_window_status(2015, 2025, 2026) == WINDOW_STATUS_PAST_PEAK
+
 
 def test_window_status_unknown():
     assert compute_window_status(None, None, 2026) == WINDOW_STATUS_UNKNOWN
@@ -213,32 +237,83 @@ Create `tests/test_pairing.py`:
 from custom_components.vivino_cellar.models import Bottle, FoodCategory, Vintage
 from custom_components.vivino_cellar.pairing import score_vintages
 
+
 def test_pairing_scoring_and_ranking():
-    bottle = Bottle(id=1, size_id=1, storage_location_id=1, location_name="Cellar", bin="1", created_at="2026-01-01")
+    bottle = Bottle(
+        id=1,
+        size_id=1,
+        storage_location_id=1,
+        location_name="Cellar",
+        bin="1",
+        created_at="2026-01-01",
+    )
     v_ready = Vintage(
-        id=1, year=2020, name="Cabernet", winery="W1", region="Bordeaux", country="France", type_id=1,
-        grapes=["Cabernet Sauvignon"], image_url=None, rating=4.5, ratings_count=100,
+        id=1,
+        year=2020,
+        name="Cabernet",
+        winery="W1",
+        region="Bordeaux",
+        country="France",
+        type_id=1,
+        grapes=["Cabernet Sauvignon"],
+        image_url=None,
+        rating=4.5,
+        ratings_count=100,
         foods=[FoodCategory(id=10, name="Beef", seo_name="beef", weight=0.5)],
-        style=None, bottles=[bottle], start_year=2022, end_year=2028, window_source="vivino"
+        style=None,
+        bottles=[bottle],
+        start_year=2022,
+        end_year=2028,
+        window_source="vivino",
     )
     v_hold = Vintage(
-        id=2, year=2024, name="Young Bordeaux", winery="W2", region="Bordeaux", country="France", type_id=1,
-        grapes=["Merlot"], image_url=None, rating=4.8, ratings_count=50,
+        id=2,
+        year=2024,
+        name="Young Bordeaux",
+        winery="W2",
+        region="Bordeaux",
+        country="France",
+        type_id=1,
+        grapes=["Merlot"],
+        image_url=None,
+        rating=4.8,
+        ratings_count=50,
         foods=[FoodCategory(id=10, name="Beef", seo_name="beef", weight=0.5)],
-        style=None, bottles=[bottle], start_year=2028, end_year=2035, window_source="vivino"
+        style=None,
+        bottles=[bottle],
+        start_year=2028,
+        end_year=2035,
+        window_source="vivino",
     )
     v_no_bottles = Vintage(
-        id=3, year=2019, name="Empty Wine", winery="W3", region="Rioja", country="Spain", type_id=1,
-        grapes=["Tempranillo"], image_url=None, rating=4.9, ratings_count=200,
+        id=3,
+        year=2019,
+        name="Empty Wine",
+        winery="W3",
+        region="Rioja",
+        country="Spain",
+        type_id=1,
+        grapes=["Tempranillo"],
+        image_url=None,
+        rating=4.9,
+        ratings_count=200,
         foods=[FoodCategory(id=10, name="Beef", seo_name="beef", weight=0.5)],
-        style=None, bottles=[], start_year=2022, end_year=2028, window_source="vivino"
+        style=None,
+        bottles=[],
+        start_year=2022,
+        end_year=2028,
+        window_source="vivino",
     )
-    
+
     # Target: Beef (id 10) weight 1.0
-    results = score_vintages([v_ready, v_hold, v_no_bottles], {10: 1.0}, current_year=2026, max_results=3)
-    
+    results = score_vintages(
+        [v_ready, v_hold, v_no_bottles], {10: 1.0}, current_year=2026, max_results=3
+    )
+
     assert len(results) == 2
-    assert results[0].vintage.id == 1  # v_ready outranks v_hold because hold is penalized
+    assert (
+        results[0].vintage.id == 1
+    )  # v_ready outranks v_hold because hold is penalized
     assert results[0].window_status == "ready"
     assert "Beef" in results[0].explanation
 ```

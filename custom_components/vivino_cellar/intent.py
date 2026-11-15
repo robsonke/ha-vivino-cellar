@@ -12,9 +12,8 @@ from .exceptions import VivinoError
 _LOGGER = logging.getLogger(__name__)
 
 try:
-    import voluptuous as vol
-    from homeassistant.core import HomeAssistant
     from homeassistant.helpers import intent
+    import voluptuous as vol
 
     Intent = intent.Intent
     IntentResponse = intent.IntentResponse
@@ -233,9 +232,7 @@ class VivinoCellarSuggestWineIntent(intent.IntentHandler):
         top = results[0]
         vintage = top.vintage
         vintage_name = (
-            f"{vintage.year} {vintage.name}".strip()
-            if vintage.year
-            else vintage.name
+            f"{vintage.year} {vintage.name}".strip() if vintage.year else vintage.name
         )
 
         bottle_info = ""

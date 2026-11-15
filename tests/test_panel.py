@@ -29,7 +29,9 @@ class MockHttp:
             side_effect=lambda paths: self.static_paths.extend(paths)
         )
         self.register_static_path = MagicMock(
-            side_effect=lambda url, path, cache_headers=True: self.static_paths.append((url, path, cache_headers))
+            side_effect=lambda url, path, cache_headers=True: self.static_paths.append(
+                (url, path, cache_headers)
+            )
         )
 
 
@@ -39,12 +41,8 @@ class MockFrontend:
     def __init__(self) -> None:
         self.panels: dict[str, dict] = {}
         self.extra_js_urls: list[str] = []
-        self.async_register_panel = MagicMock(
-            side_effect=self._register_panel
-        )
-        self.async_remove_panel = MagicMock(
-            side_effect=self._remove_panel
-        )
+        self.async_register_panel = MagicMock(side_effect=self._register_panel)
+        self.async_remove_panel = MagicMock(side_effect=self._remove_panel)
         self.add_extra_js_url = MagicMock(
             side_effect=lambda hass, url: self.extra_js_urls.append(url)
         )
@@ -163,7 +161,12 @@ async def test_register_frontend_lovelace_resource(mock_hass):
 async def test_register_frontend_lovelace_resource_already_exists(mock_hass):
     """Test that existing resource is not duplicated."""
     mock_hass.data["lovelace"].resources = MockLovelaceResources(
-        initial_items=[{"res_type": "module", "url": "/vivino_cellar_frontend/vivino-cellar-card.js"}]
+        initial_items=[
+            {
+                "res_type": "module",
+                "url": "/vivino_cellar_frontend/vivino-cellar-card.js",
+            }
+        ]
     )
 
     await async_register_frontend(mock_hass)
@@ -226,7 +229,9 @@ async def test_setup_and_unload_entry_panel_integration(mock_hass):
 
     with (
         patch("custom_components.vivino_cellar.VivinoClient"),
-        patch("custom_components.vivino_cellar.VivinoCellarCoordinator") as mock_coord_cls,
+        patch(
+            "custom_components.vivino_cellar.VivinoCellarCoordinator"
+        ) as mock_coord_cls,
     ):
         coord_inst = MagicMock()
         coord_inst.async_config_entry_first_refresh = AsyncMock()

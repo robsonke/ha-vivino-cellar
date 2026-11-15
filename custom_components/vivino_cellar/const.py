@@ -19,5 +19,4 @@ WS_TYPE_CELLAR = "vivino_cellar/cellar"
 WS_TYPE_PAIRING = "vivino_cellar/pairing"
 WS_TYPE_DRINK = "vivino_cellar/drink"
 WS_TYPE_REFRESH = "vivino_cellar/refresh"
-
-
+WS_TYPE_SUBSCRIBE = "vivino_cellar/subscribe"

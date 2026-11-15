@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import html
+from http.cookies import CookieError, SimpleCookie
 import json
 import logging
 import re
-from http.cookies import CookieError, SimpleCookie
 from typing import Any
 from urllib.parse import unquote
 
@@ -56,6 +56,7 @@ def _parse_set_cookies(headers: Any) -> dict[str, str]:
             out[k.strip()] = v.strip()
     return out
 
+
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -88,7 +89,9 @@ class VivinoClient:
             )
         self.locale = match.group(1)
         self.cellar_id = match.group(2)
-        self._base_url = f"https://www.vivino.com/{self.locale}/cellars/{self.cellar_id}"
+        self._base_url = (
+            f"https://www.vivino.com/{self.locale}/cellars/{self.cellar_id}"
+        )
 
     def get_rotated_cookie(self) -> str | None:
         """Return the rotated cookie if Set-Cookie was received, else None."""
@@ -133,13 +136,17 @@ class VivinoClient:
                     if not updated:
                         new_parts.append(f"_ruby-web_session={new_val}")
                     self._rotated_cookie = "; ".join(new_parts)
-                self._current_cookie_header = self._format_cookie_header(self._rotated_cookie)
+                self._current_cookie_header = self._format_cookie_header(
+                    self._rotated_cookie
+                )
 
     def _extract_version_from_html(self, html_content: str) -> str:
         """Extract Inertia version from HTML data-page attribute."""
         match = DATA_PAGE_PATTERN.search(html_content)
         if not match:
-            raise VivinoParseError("Could not find data-page attribute in cellar page HTML")
+            raise VivinoParseError(
+                "Could not find data-page attribute in cellar page HTML"
+            )
 
         raw_page_data = match.group(2)
         unescaped = html.unescape(raw_page_data)
@@ -162,7 +169,9 @@ class VivinoClient:
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         }
         try:
-            async with self._session.get(url, headers=headers, allow_redirects=False) as response:
+            async with self._session.get(
+                url, headers=headers, allow_redirects=False
+            ) as response:
                 self._check_cookie_rotation(response.headers)
 
                 if response.status in (301, 302, 303, 307, 308):
@@ -171,9 +180,13 @@ class VivinoClient:
                         f"Session expired or login redirect: redirected to {location}"
                     )
                 if response.status in (401, 403):
-                    raise VivinoAuthError(f"Authentication failed with status {response.status}")
+                    raise VivinoAuthError(
+                        f"Authentication failed with status {response.status}"
+                    )
                 if response.status != 200:
-                    raise VivinoParseError(f"Unexpected HTTP status {response.status} fetching HTML")
+                    raise VivinoParseError(
+                        f"Unexpected HTTP status {response.status} fetching HTML"
+                    )
 
                 content = await response.text()
                 version = self._extract_version_from_html(content)
@@ -182,7 +195,9 @@ class VivinoClient:
         except (VivinoAuthError, VivinoParseError):
             raise
         except (TimeoutError, aiohttp.ClientError) as err:
-            raise VivinoConnectionError(f"Connection error fetching cellar HTML: {err}") from err
+            raise VivinoConnectionError(
+                f"Connection error fetching cellar HTML: {err}"
+            ) from err
 
     async def _fetch_deferred_page(self, page: int, retries: int = 1) -> dict[str, Any]:
         """Fetch deferred Inertia page data as JSON."""
@@ -199,7 +214,9 @@ class VivinoClient:
         }
 
         try:
-            async with self._session.get(url, headers=headers, allow_redirects=False) as response:
+            async with self._session.get(
+                url, headers=headers, allow_redirects=False
+            ) as response:
                 self._check_cookie_rotation(response.headers)
 
                 if response.status in (301, 302, 303, 307, 308):
@@ -208,15 +225,25 @@ class VivinoClient:
                         f"Session expired or login redirect: redirected to {location}"
                     )
                 if response.status in (401, 403):
-                    raise VivinoAuthError(f"Authentication failed with status {response.status}")
+                    raise VivinoAuthError(
+                        f"Authentication failed with status {response.status}"
+                    )
 
                 if response.status == 409:
                     if retries > 0:
-                        location = response.headers.get("X-Inertia-Location") or self._base_url
-                        _LOGGER.debug("Inertia 409 Conflict. Refreshing version from %s", location)
+                        location = (
+                            response.headers.get("X-Inertia-Location") or self._base_url
+                        )
+                        _LOGGER.debug(
+                            "Inertia 409 Conflict. Refreshing version from %s", location
+                        )
                         await self._refresh_version(location)
-                        return await self._fetch_deferred_page(page, retries=retries - 1)
-                    raise VivinoParseError("Persistent 409 Conflict encountered fetching cellar data")
+                        return await self._fetch_deferred_page(
+                            page, retries=retries - 1
+                        )
+                    raise VivinoParseError(
+                        "Persistent 409 Conflict encountered fetching cellar data"
+                    )
 
                 if response.status != 200:
                     raise VivinoParseError(
@@ -227,7 +254,9 @@ class VivinoClient:
         except (VivinoAuthError, VivinoParseError):
             raise
         except (TimeoutError, aiohttp.ClientError) as err:
-            raise VivinoConnectionError(f"Connection error fetching page {page}: {err}") from err
+            raise VivinoConnectionError(
+                f"Connection error fetching page {page}: {err}"
+            ) from err
 
     def _parse_entry(self, entry: dict[str, Any]) -> Vintage:
         """Parse an Inertia entry into a Vintage model."""
@@ -258,7 +287,9 @@ class VivinoClient:
         bottles: list[Bottle] = []
         for b in bottles_data:
             if not isinstance(b, dict) or "id" not in b:
-                raise VivinoParseError(f"Invalid bottle data in entry {vintage_id}: {b}")
+                raise VivinoParseError(
+                    f"Invalid bottle data in entry {vintage_id}: {b}"
+                )
             bottle_id = b["id"]
             size_id = b.get("bottle_size_id") or b.get("size_id") or 1
             loc_id = b.get("storage_location_id")
@@ -290,18 +321,30 @@ class VivinoClient:
                 pass
 
         winery_obj = wine.get("winery") or {}
-        winery = winery_obj.get("name", "") if isinstance(winery_obj, dict) else str(winery_obj)
+        winery = (
+            winery_obj.get("name", "")
+            if isinstance(winery_obj, dict)
+            else str(winery_obj)
+        )
 
         region_obj = wine.get("region") or {}
-        region = region_obj.get("name", "") if isinstance(region_obj, dict) else str(region_obj)
+        region = (
+            region_obj.get("name", "")
+            if isinstance(region_obj, dict)
+            else str(region_obj)
+        )
 
         country = ""
         if isinstance(region_obj, dict):
             c = region_obj.get("country")
-            country = c.get("name", "") if isinstance(c, dict) else (str(c) if c else "")
+            country = (
+                c.get("name", "") if isinstance(c, dict) else (str(c) if c else "")
+            )
         if not country:
             c = wine.get("country")
-            country = c.get("name", "") if isinstance(c, dict) else (str(c) if c else "")
+            country = (
+                c.get("name", "") if isinstance(c, dict) else (str(c) if c else "")
+            )
 
         type_id = int(wine.get("type_id", 1))
 
@@ -343,15 +386,21 @@ class VivinoClient:
         if isinstance(style_data, dict):
             style = WineStyle(
                 name=style_data.get("name", ""),
-                body=float(style_data["body"]) if style_data.get("body") is not None else None,
-                acidity=float(style_data["acidity"]) if style_data.get("acidity") is not None else None,
+                body=float(style_data["body"])
+                if style_data.get("body") is not None
+                else None,
+                acidity=float(style_data["acidity"])
+                if style_data.get("acidity") is not None
+                else None,
                 food=style_data.get("food", []),
             )
 
         rec_win = vintage_data.get("recommended_drinking_window") or {}
         start_year = rec_win.get("start_year")
         end_year = rec_win.get("end_year")
-        window_source = "vivino" if (start_year is not None or end_year is not None) else "none"
+        window_source = (
+            "vivino" if (start_year is not None or end_year is not None) else "none"
+        )
 
         return Vintage(
             id=vintage_id,
@@ -384,16 +433,24 @@ class VivinoClient:
 
         while True:
             data = await self._fetch_deferred_page(page)
-            props = data.get("props") if isinstance(data, dict) and "props" in data else data
+            props = (
+                data.get("props")
+                if isinstance(data, dict) and "props" in data
+                else data
+            )
             if not isinstance(props, dict):
-                raise VivinoParseError(f"Expected dict props in response, got {type(props)}")
+                raise VivinoParseError(
+                    f"Expected dict props in response, got {type(props)}"
+                )
 
             total_count = props.get("total_count", total_count)
             entries_data = props.get("entries")
             if entries_data is None:
                 raise VivinoParseError("Missing 'entries' in Inertia response props")
             if not isinstance(entries_data, list):
-                raise VivinoParseError(f"Expected list for 'entries', got {type(entries_data)}")
+                raise VivinoParseError(
+                    f"Expected list for 'entries', got {type(entries_data)}"
+                )
 
             if not entries_data:
                 break
@@ -439,7 +496,9 @@ class VivinoClient:
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         }
         try:
-            async with self._session.get(self._base_url, headers=headers, allow_redirects=False) as response:
+            async with self._session.get(
+                self._base_url, headers=headers, allow_redirects=False
+            ) as response:
                 self._check_cookie_rotation(response.headers)
                 fresh_cookies = _parse_set_cookies(response.headers)
 
@@ -449,23 +508,33 @@ class VivinoClient:
                         f"Session expired or login redirect: redirected to {location}"
                     )
                 if response.status in (401, 403):
-                    raise VivinoAuthError(f"Authentication failed with status {response.status}")
+                    raise VivinoAuthError(
+                        f"Authentication failed with status {response.status}"
+                    )
                 if response.status != 200:
-                    raise VivinoParseError(f"Unexpected HTTP status {response.status} fetching write context")
+                    raise VivinoParseError(
+                        f"Unexpected HTTP status {response.status} fetching write context"
+                    )
 
                 content = await response.text()
         except (VivinoAuthError, VivinoParseError):
             raise
         except (TimeoutError, aiohttp.ClientError) as err:
-            raise VivinoConnectionError(f"Connection error fetching write context: {err}") from err
+            raise VivinoConnectionError(
+                f"Connection error fetching write context: {err}"
+            ) from err
 
         # Extract CSRF token
         csrf_token = self._extract_csrf_from_html(content)
         if not csrf_token:
-            csrf_token = fresh_cookies.get("csrf_token") or fresh_cookies.get("XSRF-TOKEN")
+            csrf_token = fresh_cookies.get("csrf_token") or fresh_cookies.get(
+                "XSRF-TOKEN"
+            )
             if not csrf_token:
                 current_cookies = _split_cookie(self._current_cookie_header)
-                csrf_token = current_cookies.get("csrf_token") or current_cookies.get("XSRF-TOKEN")
+                csrf_token = current_cookies.get("csrf_token") or current_cookies.get(
+                    "XSRF-TOKEN"
+                )
 
         if not csrf_token:
             raise VivinoParseError("Could not extract CSRF token from cellar page")
@@ -542,7 +611,9 @@ class VivinoClient:
                     return True
 
                 if response.status in (401, 403):
-                    raise VivinoAuthError(f"Authentication failed during bottle removal: HTTP {response.status}")
+                    raise VivinoAuthError(
+                        f"Authentication failed during bottle removal: HTTP {response.status}"
+                    )
 
                 if response.status in (200, 201, 204):
                     return True
@@ -554,13 +625,19 @@ class VivinoClient:
                         response.status,
                         vintage_id,
                     )
-                    return await self._decrement_vintage_count(vintage_id, headers, events_url)
+                    return await self._decrement_vintage_count(
+                        vintage_id, headers, events_url
+                    )
 
-                raise VivinoError(f"Bottle removal failed with HTTP status {response.status}")
+                raise VivinoError(
+                    f"Bottle removal failed with HTTP status {response.status}"
+                )
         except (VivinoAuthError, VivinoError):
             raise
         except (TimeoutError, aiohttp.ClientError) as err:
-            raise VivinoConnectionError(f"Connection error during bottle removal: {err}") from err
+            raise VivinoConnectionError(
+                f"Connection error during bottle removal: {err}"
+            ) from err
 
     async def _decrement_vintage_count(
         self,
@@ -599,8 +676,12 @@ class VivinoClient:
                 if response.status in (200, 201, 204):
                     return True
 
-                raise VivinoError(f"Vintage count decrement failed with HTTP status {response.status}")
+                raise VivinoError(
+                    f"Vintage count decrement failed with HTTP status {response.status}"
+                )
         except (VivinoAuthError, VivinoError):
             raise
         except (TimeoutError, aiohttp.ClientError) as err:
-            raise VivinoConnectionError(f"Connection error during vintage count decrement: {err}") from err
+            raise VivinoConnectionError(
+                f"Connection error during vintage count decrement: {err}"
+            ) from err

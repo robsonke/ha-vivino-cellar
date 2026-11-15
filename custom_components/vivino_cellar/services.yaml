@@ -1,0 +1,41 @@
+suggest_pairing:
+  fields:
+    dish:
+      example: "Ribeye steak with garlic butter"
+      selector:
+        text:
+    food_ids:
+      example: "[1, 5]"
+      selector:
+        object:
+    entry_id:
+      selector:
+        config_entry:
+          integration: vivino_cellar
+
+drink_bottle:
+  fields:
+    bottle_id:
+      required: true
+      example: 12345678
+      selector:
+        number:
+          min: 1
+          mode: box
+    vintage_id:
+      example: 987654
+      selector:
+        number:
+          min: 1
+          mode: box
+    entry_id:
+      selector:
+        config_entry:
+          integration: vivino_cellar
+
+refresh:
+  fields:
+    entry_id:
+      selector:
+        config_entry:
+          integration: vivino_cellar

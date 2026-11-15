@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
+import logging
 from typing import Any
 
 from .const import CONF_CELLAR_URL, DOMAIN

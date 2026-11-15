@@ -123,7 +123,9 @@ async def test_diagnostics_with_coordinator_data() -> None:
         food_categories=[],
     )
 
-    coordinator = MagicMock(spec=["data", "last_update_success", "ai_task_entity", "_ai_estimates"])
+    coordinator = MagicMock(
+        spec=["data", "last_update_success", "ai_task_entity", "_ai_estimates"]
+    )
     coordinator.data = cellar_data
     coordinator.last_update_success = True
     coordinator.ai_task_entity = "conversation.openai"
@@ -168,7 +170,9 @@ async def test_diagnostics_stored_ai_windows_fallback() -> None:
     hass = MockHass()
     entry = MockConfigEntry()
 
-    coordinator = MagicMock(spec=["data", "last_update_success", "ai_task_entity", "_stored_ai_windows"])
+    coordinator = MagicMock(
+        spec=["data", "last_update_success", "ai_task_entity", "_stored_ai_windows"]
+    )
     coordinator.data = None
     coordinator.last_update_success = True
     coordinator.ai_task_entity = None
@@ -204,4 +208,3 @@ async def test_diagnostics_with_coordinator_empty_data() -> None:
     assert "coordinator" in diag
     assert diag["coordinator"]["last_update_success"] is False
     assert "cellar" not in diag["coordinator"]
-

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import logging
 from datetime import UTC, datetime, timedelta
+import logging
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -11,6 +11,8 @@ import pytest
 from custom_components.vivino_cellar.button import (
     BUTTON_TYPES,
     VivinoRefreshButton,
+)
+from custom_components.vivino_cellar.button import (
     async_setup_entry as async_setup_button_entry,
 )
 from custom_components.vivino_cellar.const import CONF_CELLAR_URL, CONF_COOKIE, DOMAIN

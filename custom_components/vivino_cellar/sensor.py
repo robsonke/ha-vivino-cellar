@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
+import logging
 from typing import Any
 
 from .const import CONF_CELLAR_URL, DOMAIN
@@ -212,7 +212,7 @@ class VivinoCellarSensor(CoordinatorEntity[VivinoCellarCoordinator], SensorEntit
         if key == "total_bottles":
             return sum(len(v.bottles) for v in vintages)
 
-        current_year = datetime.now().year
+        current_year = datetime.now(UTC).year
         return sum(
             len(v.bottles)
             for v in vintages
@@ -233,7 +233,7 @@ class VivinoCellarSensor(CoordinatorEntity[VivinoCellarCoordinator], SensorEntit
                 "total_vintages": len(vintages),
             }
 
-        current_year = datetime.now().year
+        current_year = datetime.now(UTC).year
         matching_wines = [
             v.name
             for v in vintages

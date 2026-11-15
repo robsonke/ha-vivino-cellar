@@ -20,7 +20,7 @@
     },
     "error": {
       "invalid_auth": "Ongeldige of verlopen sessie-cookie.",
-      "invalid_url": "Ongeldige Vivino kelder-URL. Verwacht formaat: https://www.vivino.com/{locale}/cellars/{id}",
+      "invalid_url": "Ongeldige Vivino kelder-URL. Gebruik het adres van je kelderpagina op vivino.com.",
       "cannot_connect": "Kan geen verbinding maken met Vivino. Controleer je internetverbinding.",
       "unknown": "Er is een onverwachte fout opgetreden."
     },
@@ -53,6 +53,54 @@
     "button": {
       "refresh_cellar": {
         "name": "Kelder vernieuwen"
+      }
+    }
+  },
+  "services": {
+    "suggest_pairing": {
+      "name": "Wijn bij gerecht",
+      "description": "Stelt wijnen uit je kelder voor bij een gerecht of Vivino-spijscategorieën. Geef een gerecht of categorie-ID's op.",
+      "fields": {
+        "dish": {
+          "name": "Gerecht",
+          "description": "Omschrijving van het gerecht. Vereist een AI-taak-entiteit."
+        },
+        "food_ids": {
+          "name": "Spijscategorie-ID's",
+          "description": "Lijst met Vivino-spijscategorie-ID's."
+        },
+        "entry_id": {
+          "name": "Kelder",
+          "description": "Vivino-kelder die gebruikt wordt. Standaard de eerste geconfigureerde kelder."
+        }
+      }
+    },
+    "drink_bottle": {
+      "name": "Fles ontkurken",
+      "description": "Verwijdert een fles uit je Vivino-kelder.",
+      "fields": {
+        "bottle_id": {
+          "name": "Fles-ID",
+          "description": "ID van de fles die verwijderd wordt."
+        },
+        "vintage_id": {
+          "name": "Jaargang-ID",
+          "description": "Jaargang van de fles; gebruikt als terugval als de fles niet direct verwijderd kan worden."
+        },
+        "entry_id": {
+          "name": "Kelder",
+          "description": "Vivino-kelder die gebruikt wordt. Standaard de eerste geconfigureerde kelder."
+        }
+      }
+    },
+    "refresh": {
+      "name": "Vernieuwen",
+      "description": "Haalt de nieuwste keldergegevens op bij Vivino.",
+      "fields": {
+        "entry_id": {
+          "name": "Kelder",
+          "description": "Vivino-kelder die gebruikt wordt. Standaard de eerste geconfigureerde kelder."
+        }
       }
     }
   }

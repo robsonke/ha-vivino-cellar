@@ -438,4 +438,3 @@ async def test_background_ai_estimation_handles_service_error(
     v2 = next(v for v in coordinator.data.vintages if v.id == 1002)
     assert v2.start_year is None
     assert v2.window_source == "none"
-
