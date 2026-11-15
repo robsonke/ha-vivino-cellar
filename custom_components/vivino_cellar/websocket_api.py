@@ -9,6 +9,7 @@ from typing import Any
 
 from .const import (
     CONF_NOW_LIMIT,
+    CONF_WEATHER_ENTITY,
     DEFAULT_NOW_LIMIT,
     DEFAULT_TITLE,
     DOMAIN,
@@ -342,6 +343,8 @@ def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
             "grapes": list(vintage.grapes or []),
             "vivino_url": _vivino_url(vintage),
             "style": vintage.style.name if vintage.style else None,
+            "style_body": vintage.style.body if vintage.style else None,
+            "style_acidity": vintage.style.acidity if vintage.style else None,
             "rating": vintage.rating,
             "ratings_count": vintage.ratings_count,
             "image_url": vintage.image_url,
@@ -370,6 +373,7 @@ def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
         "settings": {
             "title": settings.get("title") or DEFAULT_TITLE,
             "now_limit": settings.get(CONF_NOW_LIMIT) or DEFAULT_NOW_LIMIT,
+            "weather_entity": settings.get(CONF_WEATHER_ENTITY) or None,
         },
         "total_bottles": sum(w["bottle_count"] for w in wines),
         "last_refresh_time": _last_refresh_iso(coordinator),

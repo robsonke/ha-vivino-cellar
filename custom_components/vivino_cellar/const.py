@@ -17,6 +17,7 @@ CONF_SHOW_PANEL = "show_panel"
 CONF_NOW_LIMIT = "now_limit"
 # {"<storage_location_id>": "name"}; Vivino's web data has no location names
 CONF_LOCATION_NAMES = "location_names"
+CONF_WEATHER_ENTITY = "weather_entity"
 
 DEFAULT_TITLE = "Wijnkelder"
 DEFAULT_SCAN_INTERVAL = 6
@@ -50,6 +51,7 @@ def cellar_settings(entry: Any) -> dict[str, Any]:
         CONF_SHOW_PANEL: bool(options.get(CONF_SHOW_PANEL, True)),
         CONF_NOW_LIMIT: int(options.get(CONF_NOW_LIMIT, DEFAULT_NOW_LIMIT)),
         CONF_LOCATION_NAMES: dict(options.get(CONF_LOCATION_NAMES) or {}),
+        CONF_WEATHER_ENTITY: options.get(CONF_WEATHER_ENTITY) or None,
     }
 
 

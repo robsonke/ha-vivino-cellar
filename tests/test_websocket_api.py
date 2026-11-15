@@ -22,6 +22,7 @@ from custom_components.vivino_cellar.models import (
     CellarData,
     FoodCategory,
     Vintage,
+    WineStyle,
 )
 from custom_components.vivino_cellar.pairing import PairingResult
 from custom_components.vivino_cellar.websocket_api import (
@@ -116,7 +117,7 @@ def _create_sample_cellar_data() -> CellarData:
         rating=4.7,
         ratings_count=1200,
         foods=[food_beef],
-        style=None,
+        style=WineStyle(name="Bordeaux Red", body=4.0, acidity=3.0, food=[]),
         bottles=[b1, b2],
         start_year=2022,
         end_year=2029,  # ends within CAN_WAIT_YEARS of 2026, so ready
@@ -261,11 +262,15 @@ async def test_ws_cellar_overview(mock_coordinator: MagicMock) -> None:
     assert margaux["window_status"] == "ready"
     # Kelder tab filters on grape and style.
     assert margaux["grapes"] == ["Cabernet Sauvignon"]
+    assert margaux["style_body"] == 4.0
+    assert margaux["style_acidity"] == 3.0
     assert margaux["vivino_url"] == "https://www.vivino.com/w/501?year=2018"
     # No wine id from Vivino: no link.
     other = next(w for w in wines if w["vintage_id"] == 1002)
     assert other["vivino_url"] is None
-    assert margaux["style"] is None
+    assert other["style_body"] is None
+    assert other["style_acidity"] is None
+    assert margaux["style"] == "Bordeaux Red"
     assert len(margaux["bottles"]) == 2
     assert margaux["bottles"][0]["location_name"] == "Wine Fridge"
     assert margaux["bottles"][0]["bin"] == "A1"

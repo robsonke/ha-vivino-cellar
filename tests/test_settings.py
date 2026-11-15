@@ -68,6 +68,7 @@ def test_cellar_settings_defaults():
         CONF_SHOW_PANEL: True,
         CONF_NOW_LIMIT: DEFAULT_NOW_LIMIT,
         "location_names": {},
+        "weather_entity": None,
     }
 
 
@@ -105,6 +106,7 @@ async def test_options_flow_saves_input():
         CONF_SCAN_INTERVAL: 12,
         CONF_SHOW_PANEL: False,
         CONF_NOW_LIMIT: 8,
+        "weather_entity": "weather.home",
     }
     result = await flow.async_step_init(user_input)
     assert result["type"] == "create_entry"
@@ -124,6 +126,7 @@ async def test_options_flow_coerces_numbers_to_int():
     assert isinstance(result["data"][CONF_NOW_LIMIT], int)
     # A cleared AI task is stored as None so it overrides the setup value.
     assert result["data"][CONF_AI_TASK] is None
+    assert result["data"]["weather_entity"] is None
 
 
 def test_payload_includes_settings():
@@ -132,7 +135,15 @@ def test_payload_includes_settings():
     coordinator.data = None
     coordinator.settings = {"title": "Kelder", CONF_NOW_LIMIT: 7}
     payload = _build_cellar_payload(coordinator)
-    assert payload["settings"] == {"title": "Kelder", "now_limit": 7}
+    assert payload["settings"] == {
+        "title": "Kelder",
+        "now_limit": 7,
+        "weather_entity": None,
+    }
+    coordinator.settings["weather_entity"] = "weather.home"
+    assert _build_cellar_payload(coordinator)["settings"]["weather_entity"] == (
+        "weather.home"
+    )
 
 
 def _setup_patches():

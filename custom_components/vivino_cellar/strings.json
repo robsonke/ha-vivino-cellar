@@ -38,13 +38,15 @@
           "ai_task": "AI task entity",
           "scan_interval_hours": "Refresh interval",
           "show_panel": "Show in sidebar",
-          "now_limit": "Wines in \"Drink now\""
+          "now_limit": "Wines in \"Drink now\"",
+          "weather_entity": "Weather entity"
         },
         "data_description": {
           "ai_task": "Estimates drinking windows and suggests food pairings. Leave empty to turn AI off.",
           "scan_interval_hours": "How often the cellar is fetched from Vivino.",
           "show_panel": "Turn off if you only use the dashboard card.",
-          "now_limit": "How many wines the \"Drink now\" tab shows."
+          "now_limit": "How many wines the \"Drink now\" tab shows.",
+          "weather_entity": "Suggests Verfrissend when it is warm and Winteravond when it is cold."
         }
       },
       "locations": {

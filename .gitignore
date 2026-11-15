@@ -82,3 +82,6 @@ tasks/
 
 # Superpowers plans/specs (local only)
 docs/superpowers/
+
+# Brainstorm mockups (local only)
+.superpowers/

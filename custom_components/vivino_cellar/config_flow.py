@@ -14,6 +14,7 @@ from .const import (
     CONF_NOW_LIMIT,
     CONF_SCAN_INTERVAL,
     CONF_SHOW_PANEL,
+    CONF_WEATHER_ENTITY,
     DOMAIN,
     cellar_settings,
 )
@@ -302,6 +303,9 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Optional(CONF_AI_TASK): EntitySelector(
             EntitySelectorConfig(domain="ai_task")
         ),
+        vol.Optional(CONF_WEATHER_ENTITY): EntitySelector(
+            EntitySelectorConfig(domain="weather")
+        ),
         vol.Required(CONF_SCAN_INTERVAL): NumberSelector(
             NumberSelectorConfig(
                 min=1,
@@ -338,6 +342,7 @@ class VivinoCellarOptionsFlow(config_entries.OptionsFlow):
                 CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL]),
                 CONF_SHOW_PANEL: bool(user_input[CONF_SHOW_PANEL]),
                 CONF_NOW_LIMIT: int(user_input[CONF_NOW_LIMIT]),
+                CONF_WEATHER_ENTITY: user_input.get(CONF_WEATHER_ENTITY) or None,
             }
             if self._location_fields():
                 return await self.async_step_locations()
