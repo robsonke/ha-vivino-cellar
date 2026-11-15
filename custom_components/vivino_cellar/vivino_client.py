@@ -402,8 +402,10 @@ class VivinoClient:
             "vivino" if (start_year is not None or end_year is not None) else "none"
         )
 
+        raw_wine_id = wine.get("id")
         return Vintage(
             id=vintage_id,
+            wine_id=int(raw_wine_id) if raw_wine_id is not None else None,
             year=year,
             name=wine_name,
             winery=winery,

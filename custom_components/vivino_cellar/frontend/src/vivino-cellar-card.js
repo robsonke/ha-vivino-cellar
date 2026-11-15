@@ -133,9 +133,14 @@ export class VivinoCellarCard extends HTMLElement {
     this._pendingDrinks = new Map();
     this._drinkErrors = [];
     this._spotPicker = null; // vintage id whose location picker is open
+    this._detailWine = null; // vintage id whose detail sheet is open
     this._wineIndex = new Map();
 
     this._onPageHide = () => this._flushPendingDrinks();
+    this._onKeyDown = (e) => {
+      if (e.key !== "Escape" || (this._detailWine === null && this._spotPicker === null)) return;
+      this._closeModals();
+    };
   }
 
   setConfig(config) {
@@ -166,12 +171,14 @@ export class VivinoCellarCard extends HTMLElement {
 
   connectedCallback() {
     window.addEventListener("pagehide", this._onPageHide);
+    window.addEventListener("keydown", this._onKeyDown);
     if (this._hass) this._subscribe();
     this._render();
   }
 
   disconnectedCallback() {
     window.removeEventListener("pagehide", this._onPageHide);
+    window.removeEventListener("keydown", this._onKeyDown);
     this._flushPendingDrinks();
     this._unsubscribeUpdates();
   }
@@ -353,6 +360,13 @@ export class VivinoCellarCard extends HTMLElement {
     this._startDrink(wine, wine.bottles[0]);
   }
 
+  _closeModals() {
+    // The picker opens from the sheet, so close it first and go back to the sheet.
+    if (this._spotPicker !== null) this._spotPicker = null;
+    else this._detailWine = null;
+    this._render();
+  }
+
   _handlePickSpot(index) {
     const wine = this._wineIndex.get(this._spotPicker);
     this._spotPicker = null;
@@ -509,6 +523,7 @@ export class VivinoCellarCard extends HTMLElement {
             : this._renderCurrentTab(view)
         }
 
+        ${this._renderDetailSheet()}
         ${this._renderSpotPicker()}
       </div>
       ${this._renderToasts()}
@@ -887,7 +902,8 @@ export class VivinoCellarCard extends HTMLElement {
     const spots = bottleSpots(bottles);
 
     return `
-      <div class="wine-card">
+      <div class="wine-card clickable" role="button" tabindex="0"
+        data-detail-id="${esc(vintageId(wine))}" aria-label="Details: ${esc(wineName)}">
         ${
           image
             ? `<img class="wine-thumb" src="${esc(image)}" alt="${esc(wineName)}" onerror="this.style.display='none'" />`
@@ -924,6 +940,91 @@ export class VivinoCellarCard extends HTMLElement {
                   </div>`
                 : `<div class="bottle-row"><span>Geen flessen op voorraad</span></div>`
             }
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  _renderDetailSheet() {
+    if (this._detailWine === null) return "";
+    const wine = this._wineIndex.get(this._detailWine);
+    if (!wine) {
+      this._detailWine = null;
+      return "";
+    }
+    const name = wine.name || wine.wine_name || "Onbekende wijn";
+    const status = wine.window_status || "unknown";
+    const image = safeUrl(wine.image_url);
+    const vivinoUrl = safeUrl(wine.vivino_url);
+    const rating = typeof wine.rating === "number" ? wine.rating.toFixed(1) : null;
+    const origin = [wine.region, wine.country].filter(Boolean).join(", ");
+    const windowText =
+      wine.start_year && wine.end_year
+        ? `${wine.start_year} – ${wine.end_year}`
+        : wine.start_year
+        ? `vanaf ${wine.start_year}`
+        : wine.end_year
+        ? `tot ${wine.end_year}`
+        : "onbekend";
+    const source = { vivino: "volgens Vivino", ai_estimate: "AI-schatting" }[wine.window_source];
+    const foods = (wine.foods || []).map((f) => f.name).filter(Boolean);
+    const spots = bottleSpots(wine.bottles || []);
+    const row = (label, value) =>
+      value ? `<div class="detail-row"><dt>${label}</dt><dd>${value}</dd></div>` : "";
+
+    return `
+      <div class="modal-backdrop" id="detail-backdrop">
+        <div class="modal-dialog detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+          <div class="detail-hero">
+            ${
+              image
+                ? `<img class="detail-image" src="${esc(image)}" alt="" onerror="this.style.display='none'" />`
+                : `<div class="detail-image placeholder">${ICON_BOTTLE}</div>`
+            }
+            <div class="detail-heading">
+              <div class="wine-title" id="detail-title">${esc(name)} ${wine.year ? `(${esc(wine.year)})` : ""}</div>
+              ${wine.winery ? `<div class="wine-subtitle">${esc(wine.winery)}</div>` : ""}
+              <div class="wine-badges">
+                ${rating ? `<span class="badge badge-rating">${ICON_STAR} ${rating}${wine.ratings_count ? ` · ${esc(wine.ratings_count)} beoordelingen` : ""}</span>` : ""}
+                <span class="badge badge-${status}">${STATUS_LABELS[status] || esc(status)}</span>
+              </div>
+            </div>
+          </div>
+          <div class="modal-body">
+            <dl class="detail-list">
+              ${row("Drinkvenster", `${esc(windowText)}${source ? ` <span class="muted">(${source})</span>` : ""}`)}
+              ${row("Soort", esc(WINE_TYPES[wine.type_id] || ""))}
+              ${row("Herkomst", esc(origin))}
+              ${row("Druiven", esc((wine.grapes || []).join(", ")))}
+              ${row("Stijl", esc(wine.style || ""))}
+              ${row("Past bij", esc(foods.join(", ")))}
+              ${row(
+                "Flessen",
+                spots.length
+                  ? spots
+                      .map(
+                        (sp) => `<div>${esc(sp.location)}${sp.bin ? ` · vak ${esc(sp.bin)}` : ""}: ${sp.bottles.length}×</div>`
+                      )
+                      .join("")
+                  : "Geen flessen op voorraad"
+              )}
+            </dl>
+          </div>
+          <div class="modal-footer detail-actions">
+            ${
+              vivinoUrl
+                ? `<a class="btn-link" href="${esc(vivinoUrl)}" target="_blank" rel="noopener noreferrer">Bekijk op Vivino</a>`
+                : "<span></span>"
+            }
+            <div class="detail-buttons">
+              <button class="btn-secondary" id="btn-close-detail">Sluiten</button>
+              ${
+                wine.bottles.length
+                  ? `<button class="drink-btn btn-drink-action" data-vintage-id="${esc(vintageId(wine))}">${ICON_GLASS} Ontkurken</button>`
+                  : ""
+              }
+            </div>
           </div>
         </div>
       </div>
@@ -1061,7 +1162,28 @@ export class VivinoCellarCard extends HTMLElement {
     // Drinking
     on(".btn-drink-action", (el, e) => {
       e.stopPropagation();
+      this._detailWine = null;
       this._handleDrinkWine(Number(el.dataset.vintageId));
+    });
+
+    // Wine details
+    shadow.querySelectorAll("[data-detail-id]").forEach((el) => {
+      const open = () => {
+        this._detailWine = Number(el.dataset.detailId);
+        this._render();
+        this.shadowRoot.getElementById("btn-close-detail")?.focus();
+      };
+      el.addEventListener("click", open);
+      el.addEventListener("keydown", (e) => {
+        if (e.target === el && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          open();
+        }
+      });
+    });
+    on("#btn-close-detail", () => this._closeModals());
+    on("#detail-backdrop", (el, e) => {
+      if (e.target === el) this._closeModals();
     });
     on(".spot-option", (el) => this._handlePickSpot(Number(el.dataset.spotIndex)));
     on("#btn-cancel-picker", () => {

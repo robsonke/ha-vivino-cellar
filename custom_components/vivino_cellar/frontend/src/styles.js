@@ -366,6 +366,13 @@ export const cardStyles = `
     gap: 4px;
   }
 
+  .badge svg {
+    width: 12px;
+    height: 12px;
+    fill: currentColor;
+    flex-shrink: 0;
+  }
+
   .badge-rating {
     background: #fff8e1;
     color: #b78103;
@@ -693,6 +700,114 @@ export const cardStyles = `
     width: 24px;
     height: 24px;
     fill: var(--primary-color, #8b1e3f);
+  }
+
+  /* Wine detail sheet */
+  .wine-card.clickable {
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .wine-card.clickable:hover {
+    border-color: var(--primary-color, #8b1e3f);
+  }
+
+  .wine-card.clickable:focus-visible {
+    outline: 2px solid var(--primary-color, #8b1e3f);
+    outline-offset: 2px;
+  }
+
+  .detail-sheet {
+    max-width: 520px;
+    max-height: calc(100vh - 32px);
+  }
+
+  .detail-sheet .modal-body {
+    overflow-y: auto;
+  }
+
+  .detail-hero {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    border-bottom: 1px solid var(--divider-color, #eee);
+  }
+
+  .detail-image {
+    width: 72px;
+    height: 108px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .detail-image.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--secondary-background-color, #f5f5f5);
+    color: var(--secondary-text-color, #757575);
+  }
+
+  .detail-image.placeholder svg {
+    width: 32px;
+    height: 32px;
+    fill: currentColor;
+  }
+
+  .detail-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .detail-list {
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .detail-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 8px;
+    font-size: 0.9rem;
+  }
+
+  .detail-row dt {
+    color: var(--secondary-text-color, #757575);
+  }
+
+  .detail-row dd {
+    margin: 0;
+    color: var(--primary-text-color, #212121);
+    overflow-wrap: anywhere;
+  }
+
+  .muted {
+    color: var(--secondary-text-color, #757575);
+  }
+
+  .detail-actions {
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .detail-buttons {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  @container (max-width: 420px) {
+    .detail-row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
   }
 
   .modal-body {

@@ -104,6 +104,7 @@ def _create_sample_cellar_data() -> CellarData:
     # Ready wine (current year 2026: 2022 <= 2026 < 2035)
     v1 = Vintage(
         id=1001,
+        wine_id=501,
         year=2018,
         name="Château Margaux",
         winery="Château Margaux",
@@ -260,6 +261,10 @@ async def test_ws_cellar_overview(mock_coordinator: MagicMock) -> None:
     assert margaux["window_status"] == "ready"
     # Kelder tab filters on grape and style.
     assert margaux["grapes"] == ["Cabernet Sauvignon"]
+    assert margaux["vivino_url"] == "https://www.vivino.com/w/501?year=2018"
+    # No wine id from Vivino: no link.
+    other = next(w for w in wines if w["vintage_id"] == 1002)
+    assert other["vivino_url"] is None
     assert margaux["style"] is None
     assert len(margaux["bottles"]) == 2
     assert margaux["bottles"][0]["location_name"] == "Wine Fridge"

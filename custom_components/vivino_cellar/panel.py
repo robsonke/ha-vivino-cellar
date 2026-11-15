@@ -15,7 +15,7 @@ PANEL_URL = "vivino_cellar"
 PANEL_ICON = "mdi:barrel"
 PANEL_WEBCOMPONENT = "vivino-cellar-card"
 CARD_JS = "vivino-cellar-card.js"
-VERSION = "0.5.0"
+VERSION = "0.6.0"
 
 try:
     from homeassistant.components.http import StaticPathConfig

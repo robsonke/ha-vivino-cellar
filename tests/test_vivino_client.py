@@ -108,6 +108,7 @@ async def test_successful_fetch_cellar(cellar_html, cellar_p1_json):
 
     vintage = cellar_data.vintages[0]
     assert vintage.id == 2001
+    assert vintage.wine_id == 1001
     assert vintage.year == 2018
     assert vintage.name == "Barolo"
     assert vintage.winery == "Vietti"

@@ -279,6 +279,15 @@ def _last_refresh_iso(coordinator: Any) -> str | None:
     return last.isoformat() if isinstance(last, datetime) else None
 
 
+def _vivino_url(vintage: Any) -> str | None:
+    """Link to the wine's Vivino page, opened at this vintage."""
+    wine_id = getattr(vintage, "wine_id", None)
+    if wine_id is None:
+        return None
+    url = f"https://www.vivino.com/w/{wine_id}"
+    return f"{url}?year={vintage.year}" if vintage.year else url
+
+
 def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
     """Build the cellar payload shared by the cellar command and subscription."""
     cellar_data = coordinator.data
@@ -310,6 +319,7 @@ def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
             "country": vintage.country,
             "type_id": vintage.type_id,
             "grapes": list(vintage.grapes or []),
+            "vivino_url": _vivino_url(vintage),
             "style": vintage.style.name if vintage.style else None,
             "rating": vintage.rating,
             "ratings_count": vintage.ratings_count,
