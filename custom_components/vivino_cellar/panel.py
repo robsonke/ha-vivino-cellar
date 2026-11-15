@@ -84,7 +84,9 @@ async def async_register_frontend(hass: Any) -> None:
         return
 
     frontend_path = Path(__file__).parent / "frontend"
-    card_url = f"{URL_BASE}/{CARD_JS}"
+    # Version every URL: browsers cache the unversioned file, and the first
+    # copy to load wins the custom element name.
+    card_url = f"{URL_BASE}/{CARD_JS}?v={VERSION}"
 
     # 1. Register static path (ignore duplicate registration errors)
     if hasattr(hass, "http"):
@@ -135,7 +137,7 @@ async def async_register_frontend(hass: Any) -> None:
                 webcomponent_name=PANEL_WEBCOMPONENT,
                 sidebar_title=PANEL_TITLE,
                 sidebar_icon=PANEL_ICON,
-                module_url=f"{card_url}?v={VERSION}",
+                module_url=card_url,
                 require_admin=False,
                 config={},
             )
@@ -189,15 +191,27 @@ async def _async_register_lovelace_resource(hass: Any, url: str) -> None:
         elif hasattr(resources, "items"):
             items = list(resources.items)
 
+        base = url.split("?", 1)[0]
         for item in items:
             item_url = (
                 item.get("url")
                 if isinstance(item, dict)
                 else getattr(item, "url", None)
             )
+            if not item_url or item_url.split("?", 1)[0] != base:
+                continue
             if item_url == url:
                 _LOGGER.debug("Lovelace resource '%s' already registered", url)
                 return
+            item_id = (
+                item.get("id") if isinstance(item, dict) else getattr(item, "id", None)
+            )
+            if item_id and hasattr(resources, "async_update_item"):
+                await resources.async_update_item(
+                    item_id, {"res_type": "module", "url": url}
+                )
+                _LOGGER.debug("Updated Lovelace resource '%s' -> '%s'", item_url, url)
+            return
 
         if hasattr(resources, "async_create_item"):
             await resources.async_create_item({"res_type": "module", "url": url})
