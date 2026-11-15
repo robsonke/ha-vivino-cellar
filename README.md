@@ -6,7 +6,7 @@
 [![Tests](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/tests.yml/badge.svg)](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Vivino Cellar** integrates your personal Vivino wine cellar into [Home Assistant](https://www.home-assistant.io/). Keep track of bottle counts, monitor drinking windows (hold, ready, near peak, past peak), discover food & wine pairings using Vivino food categories or Home Assistant Assist / AI, and mark bottles as drunk directly from your dashboard or voice assistant.
+**Vivino Cellar** integrates your personal Vivino wine cellar into [Home Assistant](https://www.home-assistant.io/). Keep track of bottle counts, monitor drinking windows (hold, ready, can wait, near peak, past peak), discover food & wine pairings using Vivino food categories or Home Assistant Assist / AI, and mark bottles as drunk directly from your dashboard or voice assistant.
 
 ---
 
@@ -39,7 +39,7 @@
   - Full Home Assistant Diagnostics support with sensitive cookie & token redaction.
 - 📱 **Sidebar Panel & Lovelace Custom Card**:
   - Dedicated **Wijnkelder** panel in your Home Assistant sidebar (`mdi:barrel`).
-  - Lit-based Lovelace card (`custom:vivino-cellar-card`) for dashboard embedding.
+  - Lovelace card (`custom:vivino-cellar-card`) for dashboard embedding.
 
 ---
 
@@ -138,11 +138,11 @@ type: custom:vivino-cellar-card
 type: custom:vivino-cellar-card
 title: Mijn Wijnkelder
 now_limit: 8
-default_tab: now    # Options: "now", "pairing" or "windows"
+default_tab: now    # Options: "now", "pairing" or "cellar"
 tabs:
   - now
   - pairing
-  - windows
+  - cellar
 ```
 
 ### Configuration Parameters
@@ -152,8 +152,14 @@ tabs:
 | `type` | string | **Required** | Must be `custom:vivino-cellar-card` |
 | `title` | string | Integration name | Header title. Overrides the integration's name for this card only |
 | `now_limit` | number | Integration setting (5) | Wines on the **Nu drinken** tab, for this card only |
-| `default_tab` | string | `"now"` | Initial tab to open (`"now"`, `"pairing"` or `"windows"`) |
-| `tabs` | list | `["now", "pairing", "windows"]` | Which tabs to display |
+| `default_tab` | string | `"now"` | Initial tab to open (`"now"`, `"pairing"` or `"cellar"`) |
+| `tabs` | list | `["now", "pairing", "cellar"]` | Which tabs to display. The old name `windows` still works and opens **Kelder** |
+
+### Tabs
+
+- **Nu drinken**: a short list of what to open now: wines in their last year first, then the rest of what's ready.
+- **Wijn & Spijs**: food pairing from Vivino food categories, or free text via your AI task.
+- **Kelder**: every wine in the cellar. Filter by drinking-window status (tap a pill), type, country, grape and number of bottles, and search by name, winery, region or grape. Sort by drinking window (grouped), drink-by year, rating, vintage, bottle count or name. Each filter's counts follow the other filters.
 
 ---
 

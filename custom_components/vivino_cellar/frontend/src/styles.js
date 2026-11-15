@@ -477,10 +477,63 @@ export const cardStyles = `
   }
 
   /* Drinking Windows Tab */
-  .windows-tab {
+  .cellar-tab {
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+  }
+
+  .filter-select {
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--divider-color, #ccc);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.85rem;
+    background: var(--input-fill-color, var(--ha-card-background, #fff));
+    color: var(--primary-text-color, #212121);
+    cursor: pointer;
+  }
+
+  /* Sort is not a filter: own row, never truncated. */
+  .filter-select[data-filter="sort"] {
+    grid-column: 1 / -1;
+  }
+
+  .filter-select.active {
+    border-color: var(--primary-color, #8b1e3f);
+    box-shadow: inset 0 0 0 1px var(--primary-color, #8b1e3f);
+  }
+
+  .result-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--secondary-text-color, #757575);
+  }
+
+  .btn-link {
+    background: none;
+    border: none;
+    padding: 4px 0;
+    font: inherit;
+    color: var(--primary-color, #8b1e3f);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .cellar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .search-filter-row {

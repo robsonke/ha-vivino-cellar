@@ -309,6 +309,8 @@ def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
             "region": vintage.region,
             "country": vintage.country,
             "type_id": vintage.type_id,
+            "grapes": list(vintage.grapes or []),
+            "style": vintage.style.name if vintage.style else None,
             "rating": vintage.rating,
             "ratings_count": vintage.ratings_count,
             "image_url": vintage.image_url,

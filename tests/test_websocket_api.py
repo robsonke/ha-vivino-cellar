@@ -258,6 +258,9 @@ async def test_ws_cellar_overview(mock_coordinator: MagicMock) -> None:
     assert margaux["year"] == 2018
     assert margaux["window_source"] == "vivino"
     assert margaux["window_status"] == "ready"
+    # Kelder tab filters on grape and style.
+    assert margaux["grapes"] == ["Cabernet Sauvignon"]
+    assert margaux["style"] is None
     assert len(margaux["bottles"]) == 2
     assert margaux["bottles"][0]["location_name"] == "Wine Fridge"
     assert margaux["bottles"][0]["bin"] == "A1"

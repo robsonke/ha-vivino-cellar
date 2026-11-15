@@ -24,7 +24,27 @@ const STATUS_LABELS = {
   unknown: "Venster onbekend",
 };
 const STATUS_ORDER = ["near_past_peak", "ready", "can_wait", "hold", "past_peak", "unknown"];
-const DEFAULT_TABS = ["now", "pairing", "windows"];
+const DEFAULT_TABS = ["now", "pairing", "cellar"];
+// "windows" was the old name of the Kelder tab; keep YAML configs working.
+const TAB_ALIASES = { windows: "cellar" };
+const WINE_TYPES = {
+  1: "Rood",
+  2: "Wit",
+  3: "Mousserend",
+  4: "Rosé",
+  7: "Dessert",
+  24: "Versterkt",
+};
+const SORTS = {
+  status: "Drinkvenster",
+  drink_by: "Drinken voor",
+  rating: "Beoordeling",
+  vintage: "Jaargang (oud eerst)",
+  bottles: "Aantal flessen",
+  name: "Naam",
+};
+const MIN_BOTTLES = [0, 2, 3, 6];
+const EMPTY_FILTERS = { type: "", country: "", grape: "", minBottles: 0, sort: "status" };
 const NOW_LIMIT = 5;
 const UNDO_MS = 8000;
 const ERROR_TOAST_MS = 8000;
@@ -99,6 +119,7 @@ export class VivinoCellarCard extends HTMLElement {
     // Drinking Windows tab state
     this._searchQuery = "";
     this._statusFilter = null; // status pill that filters the list, or null
+    this._filters = { ...EMPTY_FILTERS };
     this._expandedGroups = {
       near_past_peak: true,
       ready: true,
@@ -123,8 +144,11 @@ export class VivinoCellarCard extends HTMLElement {
     }
     this._config = {
       default_tab: config.default_tab || "now",
-      tabs: Array.isArray(config.tabs) && config.tabs.length > 0 ? config.tabs : DEFAULT_TABS,
       ...config,
+      tabs: (Array.isArray(config.tabs) && config.tabs.length > 0 ? config.tabs : DEFAULT_TABS).map(
+        (t) => TAB_ALIASES[t] || t
+      ),
+      default_tab: TAB_ALIASES[config.default_tab] || config.default_tab || "now",
     };
     this._currentTab = this._config.tabs.includes(this._config.default_tab)
       ? this._config.default_tab
@@ -506,8 +530,8 @@ export class VivinoCellarCard extends HTMLElement {
     switch (this._currentTab) {
       case "pairing":
         return this._renderPairingTab();
-      case "windows":
-        return this._renderWindowsTab(view);
+      case "cellar":
+        return this._renderCellarTab(view);
       default:
         return this._renderNowTab(view);
     }
@@ -519,7 +543,7 @@ export class VivinoCellarCard extends HTMLElement {
     const defs = {
       now: `${ICON_CLOCK} Nu drinken`,
       pairing: `${ICON_GLASS} Wijn & Spijs`,
-      windows: `${ICON_BOTTLE} Drinkvensters`,
+      cellar: `${ICON_BOTTLE} Kelder`,
     };
     return `
       <div class="tabs-bar">
@@ -676,29 +700,141 @@ export class VivinoCellarCard extends HTMLElement {
     `;
   }
 
-  _renderWindowsTab(view) {
+  /** Does a wine pass every Kelder filter except the ones named in `skip`? */
+  _matchesFilters(wine, skip = []) {
+    const f = this._filters;
     const query = (this._searchQuery || "").toLowerCase();
-    const grouped = Object.fromEntries(STATUS_ORDER.map((s) => [s, []]));
+    if (wine.bottles.length === 0) return false;
+    if (wine.bottles.length < f.minBottles) return false;
+    if (query && ![wine.name, wine.winery, wine.region, ...(wine.grapes || [])].some(
+      (v) => (v || "").toLowerCase().includes(query)
+    )) return false;
+    if (!skip.includes("type") && f.type && String(wine.type_id) !== f.type) return false;
+    if (!skip.includes("country") && f.country && wine.country !== f.country) return false;
+    if (!skip.includes("grape") && f.grape && !(wine.grapes || []).includes(f.grape)) return false;
+    if (!skip.includes("status") && this._statusFilter && wine.window_status !== this._statusFilter)
+      return false;
+    return true;
+  }
+
+  /** Options for one filter, counted (in bottles) over the wines the other filters leave. */
+  _filterOptions(wines, key, valuesOf, labelOf = (v) => v) {
+    const counts = new Map();
+    for (const wine of wines) {
+      if (!this._matchesFilters(wine, [key])) continue;
+      for (const v of valuesOf(wine)) {
+        if (v === null || v === undefined || v === "") continue;
+        counts.set(String(v), (counts.get(String(v)) || 0) + wine.bottles.length);
+      }
+    }
+    const selected = this._filters[key];
+    if (selected && !counts.has(selected)) counts.set(selected, 0);
+    return [...counts.entries()]
+      .map(([value, n]) => ({ value, label: labelOf(value), n }))
+      .sort((a, b) => a.label.localeCompare(b.label, "nl"));
+  }
+
+  _renderSelect(key, allLabel, options) {
+    const current = this._filters[key];
+    return `
+      <select class="filter-select ${current ? "active" : ""}" data-filter="${key}" aria-label="${esc(allLabel)}">
+        <option value="">${esc(allLabel)}</option>
+        ${options
+          .map(
+            (o) => `<option value="${esc(o.value)}" ${o.value === current ? "selected" : ""}>${esc(o.label)} (${o.n})</option>`
+          )
+          .join("")}
+      </select>`;
+  }
+
+  _sortWines(wines) {
+    const by = {
+      drink_by: (a, b) => (a.end_year ?? Infinity) - (b.end_year ?? Infinity),
+      rating: (a, b) => (b.rating || 0) - (a.rating || 0),
+      vintage: (a, b) => (a.year ?? Infinity) - (b.year ?? Infinity),
+      bottles: (a, b) => b.bottles.length - a.bottles.length,
+      name: (a, b) => (a.name || "").localeCompare(b.name || "", "nl"),
+    }[this._filters.sort];
+    const byName = (a, b) => (a.name || "").localeCompare(b.name || "", "nl");
+    return [...wines].sort((a, b) => (by ? by(a, b) : 0) || byName(a, b));
+  }
+
+  _hasActiveFilters() {
+    const f = this._filters;
+    return Boolean(
+      this._statusFilter || this._searchQuery || f.type || f.country || f.grape || f.minBottles
+    );
+  }
+
+  _renderCellarTab(view) {
+    const f = this._filters;
+    const wines = view.wines.filter((w) => this._matchesFilters(w));
+    const bottles = wines.reduce((n, w) => n + w.bottles.length, 0);
+
+    // Pill counts follow the other filters, so they show what a tap would leave.
+    const statusCounts = Object.fromEntries(STATUS_ORDER.map((st) => [st, 0]));
     for (const wine of view.wines) {
-      if (wine.bottles.length === 0) continue;
-      (grouped[wine.window_status] || grouped.unknown).push(wine);
+      if (!this._matchesFilters(wine, ["status"])) continue;
+      const st = wine.window_status || "unknown";
+      statusCounts[st] = (statusCounts[st] || 0) + wine.bottles.length;
+    }
+
+    const typeOptions = this._filterOptions(
+      view.wines, "type", (w) => [w.type_id], (v) => WINE_TYPES[v] || `Type ${v}`
+    );
+    const countryOptions = this._filterOptions(view.wines, "country", (w) => [w.country]);
+    const grapeOptions = this._filterOptions(view.wines, "grape", (w) => w.grapes || []);
+
+    let list;
+    if (f.sort === "status") {
+      list = STATUS_ORDER.map((status) => {
+        if (this._statusFilter && status !== this._statusFilter) return "";
+        const groupWines = this._sortWines(
+          wines.filter((w) => (w.window_status || "unknown") === status)
+        );
+        if (groupWines.length === 0) return "";
+        // A filtered group is always open: that is what the pill asked for.
+        const isOpen = this._statusFilter === status || !!this._expandedGroups[status];
+        const groupBottles = groupWines.reduce((n, w) => n + w.bottles.length, 0);
+        return `
+          <div class="group-section">
+            <div class="group-header" data-status="${status}">
+              <div class="group-header-left">
+                <span class="badge badge-${status}">${STATUS_LABELS[status]}</span>
+                <span class="group-count">${groupBottles} flessen</span>
+              </div>
+              <div class="group-chevron ${isOpen ? "open" : ""}">${ICON_CHEVRON}</div>
+            </div>
+            ${
+              isOpen
+                ? `<div class="group-wines-content">
+                    ${groupWines.map((wine) => this._renderWineCard(wine)).join("")}
+                  </div>`
+                : ""
+            }
+          </div>`;
+      }).join("");
+    } else {
+      list = `<div class="cellar-list">${this._sortWines(wines)
+        .map((wine) => this._renderWineCard(wine))
+        .join("")}</div>`;
     }
 
     return `
-      <div class="windows-tab">
+      <div class="cellar-tab">
         <div class="search-filter-row">
           <input
             type="text"
             class="text-input"
-            id="windows-search-input"
-            placeholder="Zoek op wijnnaam, wijnhuis of regio..."
+            id="cellar-search-input"
+            placeholder="Zoek op wijn, wijnhuis, regio of druif..."
             value="${esc(this._searchQuery)}"
           />
         </div>
 
         <div class="status-chips-summary ${this._statusFilter ? "filtering" : ""}">
           ${STATUS_ORDER.map((status) => {
-            const count = view.counts[status] || 0;
+            const count = statusCounts[status] || 0;
             const active = this._statusFilter === status;
             return `<button class="status-chip badge-${status} ${active ? "active" : ""}"
                 data-status="${status}" aria-pressed="${active}" ${count === 0 && !active ? "disabled" : ""}>
@@ -707,43 +843,28 @@ export class VivinoCellarCard extends HTMLElement {
           }).join("")}
         </div>
 
-        ${STATUS_ORDER.map((status) => {
-          if (this._statusFilter && status !== this._statusFilter) return "";
-          let wines = grouped[status];
-          if (query) {
-            wines = wines.filter((w) =>
-              [w.name, w.winery, w.region].some((f) => (f || "").toLowerCase().includes(query))
-            );
-            if (wines.length === 0) return "";
-          }
+        <div class="filter-grid">
+          ${this._renderSelect("type", "Alle soorten", typeOptions)}
+          ${this._renderSelect("country", "Alle landen", countryOptions)}
+          ${this._renderSelect("grape", "Alle druiven", grapeOptions)}
+          <select class="filter-select ${f.minBottles ? "active" : ""}" data-filter="minBottles" aria-label="Aantal flessen">
+            ${MIN_BOTTLES.map(
+              (n) => `<option value="${n}" ${n === f.minBottles ? "selected" : ""}>${n ? `${n}+ flessen` : "Elk aantal"}</option>`
+            ).join("")}
+          </select>
+          <select class="filter-select" data-filter="sort" aria-label="Sorteren">
+            ${Object.entries(SORTS)
+              .map(([k, label]) => `<option value="${k}" ${k === f.sort ? "selected" : ""}>Sorteer: ${label}</option>`)
+              .join("")}
+          </select>
+        </div>
 
-          // A filtered group is always open: that is what the pill asked for.
-          const isOpen = this._statusFilter === status || !!this._expandedGroups[status];
-          const bottleCount = wines.reduce((acc, w) => acc + w.bottles.length, 0);
+        <div class="result-bar">
+          <span>${wines.length} ${wines.length === 1 ? "wijn" : "wijnen"} · ${bottles} flessen</span>
+          ${this._hasActiveFilters() ? `<button class="btn-link" id="btn-clear-filters">Wis filters</button>` : ""}
+        </div>
 
-          return `
-            <div class="group-section">
-              <div class="group-header" data-status="${status}">
-                <div class="group-header-left">
-                  <span class="badge badge-${status}">${STATUS_LABELS[status]}</span>
-                  <span class="group-count">${bottleCount} flessen</span>
-                </div>
-                <div class="group-chevron ${isOpen ? "open" : ""}">${ICON_CHEVRON}</div>
-              </div>
-              ${
-                isOpen
-                  ? `<div class="group-wines-content">
-                      ${
-                        wines.length === 0
-                          ? `<div class="empty-state">Geen wijnen in deze categorie</div>`
-                          : wines.map((wine) => this._renderWineCard(wine)).join("")
-                      }
-                    </div>`
-                  : ""
-              }
-            </div>
-          `;
-        }).join("")}
+        ${wines.length === 0 ? `<div class="empty-state">Geen wijnen voor deze filters.</div>` : list}
       </div>
     `;
   }
@@ -894,7 +1015,7 @@ export class VivinoCellarCard extends HTMLElement {
     });
 
     on("#btn-show-past-peak", () => {
-      this._currentTab = "windows";
+      this._currentTab = "cellar";
       this._statusFilter = "past_peak";
       this._render();
     });
@@ -914,15 +1035,28 @@ export class VivinoCellarCard extends HTMLElement {
     on("#btn-reset-pairing", () => this._handleResetPairing());
 
     // Windows
-    const windowsSearch = shadow.getElementById("windows-search-input");
-    if (windowsSearch) {
-      windowsSearch.addEventListener("input", (e) => {
+    const cellarSearch = shadow.getElementById("cellar-search-input");
+    if (cellarSearch) {
+      cellarSearch.addEventListener("input", (e) => {
         this._searchQuery = e.target.value;
         this._render();
       });
     }
     on(".group-header", (el) => this._toggleGroup(el.dataset.status));
     on(".status-chip", (el) => this._toggleStatusFilter(el.dataset.status));
+    shadow.querySelectorAll(".filter-select").forEach((el) =>
+      el.addEventListener("change", () => {
+        const key = el.dataset.filter;
+        this._filters[key] = key === "minBottles" ? Number(el.value) : el.value;
+        this._render();
+      })
+    );
+    on("#btn-clear-filters", () => {
+      this._filters = { ...EMPTY_FILTERS, sort: this._filters.sort };
+      this._statusFilter = null;
+      this._searchQuery = "";
+      this._render();
+    });
 
     // Drinking
     on(".btn-drink-action", (el, e) => {
