@@ -13,6 +13,7 @@ const ICON_STAR = `<svg viewBox="0 0 24 24"><path d="M12,17.27L18.18,21L16.54,13
 const ICON_LOCATION = `<svg viewBox="0 0 24 24"><path d="M12,2C15.31,2 18,4.66 18,7.95C18,12.41 12,19 12,19C12,19 6,12.41 6,7.95C6,4.66 8.69,2 12,2M12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8A2,2 0 0,0 12,6Z" /></svg>`;
 const ICON_CHEVRON = `<svg viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg>`;
 const ICON_ALERT = `<svg viewBox="0 0 24 24"><path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z" /></svg>`;
+const ICON_CLOCK = `<svg viewBox="0 0 24 24"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" /></svg>`;
 
 const STATUS_LABELS = {
   ready: "Op dronk",
@@ -21,6 +22,48 @@ const STATUS_LABELS = {
   past_peak: "Voorbij piek",
   unknown: "Venster onbekend",
 };
+const STATUS_ORDER = ["near_past_peak", "ready", "hold", "past_peak", "unknown"];
+const DEFAULT_TABS = ["now", "pairing", "windows"];
+const NOW_LIMIT = 5;
+const UNDO_MS = 8000;
+const ERROR_TOAST_MS = 8000;
+
+/** Escape text for safe use in HTML content and attribute values. */
+function esc(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** Only allow http(s) image URLs (Vivino uses protocol-relative "//images..." too). */
+function safeUrl(url) {
+  if (!url) return null;
+  const full = String(url).startsWith("//") ? `https:${url}` : String(url);
+  return /^https?:\/\//i.test(full) ? full : null;
+}
+
+function bottleId(bottle) {
+  return bottle.bottle_id ?? bottle.id;
+}
+
+function vintageId(wine) {
+  return wine.vintage_id ?? wine.id;
+}
+
+/** Distinct (location, bin) spots of a wine's bottles, each with its bottles. */
+function bottleSpots(bottles) {
+  const spots = new Map();
+  for (const b of bottles) {
+    const location = b.location_name || "Kelder";
+    const key = JSON.stringify([location, b.bin || null]);
+    if (!spots.has(key)) spots.set(key, { location, bin: b.bin || null, bottles: [] });
+    spots.get(key).bottles.push(b);
+  }
+  return [...spots.values()];
+}
 
 export class VivinoCellarCard extends HTMLElement {
   constructor() {
@@ -30,15 +73,19 @@ export class VivinoCellarCard extends HTMLElement {
     this._hass = null;
     this._config = {
       title: "Wijnkelder",
-      default_tab: "pairing",
-      tabs: ["pairing", "windows"],
+      default_tab: "now",
+      tabs: DEFAULT_TABS,
     };
 
-    this._currentTab = "pairing";
+    this._currentTab = "now";
     this._cellarData = null;
     this._loading = false;
     this._error = null;
     this._refreshing = false;
+
+    // Live updates
+    this._unsubscribe = null;
+    this._subscribing = false;
 
     // Pairing tab state
     this._dishInput = "";
@@ -57,13 +104,13 @@ export class VivinoCellarCard extends HTMLElement {
       unknown: false,
     };
 
-    // Modal state
-    this._drinkModal = null;
-    this._drinking = false;
-  }
+    // Drinking: bottle id -> { timer, startedAt, vintageId, label, committing }
+    this._pendingDrinks = new Map();
+    this._drinkErrors = [];
+    this._spotPicker = null; // vintage id whose location picker is open
+    this._wineIndex = new Map();
 
-  static get observedAttributes() {
-    return [];
+    this._onPageHide = () => this._flushPendingDrinks();
   }
 
   setConfig(config) {
@@ -72,24 +119,77 @@ export class VivinoCellarCard extends HTMLElement {
     }
     this._config = {
       title: config.title || "Wijnkelder",
-      default_tab: config.default_tab || "pairing",
-      tabs: Array.isArray(config.tabs) && config.tabs.length > 0 ? config.tabs : ["pairing", "windows"],
+      default_tab: config.default_tab || "now",
+      tabs: Array.isArray(config.tabs) && config.tabs.length > 0 ? config.tabs : DEFAULT_TABS,
       ...config,
     };
-    this._currentTab = this._config.default_tab;
+    this._currentTab = this._config.tabs.includes(this._config.default_tab)
+      ? this._config.default_tab
+      : this._config.tabs[0];
     this._render();
   }
 
   set hass(hass) {
     const firstHass = !this._hass && hass;
     this._hass = hass;
-    if (firstHass) {
-      this._loadCellarData();
+    if (firstHass && this.isConnected) {
+      this._subscribe();
     }
+  }
+
+  connectedCallback() {
+    window.addEventListener("pagehide", this._onPageHide);
+    if (this._hass) this._subscribe();
+    this._render();
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener("pagehide", this._onPageHide);
+    this._flushPendingDrinks();
+    this._unsubscribeUpdates();
   }
 
   getCardSize() {
     return 6;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Data loading & live updates
+  // ---------------------------------------------------------------------------
+
+  async _subscribe() {
+    if (!this._hass || this._unsubscribe || this._subscribing) return;
+    this._subscribing = true;
+    if (!this._cellarData) {
+      this._loading = true;
+      this._render();
+    }
+
+    try {
+      this._unsubscribe = await this._hass.connection.subscribeMessage(
+        (data) => {
+          this._cellarData = data;
+          this._loading = false;
+          this._error = null;
+          this._render();
+        },
+        { type: "vivino_cellar/subscribe" }
+      );
+      if (!this.isConnected) this._unsubscribeUpdates();
+    } catch (err) {
+      // Older backend without the subscribe command: load once.
+      await this._loadCellarData();
+    } finally {
+      this._subscribing = false;
+    }
+  }
+
+  _unsubscribeUpdates() {
+    if (this._unsubscribe) {
+      const unsub = this._unsubscribe;
+      this._unsubscribe = null;
+      Promise.resolve(unsub()).catch(() => {});
+    }
   }
 
   async _loadCellarData() {
@@ -99,8 +199,7 @@ export class VivinoCellarCard extends HTMLElement {
     this._render();
 
     try {
-      const res = await this._hass.callWS({ type: "vivino_cellar/cellar" });
-      this._cellarData = res;
+      this._cellarData = await this._hass.callWS({ type: "vivino_cellar/cellar" });
     } catch (err) {
       this._error = err.message || "Fout bij ophalen van keldergegevens.";
     } finally {
@@ -116,8 +215,9 @@ export class VivinoCellarCard extends HTMLElement {
 
     try {
       await this._hass.callWS({ type: "vivino_cellar/refresh" });
-      const res = await this._hass.callWS({ type: "vivino_cellar/cellar" });
-      this._cellarData = res;
+      if (!this._unsubscribe) {
+        this._cellarData = await this._hass.callWS({ type: "vivino_cellar/cellar" });
+      }
       this._error = null;
     } catch (err) {
       this._error = err.message || "Fout bij vernieuwen van kelder.";
@@ -126,6 +226,29 @@ export class VivinoCellarCard extends HTMLElement {
       this._render();
     }
   }
+
+  /** Cellar wines with pending (undoable) drinks already taken out, plus counts. */
+  _viewData() {
+    const data = this._cellarData || {};
+    const wines = (data.wines || []).map((wine) => this._withoutPending(wine));
+    const counts = Object.fromEntries(STATUS_ORDER.map((s) => [s, 0]));
+    let total = 0;
+    for (const wine of wines) {
+      const n = wine.bottles.length;
+      total += n;
+      counts[wine.window_status || "unknown"] = (counts[wine.window_status || "unknown"] || 0) + n;
+    }
+    return { wines, counts, total };
+  }
+
+  _withoutPending(wine) {
+    const bottles = (wine.bottles || []).filter((b) => !this._pendingDrinks.has(bottleId(b)));
+    return { ...wine, bottles, bottle_count: bottles.length };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pairing
+  // ---------------------------------------------------------------------------
 
   async _handlePairingSearch() {
     if (!this._hass) return;
@@ -168,12 +291,9 @@ export class VivinoCellarCard extends HTMLElement {
     } else {
       this._selectedFoodIds.add(foodId);
     }
-    // If food chips clicked, clear dish text for single-criterion WS call
+    // Food chips and dish text are mutually exclusive for the WS call
     if (this._selectedFoodIds.size > 0) {
       this._dishInput = "";
-    }
-    this._render();
-    if (this._selectedFoodIds.size > 0) {
       this._handlePairingSearch();
     } else {
       this._pairingResults = null;
@@ -189,53 +309,100 @@ export class VivinoCellarCard extends HTMLElement {
     this._render();
   }
 
-  _openDrinkModal(bottle, wine) {
-    this._drinkModal = {
-      bottle_id: bottle.bottle_id || bottle.id,
-      vintage_id: wine.vintage_id || wine.id,
-      wine_name: wine.name || wine.wine_name,
-      winery: wine.winery,
-      year: wine.year,
-      location_name: bottle.location_name || "Onbekende locatie",
-      bin: bottle.bin,
-    };
-    this._render();
+  // ---------------------------------------------------------------------------
+  // Drinking with undo
+  // ---------------------------------------------------------------------------
+
+  /** "Ontkurken" pressed on a wine: drink directly, or ask where when bottles differ. */
+  _handleDrinkWine(vid) {
+    const wine = this._wineIndex.get(vid);
+    if (!wine || wine.bottles.length === 0) return;
+    const spots = bottleSpots(wine.bottles);
+    if (spots.length > 1) {
+      this._spotPicker = vid;
+      this._render();
+      return;
+    }
+    this._startDrink(wine, wine.bottles[0]);
   }
 
-  _closeDrinkModal() {
-    this._drinkModal = null;
-    this._drinking = false;
-    this._render();
-  }
-
-  async _confirmDrink() {
-    if (!this._hass || !this._drinkModal || this._drinking) return;
-    this._drinking = true;
-    this._render();
-
-    try {
-      await this._hass.callWS({
-        type: "vivino_cellar/drink",
-        bottle_id: this._drinkModal.bottle_id,
-        vintage_id: this._drinkModal.vintage_id,
-      });
-
-      this._closeDrinkModal();
-
-      // Refresh cellar data
-      const res = await this._hass.callWS({ type: "vivino_cellar/cellar" });
-      this._cellarData = res;
-
-      // Also update pairing results if open
-      if (this._pairingResults) {
-        this._handlePairingSearch();
-      }
-    } catch (err) {
-      alert(`Fout bij ontkurken: ${err.message || err}`);
-      this._drinking = false;
+  _handlePickSpot(index) {
+    const wine = this._wineIndex.get(this._spotPicker);
+    this._spotPicker = null;
+    const spot = wine && bottleSpots(wine.bottles)[index];
+    if (spot) {
+      this._startDrink(wine, spot.bottles[0]);
+    } else {
       this._render();
     }
   }
+
+  _startDrink(wine, bottle) {
+    const id = bottleId(bottle);
+    if (this._pendingDrinks.has(id)) return;
+    const name = wine.name || wine.wine_name || "Fles";
+    this._pendingDrinks.set(id, {
+      timer: setTimeout(() => this._commitDrink(id), UNDO_MS),
+      startedAt: Date.now(),
+      vintageId: vintageId(wine),
+      label: wine.year ? `${name} (${wine.year})` : name,
+      committing: false,
+    });
+    this._render();
+  }
+
+  _undoDrink(id) {
+    const pending = this._pendingDrinks.get(id);
+    if (!pending || pending.committing) return;
+    clearTimeout(pending.timer);
+    this._pendingDrinks.delete(id);
+    this._render();
+  }
+
+  async _commitDrink(id) {
+    const pending = this._pendingDrinks.get(id);
+    if (!pending || pending.committing || !this._hass) return;
+    pending.committing = true;
+    clearTimeout(pending.timer);
+    this._render();
+
+    try {
+      // The backend refreshes the cellar before replying, so the subscription
+      // has already pushed the new data by the time this resolves.
+      await this._hass.callWS({
+        type: "vivino_cellar/drink",
+        bottle_id: id,
+        vintage_id: pending.vintageId,
+      });
+      this._pendingDrinks.delete(id);
+      if (!this._unsubscribe) await this._loadCellarData();
+    } catch (err) {
+      this._pendingDrinks.delete(id);
+      this._showDrinkError(`Ontkurken van ${pending.label} mislukt: ${err.message || err}`);
+    }
+    this._render();
+  }
+
+  _flushPendingDrinks() {
+    for (const [id, pending] of this._pendingDrinks) {
+      if (!pending.committing) this._commitDrink(id);
+    }
+  }
+
+  _showDrinkError(message) {
+    const entry = { id: Date.now() + Math.random(), message };
+    this._drinkErrors.push(entry);
+    setTimeout(() => this._dismissError(entry.id), ERROR_TOAST_MS);
+  }
+
+  _dismissError(id) {
+    this._drinkErrors = this._drinkErrors.filter((e) => e.id !== id);
+    this._render();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Rendering
+  // ---------------------------------------------------------------------------
 
   _toggleGroup(status) {
     this._expandedGroups[status] = !this._expandedGroups[status];
@@ -261,23 +428,35 @@ export class VivinoCellarCard extends HTMLElement {
     const shadow = this.shadowRoot;
     if (!shadow) return;
 
+    // Keep focus and caret in text inputs across full re-renders (live updates).
+    const active = shadow.activeElement;
+    const focusId = active && active.id;
+    const selection =
+      active && typeof active.selectionStart === "number"
+        ? [active.selectionStart, active.selectionEnd]
+        : null;
+
     const data = this._cellarData || {};
-    const totalBottles = data.total_bottles || 0;
+    const view = this._viewData();
+    this._wineIndex = new Map(view.wines.map((w) => [vintageId(w), w]));
     const lastRefresh = this._formatLastRefresh(data.last_refresh_time);
+    const staleWarning =
+      data.last_update_success === false
+        ? `<div class="warning-banner">${ICON_ALERT} <span>Laatste update van Vivino mislukt. Gegevens kunnen verouderd zijn; controleer de Vivino-sessie.</span></div>`
+        : "";
 
     shadow.innerHTML = `
       <style>${cardStyles}</style>
       <div class="card-container">
-        <!-- Header -->
         <div class="card-header">
           <div class="header-left">
             <div class="header-icon">${ICON_BOTTLE}</div>
             <div class="header-titles">
               <div class="header-title">
-                ${this._config.title}
-                <span class="bottle-badge">${totalBottles} flessen</span>
+                ${esc(this._config.title)}
+                <span class="bottle-badge">${view.total} flessen</span>
               </div>
-              <div class="header-subtitle">Laatst bijgewerkt: ${lastRefresh}</div>
+              <div class="header-subtitle">Laatst bijgewerkt: ${esc(lastRefresh)}</div>
             </div>
           </div>
           <div class="header-actions">
@@ -287,55 +466,113 @@ export class VivinoCellarCard extends HTMLElement {
           </div>
         </div>
 
-        <!-- Error Banner -->
-        ${
-          this._error
-            ? `<div class="error-banner">${ICON_ALERT} <span>${this._error}</span></div>`
-            : ""
-        }
+        ${this._error ? `<div class="error-banner">${ICON_ALERT} <span>${esc(this._error)}</span></div>` : ""}
+        ${staleWarning}
 
-        <!-- Tab Selection -->
         ${this._renderTabsBar()}
 
-        <!-- Content Area -->
         ${
           this._loading
             ? `<div class="spinner-box"><div class="spinner"></div><span>Kelder laden...</span></div>`
-            : this._currentTab === "pairing"
-            ? this._renderPairingTab()
-            : this._renderWindowsTab()
+            : this._renderCurrentTab(view)
         }
 
-        <!-- Confirmation Modal -->
-        ${this._renderDrinkModal()}
+        ${this._renderSpotPicker()}
       </div>
+      ${this._renderToasts()}
     `;
-
     this._attachEventListeners();
+
+    if (focusId) {
+      const el = shadow.getElementById(focusId);
+      if (el) {
+        el.focus();
+        if (selection && typeof el.setSelectionRange === "function") {
+          el.setSelectionRange(selection[0], selection[1]);
+        }
+      }
+    }
+  }
+
+  _renderCurrentTab(view) {
+    switch (this._currentTab) {
+      case "pairing":
+        return this._renderPairingTab();
+      case "windows":
+        return this._renderWindowsTab(view);
+      default:
+        return this._renderNowTab(view);
+    }
   }
 
   _renderTabsBar() {
-    const tabs = this._config.tabs || ["pairing", "windows"];
+    const tabs = this._config.tabs || DEFAULT_TABS;
     if (tabs.length <= 1) return "";
-
+    const defs = {
+      now: `${ICON_CLOCK} Nu drinken`,
+      pairing: `${ICON_GLASS} Wijn & Spijs`,
+      windows: `${ICON_BOTTLE} Drinkvensters`,
+    };
     return `
       <div class="tabs-bar">
-        ${
-          tabs.includes("pairing")
-            ? `<button class="tab-btn ${this._currentTab === "pairing" ? "active" : ""}" id="tab-btn-pairing">
-                ${ICON_GLASS} Wijn & Spijs
-              </button>`
-            : ""
-        }
-        ${
-          tabs.includes("windows")
-            ? `<button class="tab-btn ${this._currentTab === "windows" ? "active" : ""}" id="tab-btn-windows">
-                ${ICON_BOTTLE} Drinkvensters
-              </button>`
-            : ""
-        }
+        ${tabs
+          .filter((t) => defs[t])
+          .map(
+            (t) => `<button class="tab-btn ${this._currentTab === t ? "active" : ""}" data-tab="${t}">${defs[t]}</button>`
+          )
+          .join("")}
       </div>
     `;
+  }
+
+  _renderNowTab(view) {
+    const year = new Date().getFullYear();
+    const rank = { near_past_peak: 0, ready: 1 };
+    const candidates = view.wines
+      .filter((w) => w.bottles.length > 0 && w.window_status in rank)
+      .sort(
+        (a, b) =>
+          rank[a.window_status] - rank[b.window_status] ||
+          (a.end_year ?? Infinity) - (b.end_year ?? Infinity) ||
+          (b.rating || 0) - (a.rating || 0)
+      )
+      .slice(0, NOW_LIMIT);
+
+    const pastPeak = view.counts.past_peak || 0;
+    const pastPeakHint = pastPeak
+      ? `<button class="hint-banner" id="btn-show-past-peak">
+           ${ICON_ALERT}
+           <span>${pastPeak} ${pastPeak === 1 ? "fles is" : "flessen zijn"} voorbij de piek. Bekijken</span>
+         </button>`
+      : "";
+
+    if (candidates.length === 0) {
+      return `
+        <div class="now-tab">
+          ${pastPeakHint}
+          <div class="empty-state">Niets dringends: alles ligt nog te rijpen.</div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="now-tab">
+        ${pastPeakHint}
+        <div class="wine-card-list">
+          ${candidates.map((w) => this._renderWineCard(w, this._nowReason(w, year))).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  _nowReason(wine, year) {
+    if (wine.window_status === "near_past_peak") {
+      return `Laatste jaar van het drinkvenster: drink deze in ${year}.`;
+    }
+    if (wine.end_year) {
+      return `Op dronk tot ${wine.end_year} (nog ${wine.end_year - year} jaar).`;
+    }
+    return "Op dronk.";
   }
 
   _renderPairingTab() {
@@ -351,13 +588,12 @@ export class VivinoCellarCard extends HTMLElement {
               class="text-input"
               id="dish-input"
               placeholder="Wat eten we vanavond? (bijv. steak, pasta, risotto)..."
-              value="${this._dishInput}"
+              value="${esc(this._dishInput)}"
             />
             <button class="primary-btn" id="btn-search-dish" ${this._pairingLoading ? "disabled" : ""}>
               ${ICON_SEARCH} Zoek
             </button>
           </div>
-
           ${
             categories.length > 0
               ? `
@@ -366,13 +602,9 @@ export class VivinoCellarCard extends HTMLElement {
               ${categories
                 .map(
                   (cat) => `
-                <button
-                  class="food-chip ${this._selectedFoodIds.has(cat.id) ? "selected" : ""}"
-                  data-food-id="${cat.id}"
-                >
-                  ${cat.name}
-                </button>
-              `
+                <button class="food-chip ${this._selectedFoodIds.has(cat.id) ? "selected" : ""}" data-food-id="${esc(cat.id)}">
+                  ${esc(cat.name)}
+                </button>`
                 )
                 .join("")}
               ${
@@ -380,17 +612,12 @@ export class VivinoCellarCard extends HTMLElement {
                   ? `<button class="reset-link" id="btn-reset-pairing">Wissen</button>`
                   : ""
               }
-            </div>
-          `
+            </div>`
               : ""
           }
         </div>
 
-        ${
-          this._pairingError
-            ? `<div class="error-banner">${ICON_ALERT} <span>${this._pairingError}</span></div>`
-            : ""
-        }
+        ${this._pairingError ? `<div class="error-banner">${ICON_ALERT} <span>${esc(this._pairingError)}</span></div>` : ""}
 
         ${
           this._pairingLoading
@@ -403,37 +630,41 @@ export class VivinoCellarCard extends HTMLElement {
 
   _renderPairingResults() {
     if (!this._pairingResults) {
-      return `
-        <div class="empty-state">
-          Voer een gerecht in of kies een spijscategorie hierboven om passende wijnen uit je kelder te vinden.
-        </div>
-      `;
+      return `<div class="empty-state">Voer een gerecht in of kies een spijscategorie hierboven om passende wijnen uit je kelder te vinden.</div>`;
     }
 
-    if (this._pairingResults.length === 0) {
-      return `
-        <div class="empty-state">
-          Geen passende wijnen gevonden in je kelder voor dit gerecht.
-        </div>
-      `;
+    // Enrich matches with live cellar data (window years, bottles after drinks).
+    const matches = this._pairingResults
+      .map((match) => {
+        const cellarWine = this._wineIndex.get(vintageId(match));
+        return cellarWine
+          ? { ...cellarWine, ...match, bottles: cellarWine.bottles }
+          : this._withoutPending(match);
+      })
+      .filter((w) => w.bottles.length > 0);
+
+    if (matches.length === 0) {
+      return `<div class="empty-state">Geen passende wijnen gevonden in je kelder voor dit gerecht.</div>`;
+    }
+
+    for (const m of matches) {
+      if (!this._wineIndex.has(vintageId(m))) this._wineIndex.set(vintageId(m), m);
     }
 
     return `
       <div class="wine-card-list">
-        ${this._pairingResults.map((wine) => this._renderWineCard(wine, true)).join("")}
+        ${matches.map((wine) => this._renderWineCard(wine, wine.explanation || wine.reason)).join("")}
       </div>
     `;
   }
 
-  _renderWindowsTab() {
-    const data = this._cellarData || {};
-    const grouped = data.grouped_wines || {};
-    const counts = data.status_counts || {};
-
+  _renderWindowsTab(view) {
     const query = (this._searchQuery || "").toLowerCase();
-
-    // Priority status order
-    const statusOrder = ["near_past_peak", "ready", "hold", "past_peak", "unknown"];
+    const grouped = Object.fromEntries(STATUS_ORDER.map((s) => [s, []]));
+    for (const wine of view.wines) {
+      if (wine.bottles.length === 0) continue;
+      (grouped[wine.window_status] || grouped.unknown).push(wine);
+    }
 
     return `
       <div class="windows-tab">
@@ -443,78 +674,61 @@ export class VivinoCellarCard extends HTMLElement {
             class="text-input"
             id="windows-search-input"
             placeholder="Zoek op wijnnaam, wijnhuis of regio..."
-            value="${this._searchQuery}"
+            value="${esc(this._searchQuery)}"
           />
         </div>
 
         <div class="status-chips-summary">
-          ${statusOrder
-            .map((status) => {
-              const count = counts[status] || 0;
-              return `<span class="status-chip badge-${status}">${STATUS_LABELS[status] || status}: ${count}</span>`;
-            })
-            .join("")}
+          ${STATUS_ORDER.map(
+            (status) =>
+              `<span class="status-chip badge-${status}">${STATUS_LABELS[status]}: ${view.counts[status] || 0}</span>`
+          ).join("")}
         </div>
 
-        ${statusOrder
-          .map((status) => {
-            let wines = grouped[status] || [];
-            if (query) {
-              wines = wines.filter((w) => {
-                const name = (w.name || "").toLowerCase();
-                const winery = (w.winery || "").toLowerCase();
-                const region = (w.region || "").toLowerCase();
-                return name.includes(query) || winery.includes(query) || region.includes(query);
-              });
-            }
+        ${STATUS_ORDER.map((status) => {
+          let wines = grouped[status];
+          if (query) {
+            wines = wines.filter((w) =>
+              [w.name, w.winery, w.region].some((f) => (f || "").toLowerCase().includes(query))
+            );
+            if (wines.length === 0) return "";
+          }
 
-            if (wines.length === 0 && query) return "";
+          const isOpen = !!this._expandedGroups[status];
+          const bottleCount = wines.reduce((acc, w) => acc + w.bottles.length, 0);
 
-            const isOpen = !!this._expandedGroups[status];
-            const bottleCount = wines.reduce((acc, w) => acc + (w.bottle_count || 0), 0);
-
-            return `
-              <div class="group-section">
-                <div class="group-header" data-status="${status}">
-                  <div class="group-header-left">
-                    <span class="badge badge-${status}">${STATUS_LABELS[status] || status}</span>
-                    <span class="group-count">${bottleCount} flessen</span>
-                  </div>
-                  <div class="group-chevron ${isOpen ? "open" : ""}">
-                    ${ICON_CHEVRON}
-                  </div>
+          return `
+            <div class="group-section">
+              <div class="group-header" data-status="${status}">
+                <div class="group-header-left">
+                  <span class="badge badge-${status}">${STATUS_LABELS[status]}</span>
+                  <span class="group-count">${bottleCount} flessen</span>
                 </div>
-                ${
-                  isOpen
-                    ? `
-                  <div class="group-wines-content">
-                    ${
-                      wines.length === 0
-                        ? `<div class="empty-state">Geen wijnen in deze categorie</div>`
-                        : wines.map((wine) => this._renderWineCard(wine, false)).join("")
-                    }
-                  </div>
-                `
-                    : ""
-                }
+                <div class="group-chevron ${isOpen ? "open" : ""}">${ICON_CHEVRON}</div>
               </div>
-            `;
-          })
-          .join("")}
+              ${
+                isOpen
+                  ? `<div class="group-wines-content">
+                      ${
+                        wines.length === 0
+                          ? `<div class="empty-state">Geen wijnen in deze categorie</div>`
+                          : wines.map((wine) => this._renderWineCard(wine)).join("")
+                      }
+                    </div>`
+                  : ""
+              }
+            </div>
+          `;
+        }).join("")}
       </div>
     `;
   }
 
-  _renderWineCard(wine, showReason) {
-    const wineName = wine.wine_name || wine.name || "Onbekende wijn";
-    const winery = wine.winery || "";
-    const year = wine.year || "";
-    const rating = wine.rating ? wine.rating.toFixed(1) : null;
+  _renderWineCard(wine, reason = null) {
+    const wineName = wine.name || wine.wine_name || "Onbekende wijn";
+    const rating = typeof wine.rating === "number" ? wine.rating.toFixed(1) : null;
     const windowStatus = wine.window_status || "unknown";
-    const windowLabel = STATUS_LABELS[windowStatus] || windowStatus;
-
-    const startYear = wine.start_year;
-    const endYear = wine.end_year;
+    const { start_year: startYear, end_year: endYear } = wine;
     const windowYearsText =
       startYear && endYear
         ? `${startYear} - ${endYear}`
@@ -523,67 +737,46 @@ export class VivinoCellarCard extends HTMLElement {
         : endYear
         ? `Tot ${endYear}`
         : null;
-
+    const image = safeUrl(wine.image_url);
     const bottles = wine.bottles || [];
+    const spots = bottleSpots(bottles);
 
     return `
       <div class="wine-card">
         ${
-          wine.image_url
-            ? `<img class="wine-thumb" src="${wine.image_url}" alt="${wineName}" onerror="this.style.display='none'" />`
+          image
+            ? `<img class="wine-thumb" src="${esc(image)}" alt="${esc(wineName)}" onerror="this.style.display='none'" />`
             : `<div class="wine-thumb-placeholder">${ICON_BOTTLE}</div>`
         }
         <div class="wine-details">
-          <div class="wine-title">${wineName} ${year ? `(${year})` : ""}</div>
-          ${winery ? `<div class="wine-subtitle">${winery}</div>` : ""}
-
+          <div class="wine-title">${esc(wineName)} ${wine.year ? `(${esc(wine.year)})` : ""}</div>
+          ${wine.winery ? `<div class="wine-subtitle">${esc(wine.winery)}</div>` : ""}
           <div class="wine-badges">
-            ${
-              rating
-                ? `<span class="badge badge-rating">${ICON_STAR} ${rating}</span>`
-                : ""
-            }
-            <span class="badge badge-${windowStatus}">${windowLabel}</span>
-            ${
-              windowYearsText
-                ? `<span class="badge badge-unknown">${windowYearsText}</span>`
-                : ""
-            }
+            ${rating ? `<span class="badge badge-rating">${ICON_STAR} ${rating}</span>` : ""}
+            <span class="badge badge-${windowStatus}">${STATUS_LABELS[windowStatus] || esc(windowStatus)}</span>
+            ${windowYearsText ? `<span class="badge badge-unknown">${windowYearsText}</span>` : ""}
           </div>
 
-          ${
-            showReason && (wine.explanation || wine.reason)
-              ? `<div class="pairing-reason">${wine.explanation || wine.reason}</div>`
-              : ""
-          }
+          ${reason ? `<div class="pairing-reason">${esc(reason)}</div>` : ""}
 
           <div class="bottles-list">
             ${
               bottles.length > 0
-                ? bottles
-                    .map((b) => {
-                      const locText = [b.location_name, b.bin ? `Vak: ${b.bin}` : null]
-                        .filter(Boolean)
-                        .join(" • ");
-                      return `
-                  <div class="bottle-row">
-                    <span class="bottle-loc">${ICON_LOCATION} ${locText || "Kelder"}</span>
-                    <button
-                      class="drink-btn btn-drink-action"
-                      data-bottle='${JSON.stringify(b)}'
-                      data-wine='${JSON.stringify({
-                        id: wine.vintage_id || wine.id,
-                        name: wineName,
-                        winery,
-                        year,
-                      })}'
-                    >
-                      ${ICON_GLASS} Fles ontkurken
+                ? `<div class="bottle-summary">
+                    <div class="bottle-spots">
+                      ${spots
+                        .map(
+                          (s) => `
+                        <span class="bottle-loc">
+                          ${ICON_LOCATION} ${esc(s.location)}${s.bin ? ` · vak ${esc(s.bin)}` : ""}${s.bottles.length > 1 ? ` <strong>${s.bottles.length}×</strong>` : ""}
+                        </span>`
+                        )
+                        .join("")}
+                    </div>
+                    <button class="drink-btn btn-drink-action" data-vintage-id="${esc(vintageId(wine))}">
+                      ${ICON_GLASS} Ontkurken
                     </button>
-                  </div>
-                `;
-                    })
-                    .join("")
+                  </div>`
                 : `<div class="bottle-row"><span>Geen flessen op voorraad</span></div>`
             }
           </div>
@@ -592,150 +785,138 @@ export class VivinoCellarCard extends HTMLElement {
     `;
   }
 
-  _renderDrinkModal() {
-    if (!this._drinkModal) return "";
+  _renderSpotPicker() {
+    if (this._spotPicker === null) return "";
+    const wine = this._wineIndex.get(this._spotPicker);
+    if (!wine) return "";
+    const name = wine.name || wine.wine_name || "Wijn";
 
-    const m = this._drinkModal;
     return `
       <div class="modal-backdrop" id="modal-backdrop">
         <div class="modal-dialog">
           <div class="modal-header">
             ${ICON_GLASS}
-            <span>Fles ontkurken?</span>
+            <span>Welke fles pak je?</span>
           </div>
           <div class="modal-body">
-            <div>Weet je zeker dat je deze fles wilt verwijderen uit je Vivino kelder?</div>
-            <div class="modal-wine-info">
-              <strong>${m.wine_name}</strong> ${m.year ? `(${m.year})` : ""}<br/>
-              ${m.winery ? `<em>${m.winery}</em><br/>` : ""}
-              ${ICON_LOCATION} Locatie: ${m.location_name}${m.bin ? ` (Vak ${m.bin})` : ""}
+            <div><strong>${esc(name)}</strong> ${wine.year ? `(${esc(wine.year)})` : ""}</div>
+            <div class="spot-options">
+              ${bottleSpots(wine.bottles)
+                .map(
+                  (s, i) => `
+                <button class="spot-option" data-spot-index="${i}">
+                  <span>${ICON_LOCATION} ${esc(s.location)}${s.bin ? ` · vak ${esc(s.bin)}` : ""}</span>
+                  <span class="spot-count">${s.bottles.length}×</span>
+                </button>`
+                )
+                .join("")}
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn-secondary" id="btn-cancel-drink" ${this._drinking ? "disabled" : ""}>
-              Annuleren
-            </button>
-            <button class="btn-danger" id="btn-confirm-drink" ${this._drinking ? "disabled" : ""}>
-              ${this._drinking ? "Bezig..." : "Ja, ontkurken"}
-            </button>
+            <button class="btn-secondary" id="btn-cancel-picker">Annuleren</button>
           </div>
         </div>
       </div>
     `;
   }
 
+  _renderToasts() {
+    const undoable = [...this._pendingDrinks.entries()].filter(([, p]) => !p.committing);
+    if (undoable.length === 0 && this._drinkErrors.length === 0) return "";
+    const now = Date.now();
+
+    return `
+      <div class="toast-stack">
+        ${this._drinkErrors
+          .map(
+            (e) => `
+          <div class="toast toast-error">
+            ${ICON_ALERT}
+            <span class="toast-text">${esc(e.message)}</span>
+            <button class="toast-action" data-dismiss-error="${e.id}">Sluiten</button>
+          </div>`
+          )
+          .join("")}
+        ${undoable
+          .map(
+            ([id, p]) => `
+          <div class="toast">
+            ${ICON_GLASS}
+            <span class="toast-text">Ontkurkt: ${esc(p.label)}</span>
+            <button class="toast-action" data-undo-bottle="${esc(id)}">Ongedaan maken</button>
+            <div class="toast-progress" style="animation-duration:${UNDO_MS}ms;animation-delay:-${Math.min(now - p.startedAt, UNDO_MS)}ms"></div>
+          </div>`
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Events
+  // ---------------------------------------------------------------------------
+
   _attachEventListeners() {
     const shadow = this.shadowRoot;
     if (!shadow) return;
+    const on = (selector, handler) =>
+      shadow.querySelectorAll(selector).forEach((el) => el.addEventListener("click", (e) => handler(el, e)));
 
-    // Header Refresh button
-    const btnRefresh = shadow.getElementById("btn-refresh");
-    if (btnRefresh) {
-      btnRefresh.addEventListener("click", () => this._handleRefresh());
-    }
+    on("#btn-refresh", () => this._handleRefresh());
 
-    // Tab buttons
-    const tabPairing = shadow.getElementById("tab-btn-pairing");
-    if (tabPairing) {
-      tabPairing.addEventListener("click", () => {
-        this._currentTab = "pairing";
-        this._render();
-      });
-    }
+    on(".tab-btn", (el) => {
+      this._currentTab = el.dataset.tab;
+      this._render();
+    });
 
-    const tabWindows = shadow.getElementById("tab-btn-windows");
-    if (tabWindows) {
-      tabWindows.addEventListener("click", () => {
-        this._currentTab = "windows";
-        this._render();
-      });
-    }
+    on("#btn-show-past-peak", () => {
+      this._currentTab = "windows";
+      this._expandedGroups.past_peak = true;
+      this._render();
+    });
 
-    // Pairing Tab: Dish input & button
+    // Pairing
     const dishInput = shadow.getElementById("dish-input");
-    const btnSearchDish = shadow.getElementById("btn-search-dish");
-    if (dishInput && btnSearchDish) {
+    if (dishInput) {
       dishInput.addEventListener("input", (e) => {
         this._dishInput = e.target.value;
       });
       dishInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          this._handlePairingSearch();
-        }
+        if (e.key === "Enter") this._handlePairingSearch();
       });
-      btnSearchDish.addEventListener("click", () => this._handlePairingSearch());
     }
+    on("#btn-search-dish", () => this._handlePairingSearch());
+    on(".food-chip", (el) => this._handleFoodChipClick(parseInt(el.dataset.foodId, 10)));
+    on("#btn-reset-pairing", () => this._handleResetPairing());
 
-    // Food Chips
-    shadow.querySelectorAll(".food-chip").forEach((chip) => {
-      chip.addEventListener("click", () => {
-        const foodId = parseInt(chip.getAttribute("data-food-id"), 10);
-        this._handleFoodChipClick(foodId);
-      });
-    });
-
-    // Reset pairing
-    const btnResetPairing = shadow.getElementById("btn-reset-pairing");
-    if (btnResetPairing) {
-      btnResetPairing.addEventListener("click", () => this._handleResetPairing());
-    }
-
-    // Windows Tab: Search filter
+    // Windows
     const windowsSearch = shadow.getElementById("windows-search-input");
     if (windowsSearch) {
       windowsSearch.addEventListener("input", (e) => {
         this._searchQuery = e.target.value;
         this._render();
-        // Restore focus and cursor position
-        const updatedInput = this.shadowRoot.getElementById("windows-search-input");
-        if (updatedInput) {
-          updatedInput.focus();
-          updatedInput.setSelectionRange(e.target.value.length, e.target.value.length);
-        }
       });
     }
+    on(".group-header", (el) => this._toggleGroup(el.dataset.status));
 
-    // Windows Tab: Accordion group headers
-    shadow.querySelectorAll(".group-header").forEach((header) => {
-      header.addEventListener("click", () => {
-        const status = header.getAttribute("data-status");
-        this._toggleGroup(status);
-      });
+    // Drinking
+    on(".btn-drink-action", (el, e) => {
+      e.stopPropagation();
+      this._handleDrinkWine(Number(el.dataset.vintageId));
     });
-
-    // Drink Action Buttons
-    shadow.querySelectorAll(".btn-drink-action").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        try {
-          const bottle = JSON.parse(btn.getAttribute("data-bottle"));
-          const wine = JSON.parse(btn.getAttribute("data-wine"));
-          this._openDrinkModal(bottle, wine);
-        } catch (err) {
-          console.error("Error parsing drink data:", err);
-        }
-      });
+    on(".spot-option", (el) => this._handlePickSpot(Number(el.dataset.spotIndex)));
+    on("#btn-cancel-picker", () => {
+      this._spotPicker = null;
+      this._render();
     });
-
-    // Modal buttons
-    const btnCancel = shadow.getElementById("btn-cancel-drink");
-    if (btnCancel) {
-      btnCancel.addEventListener("click", () => this._closeDrinkModal());
-    }
-
-    const btnConfirm = shadow.getElementById("btn-confirm-drink");
-    if (btnConfirm) {
-      btnConfirm.addEventListener("click", () => this._confirmDrink());
-    }
-
-    const backdrop = shadow.getElementById("modal-backdrop");
-    if (backdrop) {
-      backdrop.addEventListener("click", (e) => {
-        if (e.target === backdrop) {
-          this._closeDrinkModal();
-        }
-      });
-    }
+    on("#modal-backdrop", (el, e) => {
+      if (e.target === el) {
+        this._spotPicker = null;
+        this._render();
+      }
+    });
+    on("[data-undo-bottle]", (el) => this._undoDrink(Number(el.dataset.undoBottle)));
+    on("[data-dismiss-error]", (el) => this._dismissError(Number(el.dataset.dismissError)));
   }
 }
 

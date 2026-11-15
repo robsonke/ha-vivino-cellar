@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 
 from custom_components.vivino_cellar.const import (
@@ -13,6 +14,7 @@ from custom_components.vivino_cellar.const import (
     WS_TYPE_DRINK,
     WS_TYPE_PAIRING,
     WS_TYPE_REFRESH,
+    WS_TYPE_SUBSCRIBE,
 )
 from custom_components.vivino_cellar.exceptions import VivinoError
 from custom_components.vivino_cellar.models import (
@@ -29,6 +31,7 @@ from custom_components.vivino_cellar.websocket_api import (
     ws_drink,
     ws_pairing,
     ws_refresh,
+    ws_subscribe,
 )
 
 
@@ -40,6 +43,11 @@ class MockConnection:
         self.user.is_admin = is_admin
         self.results: dict[int, Any] = {}
         self.errors: dict[int, tuple[str, str]] = {}
+        self.messages: list[dict[str, Any]] = []
+        self.subscriptions: dict[int, Any] = {}
+
+    def send_message(self, message: dict[str, Any]) -> None:
+        self.messages.append(message)
 
     def send_result(self, msg_id: int, result: Any = None) -> None:
         self.results[msg_id] = result
@@ -197,6 +205,7 @@ async def test_websocket_registration_and_unregistration() -> None:
     assert WS_TYPE_PAIRING in commands
     assert WS_TYPE_DRINK in commands
     assert WS_TYPE_REFRESH in commands
+    assert WS_TYPE_SUBSCRIBE in commands
 
     # Unload
     await async_unload_websocket_api(hass)
@@ -205,6 +214,7 @@ async def test_websocket_registration_and_unregistration() -> None:
     assert WS_TYPE_PAIRING not in commands_after
     assert WS_TYPE_DRINK not in commands_after
     assert WS_TYPE_REFRESH not in commands_after
+    assert WS_TYPE_SUBSCRIBE not in commands_after
 
 
 def test_commands_do_not_require_admin() -> None:
@@ -434,7 +444,9 @@ async def test_ws_drink_bottle_missing_id(mock_coordinator: MagicMock) -> None:
 @pytest.mark.asyncio
 async def test_ws_drink_bottle_error(mock_coordinator: MagicMock) -> None:
     """Test vivino_cellar/drink reports failure on VivinoError."""
-    mock_coordinator.async_drink_bottle.side_effect = VivinoError("Failed to remove bottle from Vivino")
+    mock_coordinator.async_drink_bottle.side_effect = VivinoError(
+        "Failed to remove bottle from Vivino"
+    )
     hass = MockHass()
     hass.data[DOMAIN] = {"entry_1": mock_coordinator}
 
@@ -488,6 +500,7 @@ async def test_ws_specific_entry_id(mock_coordinator: MagicMock) -> None:
 async def test_entry_lifecycle_registers_and_unloads_websocket_api() -> None:
     """Test __init__.py async_setup_entry and async_unload_entry lifecycle for WS API."""
     from unittest.mock import patch
+
     from custom_components.vivino_cellar import async_setup_entry, async_unload_entry
     from custom_components.vivino_cellar.const import CONF_CELLAR_URL, CONF_COOKIE
 
@@ -520,7 +533,11 @@ async def test_entry_lifecycle_registers_and_unloads_websocket_api() -> None:
 
     with (
         patch("custom_components.vivino_cellar.VivinoClient", return_value=mock_client),
-        patch("custom_components.vivino_cellar.coordinator.Store.async_load", new_callable=AsyncMock, return_value=None),
+        patch(
+            "custom_components.vivino_cellar.coordinator.Store.async_load",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
     ):
         setup_ok = await async_setup_entry(hass, entry)
         assert setup_ok is True
@@ -539,3 +556,49 @@ async def test_entry_lifecycle_registers_and_unloads_websocket_api() -> None:
         assert WS_TYPE_PAIRING not in ws_commands_after
         assert WS_TYPE_DRINK not in ws_commands_after
         assert WS_TYPE_REFRESH not in ws_commands_after
+
+
+def test_ws_subscribe_pushes_now_and_on_update(mock_coordinator: MagicMock) -> None:
+    """Subscribe sends the cellar payload at once and after each coordinator update."""
+    listeners: list[Any] = []
+    unsub = MagicMock()
+
+    def _add_listener(cb: Any) -> Any:
+        listeners.append(cb)
+        return unsub
+
+    mock_coordinator.async_add_listener = _add_listener
+    mock_coordinator.last_update_success = True
+    hass = MockHass()
+    hass.data[DOMAIN] = {"entry_1": mock_coordinator}
+    connection = MockConnection()
+
+    ws_subscribe(hass, connection, {"id": 7, "type": WS_TYPE_SUBSCRIBE})
+
+    assert 7 in connection.results
+    assert len(connection.messages) == 1
+    first = connection.messages[0]
+    assert first["id"] == 7 and first["type"] == "event"
+    assert first["event"]["total_bottles"] == 4
+    assert first["event"]["last_update_success"] is True
+
+    # Coordinator update (e.g. a drink or AI estimate) pushes a fresh payload
+    mock_coordinator.data.vintages[0].bottles.pop()
+    mock_coordinator.last_update_success = False
+    listeners[0]()
+    assert len(connection.messages) == 2
+    assert connection.messages[1]["event"]["total_bottles"] == 3
+    assert connection.messages[1]["event"]["last_update_success"] is False
+
+    # Unsubscribing removes the coordinator listener
+    connection.subscriptions[7]()
+    unsub.assert_called_once()
+
+
+def test_ws_subscribe_not_configured() -> None:
+    """Subscribe without a configured cellar returns not_found."""
+    hass = MockHass()
+    connection = MockConnection()
+    ws_subscribe(hass, connection, {"id": 8, "type": WS_TYPE_SUBSCRIBE})
+    assert connection.errors[8][0] == "not_found"
+    assert connection.subscriptions == {}

@@ -13,6 +13,7 @@ from .const import (
     WS_TYPE_DRINK,
     WS_TYPE_PAIRING,
     WS_TYPE_REFRESH,
+    WS_TYPE_SUBSCRIBE,
 )
 from .coordinator import VivinoCellarCoordinator
 from .exceptions import VivinoError
@@ -28,11 +29,16 @@ from .window_engine import (
 _LOGGER = logging.getLogger(__name__)
 
 try:
-    import voluptuous as vol
     from homeassistant.components import websocket_api
-    from homeassistant.core import HomeAssistant
+    from homeassistant.core import HomeAssistant, callback
     from homeassistant.helpers import config_validation as cv
+    import voluptuous as vol
 except ImportError:
+
+    def callback(func: Any) -> Any:  # type: ignore[no-redef]
+        """Stub callback decorator."""
+        return func
+
     # Graceful fallback stubs when running in test environment without Home Assistant core
     class HomeAssistant:  # type: ignore[no-redef]
         """Stub HomeAssistant."""
@@ -131,19 +137,23 @@ except ImportError:
         @staticmethod
         def websocket_command(schema: Any) -> Callable[[Any], Any]:
             def decorator(func: Any) -> Any:
-                setattr(func, "_ws_schema", schema)
+                func._ws_schema = schema
                 return func
 
             return decorator
 
         @staticmethod
+        def event_message(msg_id: int, event: Any) -> dict[str, Any]:
+            return {"id": msg_id, "type": "event", "event": event}
+
+        @staticmethod
         def async_response(func: Any) -> Any:
-            setattr(func, "_ws_async_response", True)
+            func._ws_async_response = True
             return func
 
         @staticmethod
         def require_admin(func: Any) -> Any:
-            setattr(func, "_ws_require_admin", True)
+            func._ws_require_admin = True
             return func
 
         @staticmethod
@@ -204,6 +214,11 @@ SCHEMA_WS_DRINK = {
     vol.Optional("entry_id"): cv.string,
 }
 
+SCHEMA_WS_SUBSCRIBE = {
+    vol.Required("type"): WS_TYPE_SUBSCRIBE,
+    vol.Optional("entry_id"): cv.string,
+}
+
 SCHEMA_WS_REFRESH = {
     vol.Required("type"): WS_TYPE_REFRESH,
     vol.Optional("entry_id"): cv.string,
@@ -240,68 +255,33 @@ def _get_all_coordinators(hass: Any) -> list[VivinoCellarCoordinator]:
     ]
 
 
-@websocket_api.websocket_command(SCHEMA_WS_CELLAR)
-@websocket_api.async_response
-async def ws_cellar(
-    hass: HomeAssistant,
-    connection: Any,
-    msg: dict[str, Any],
-) -> None:
-    """Handle vivino_cellar/cellar websocket command."""
-    try:
-        coordinator = _get_coordinator(hass, msg.get("entry_id"))
-    except VivinoError as err:
-        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, str(err))
-        return
+_STATUS_ORDER = (
+    WINDOW_STATUS_READY,
+    WINDOW_STATUS_HOLD,
+    WINDOW_STATUS_NEAR_PAST_PEAK,
+    WINDOW_STATUS_PAST_PEAK,
+    WINDOW_STATUS_UNKNOWN,
+)
 
+
+def _last_refresh_iso(coordinator: Any) -> str | None:
+    """Return the coordinator's last refresh time as ISO string."""
+    last = getattr(coordinator, "last_refresh_time", None)
+    if isinstance(last, str):
+        return last
+    if not isinstance(last, datetime):
+        last = getattr(coordinator, "last_update_success_time", None)
+    return last.isoformat() if isinstance(last, datetime) else None
+
+
+def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
+    """Build the cellar payload shared by the cellar command and subscription."""
     cellar_data = coordinator.data
-    last_refresh = None
-    if isinstance(coordinator.last_refresh_time, datetime):
-        last_refresh = coordinator.last_refresh_time.isoformat()
-    elif isinstance(coordinator.last_refresh_time, str):
-        last_refresh = coordinator.last_refresh_time
-    elif isinstance(getattr(coordinator, "last_update_success_time", None), datetime):
-        last_refresh = coordinator.last_update_success_time.isoformat()
-
-    if not cellar_data or not cellar_data.vintages:
-        connection.send_result(
-            msg["id"],
-            {
-                "cellar_id": cellar_data.cellar_id if cellar_data else None,
-                "total_bottles": 0,
-                "last_refresh_time": last_refresh,
-                "food_categories": [],
-                "wines": [],
-                "grouped_wines": {
-                    WINDOW_STATUS_READY: [],
-                    WINDOW_STATUS_HOLD: [],
-                    WINDOW_STATUS_NEAR_PAST_PEAK: [],
-                    WINDOW_STATUS_PAST_PEAK: [],
-                    WINDOW_STATUS_UNKNOWN: [],
-                },
-                "status_counts": {
-                    WINDOW_STATUS_READY: 0,
-                    WINDOW_STATUS_HOLD: 0,
-                    WINDOW_STATUS_NEAR_PAST_PEAK: 0,
-                    WINDOW_STATUS_PAST_PEAK: 0,
-                    WINDOW_STATUS_UNKNOWN: 0,
-                },
-            },
-        )
-        return
-
     current_year = datetime.now(UTC).year
     wines: list[dict[str, Any]] = []
-    grouped: dict[str, list[dict[str, Any]]] = {
-        WINDOW_STATUS_READY: [],
-        WINDOW_STATUS_HOLD: [],
-        WINDOW_STATUS_NEAR_PAST_PEAK: [],
-        WINDOW_STATUS_PAST_PEAK: [],
-        WINDOW_STATUS_UNKNOWN: [],
-    }
+    grouped: dict[str, list[dict[str, Any]]] = {s: [] for s in _STATUS_ORDER}
 
-    total_bottles = 0
-    for vintage in cellar_data.vintages:
+    for vintage in cellar_data.vintages if cellar_data else []:
         status = compute_vintage_window_status(vintage, current_year)
         bottles_list = [
             {
@@ -315,9 +295,6 @@ async def ws_cellar(
             }
             for b in vintage.bottles
         ]
-        b_count = len(bottles_list)
-        total_bottles += b_count
-
         wine_item = {
             "vintage_id": vintage.id,
             "id": vintage.id,
@@ -334,7 +311,7 @@ async def ws_cellar(
             "end_year": vintage.end_year,
             "window_source": vintage.window_source,
             "window_status": status,
-            "bottle_count": b_count,
+            "bottle_count": len(bottles_list),
             "bottles": bottles_list,
             "foods": [
                 {
@@ -347,37 +324,68 @@ async def ws_cellar(
             ],
         }
         wines.append(wine_item)
-        if status in grouped:
-            grouped[status].append(wine_item)
-        else:
-            grouped.setdefault(status, []).append(wine_item)
+        grouped.setdefault(status, []).append(wine_item)
 
-    status_counts = {
-        status: sum(w["bottle_count"] for w in wine_list)
-        for status, wine_list in grouped.items()
+    return {
+        "cellar_id": cellar_data.cellar_id if cellar_data else None,
+        "total_bottles": sum(w["bottle_count"] for w in wines),
+        "last_refresh_time": _last_refresh_iso(coordinator),
+        "last_update_success": bool(getattr(coordinator, "last_update_success", True)),
+        "food_categories": [
+            {"id": cat.id, "name": cat.name, "seo_name": cat.seo_name}
+            for cat in (cellar_data.food_categories if cellar_data else [])
+        ],
+        "wines": wines,
+        "grouped_wines": grouped,
+        "status_counts": {
+            status: sum(w["bottle_count"] for w in wine_list)
+            for status, wine_list in grouped.items()
+        },
     }
 
-    food_categories = [
-        {
-            "id": cat.id,
-            "name": cat.name,
-            "seo_name": cat.seo_name,
-        }
-        for cat in cellar_data.food_categories
-    ]
 
-    connection.send_result(
-        msg["id"],
-        {
-            "cellar_id": cellar_data.cellar_id,
-            "total_bottles": total_bottles,
-            "last_refresh_time": last_refresh,
-            "food_categories": food_categories,
-            "wines": wines,
-            "grouped_wines": grouped,
-            "status_counts": status_counts,
-        },
-    )
+@websocket_api.websocket_command(SCHEMA_WS_CELLAR)
+@websocket_api.async_response
+async def ws_cellar(
+    hass: HomeAssistant,
+    connection: Any,
+    msg: dict[str, Any],
+) -> None:
+    """Handle vivino_cellar/cellar websocket command."""
+    try:
+        coordinator = _get_coordinator(hass, msg.get("entry_id"))
+    except VivinoError as err:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, str(err))
+        return
+
+    connection.send_result(msg["id"], _build_cellar_payload(coordinator))
+
+
+@websocket_api.websocket_command(SCHEMA_WS_SUBSCRIBE)
+@callback
+def ws_subscribe(
+    hass: HomeAssistant,
+    connection: Any,
+    msg: dict[str, Any],
+) -> None:
+    """Push the cellar payload now and after every coordinator update."""
+    try:
+        coordinator = _get_coordinator(hass, msg.get("entry_id"))
+    except VivinoError as err:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, str(err))
+        return
+
+    msg_id = msg["id"]
+
+    @callback
+    def _push() -> None:
+        connection.send_message(
+            websocket_api.event_message(msg_id, _build_cellar_payload(coordinator))
+        )
+
+    connection.subscriptions[msg_id] = coordinator.async_add_listener(_push)
+    connection.send_result(msg_id)
+    _push()
 
 
 @websocket_api.websocket_command(SCHEMA_WS_PAIRING)
@@ -510,7 +518,9 @@ async def ws_drink(
         connection.send_error(msg["id"], "drink_failed", str(err))
         return
     except Exception as err:  # noqa: BLE001
-        _LOGGER.error("Error drinking bottle %s via WebSocket: %s", clean_bottle_id, err)
+        _LOGGER.error(
+            "Error drinking bottle %s via WebSocket: %s", clean_bottle_id, err
+        )
         connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, str(err))
         return
 
@@ -573,6 +583,7 @@ async def async_setup_websocket_api(hass: Any) -> None:
     websocket_api.async_register_command(hass, ws_pairing)
     websocket_api.async_register_command(hass, ws_drink)
     websocket_api.async_register_command(hass, ws_refresh)
+    websocket_api.async_register_command(hass, ws_subscribe)
 
 
 async def async_unload_websocket_api(hass: Any) -> None:
@@ -582,5 +593,6 @@ async def async_unload_websocket_api(hass: Any) -> None:
         WS_TYPE_PAIRING,
         WS_TYPE_DRINK,
         WS_TYPE_REFRESH,
+        WS_TYPE_SUBSCRIBE,
     ):
         async_unregister_command(hass, cmd_type)

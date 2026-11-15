@@ -16,6 +16,7 @@ export const cardStyles = `
   }
 
   .card-container {
+    container-type: inline-size;
     background: var(--ha-card-background, var(--card-background-color, #ffffff));
     border-radius: var(--ha-card-border-radius, 12px);
     box-shadow: var(--ha-card-box-shadow, 0 2px 4px rgba(0, 0, 0, 0.1));
@@ -154,7 +155,9 @@ export const cardStyles = `
   }
 
   .tab-btn {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
     border: none;
     background: transparent;
     padding: 8px 12px;
@@ -681,5 +684,204 @@ export const cardStyles = `
   .btn-danger:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  /* Nu drinken */
+  .now-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .hint-banner,
+  .warning-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffe0b2;
+    text-align: left;
+  }
+
+  .warning-banner {
+    margin: 0 16px 12px;
+  }
+
+  .hint-banner {
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.85rem;
+  }
+
+  .hint-banner:hover {
+    background: #ffe0b2;
+  }
+
+  .hint-banner svg,
+  .warning-banner svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    fill: currentColor;
+  }
+
+  /* Bottles summary: one action per wine */
+  .bottle-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--secondary-text-color, #555);
+  }
+
+  .bottle-spots {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .drink-btn {
+    flex-shrink: 0;
+  }
+
+  /* Location picker */
+  .spot-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .spot-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--divider-color, #ddd);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--primary-text-color, #212121);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .spot-option:hover {
+    border-color: var(--primary-color, #8b1e3f);
+    color: var(--primary-color, #8b1e3f);
+  }
+
+  .spot-option span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .spot-option svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  .spot-count {
+    font-weight: 600;
+  }
+
+  /* Undo / error toasts */
+  .toast-stack {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    width: min(440px, calc(100vw - 32px));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1000;
+  }
+
+  .toast {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #323232;
+    color: #fff;
+    font-size: 0.9rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  }
+
+  .toast svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    fill: currentColor;
+  }
+
+  .toast-error {
+    background: var(--error-color, #c62828);
+  }
+
+  .toast-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .toast-action {
+    background: transparent;
+    border: none;
+    color: #ffcc80;
+    font: inherit;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 4px 6px;
+    flex-shrink: 0;
+  }
+
+  .toast-error .toast-action {
+    color: #fff;
+  }
+
+  .toast-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    background: #ffcc80;
+    transform-origin: left;
+    animation-name: toast-countdown;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes toast-countdown {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+  }
+
+  /* Narrow cards (phone, small dashboard column) */
+  @container (max-width: 420px) {
+    .tab-btn {
+      padding: 8px 4px;
+      font-size: 0.82rem;
+    }
+
+    .tab-btn svg {
+      display: none;
+    }
   }
 `;
