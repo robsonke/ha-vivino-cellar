@@ -2,6 +2,8 @@
 
 from custom_components.vivino_cellar.models import Bottle, FoodCategory, Vintage
 from custom_components.vivino_cellar.window_engine import (
+    CAN_WAIT_YEARS,
+    WINDOW_STATUS_CAN_WAIT,
     WINDOW_STATUS_HOLD,
     WINDOW_STATUS_NEAR_PAST_PEAK,
     WINDOW_STATUS_PAST_PEAK,
@@ -21,6 +23,17 @@ def test_window_status_ready():
     """Wine where current year is between start and end year should be ready."""
     assert compute_window_status(2024, 2028, 2026) == WINDOW_STATUS_READY
     assert compute_window_status(2026, 2028, 2026) == WINDOW_STATUS_READY
+
+
+def test_window_status_can_wait():
+    """Ready now, but the window ends CAN_WAIT_YEARS or more from now."""
+    assert CAN_WAIT_YEARS == 5
+    assert compute_window_status(2024, 2032, 2026) == WINDOW_STATUS_CAN_WAIT
+    assert compute_window_status(2026, 2031, 2026) == WINDOW_STATUS_CAN_WAIT
+    # One year short of the threshold stays ready.
+    assert compute_window_status(2022, 2030, 2026) == WINDOW_STATUS_READY
+    # Not started yet is still hold, however long it lasts.
+    assert compute_window_status(2028, 2040, 2026) == WINDOW_STATUS_HOLD
 
 
 def test_window_status_near_past_peak():

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from .models import Vintage
 from .window_engine import (
+    WINDOW_STATUS_CAN_WAIT,
     WINDOW_STATUS_HOLD,
     WINDOW_STATUS_NEAR_PAST_PEAK,
     WINDOW_STATUS_PAST_PEAK,
@@ -14,6 +15,8 @@ from .window_engine import (
 
 WINDOW_MULTIPLIERS: dict[str, float] = {
     WINDOW_STATUS_READY: 1.2,
+    # Drinkable, but no hurry: rank below wines that should go sooner.
+    WINDOW_STATUS_CAN_WAIT: 1.1,
     WINDOW_STATUS_NEAR_PAST_PEAK: 1.25,
     WINDOW_STATUS_HOLD: 0.6,
     WINDOW_STATUS_PAST_PEAK: 0.5,
@@ -70,7 +73,7 @@ def score_vintages(
     - Filter out vintages without physical bottles (len(bottles) == 0).
     - Food match score = sum(target_weight[f] * wine_weight[f]). If wine_weight is 0.0,
       the bonus weight 0.1 is used.
-    - Multiplied by drinking window multiplier (ready: 1.2, near_past_peak: 1.25,
+    - Multiplied by drinking window multiplier (ready: 1.2, can_wait: 1.1, near_past_peak: 1.25,
       hold: 0.6, past_peak: 0.5, unknown: 1.0).
     - Tie-break by vintage.rating descending.
     - Return top max_results.

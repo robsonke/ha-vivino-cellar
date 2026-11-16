@@ -108,6 +108,7 @@ async def test_successful_fetch_cellar(cellar_html, cellar_p1_json):
 
     vintage = cellar_data.vintages[0]
     assert vintage.id == 2001
+    assert vintage.wine_id == 1001
     assert vintage.year == 2018
     assert vintage.name == "Barolo"
     assert vintage.winery == "Vietti"
@@ -118,10 +119,11 @@ async def test_successful_fetch_cellar(cellar_html, cellar_p1_json):
     assert vintage.window_source == "vivino"
     assert len(vintage.bottles) == 2
     assert vintage.bottles[0].id == 1
-    assert vintage.bottles[0].location_name == "Location 10"
+    # Vivino sends no names; the coordinator names locations.
+    assert vintage.bottles[0].location_name == ""
     assert vintage.bottles[0].bin == "Rack A"
     assert vintage.bottles[1].id == 2
-    assert vintage.bottles[1].location_name == "Location 11"
+    assert vintage.bottles[1].location_name == ""
     assert vintage.bottles[1].bin == "Rack B"
 
     # Food categories collected
@@ -291,7 +293,7 @@ async def test_nv_vintage_and_none_storage_location(cellar_html):
     assert v.year is None
     assert v.name == "Brut Reserve"
     assert v.window_source == "none"
-    assert v.bottles[0].location_name == "Unknown"
+    assert v.bottles[0].location_name == ""
     assert v.bottles[0].storage_location_id is None
 
 

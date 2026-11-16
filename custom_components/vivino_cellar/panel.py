@@ -6,15 +6,16 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from .const import DEFAULT_TITLE
+
 _LOGGER = logging.getLogger(__name__)
 
 URL_BASE = "/vivino_cellar_frontend"
 PANEL_URL = "vivino_cellar"
-PANEL_TITLE = "Wijnkelder"
-PANEL_ICON = "mdi:bottle-wine"
+PANEL_ICON = "mdi:barrel"
 PANEL_WEBCOMPONENT = "vivino-cellar-card"
 CARD_JS = "vivino-cellar-card.js"
-VERSION = "0.2.0"
+VERSION = "0.9.0"
 
 try:
     from homeassistant.components.http import StaticPathConfig
@@ -63,8 +64,14 @@ def _get_frontend_component(hass: Any) -> Any:
     return None
 
 
-async def async_register_frontend(hass: Any) -> None:
-    """Register frontend static path, Lovelace resource, and sidebar panel."""
+async def async_register_frontend(
+    hass: Any, *, title: str = DEFAULT_TITLE, show_panel: bool = True
+) -> None:
+    """Register frontend static path, Lovelace resource, and sidebar panel.
+
+    The card is always served (dashboards use it); the sidebar panel only
+    when show_panel is on.
+    """
     # Check if panel is already registered
     panels = (
         hass.data.get("frontend_panels", {})
@@ -84,7 +91,9 @@ async def async_register_frontend(hass: Any) -> None:
         return
 
     frontend_path = Path(__file__).parent / "frontend"
-    card_url = f"{URL_BASE}/{CARD_JS}"
+    # Version every URL: browsers cache the unversioned file, and the first
+    # copy to load wins the custom element name.
+    card_url = f"{URL_BASE}/{CARD_JS}?v={VERSION}"
 
     # 1. Register static path (ignore duplicate registration errors)
     if hasattr(hass, "http"):
@@ -121,6 +130,10 @@ async def async_register_frontend(hass: Any) -> None:
         except Exception:  # noqa: BLE001
             pass
 
+    if not show_panel:
+        _LOGGER.debug("Sidebar panel turned off in the integration options")
+        return
+
     # 5. Register sidebar panel via panel_custom
     panel_custom = await _ensure_panel_custom(hass)
     registered = False
@@ -133,18 +146,16 @@ async def async_register_frontend(hass: Any) -> None:
                 hass,
                 frontend_url_path=PANEL_URL,
                 webcomponent_name=PANEL_WEBCOMPONENT,
-                sidebar_title=PANEL_TITLE,
+                sidebar_title=title,
                 sidebar_icon=PANEL_ICON,
-                module_url=f"{card_url}?v={VERSION}",
+                module_url=card_url,
                 require_admin=False,
                 config={},
             )
             if inspect.isawaitable(res):
                 await res
             registered = True
-            _LOGGER.info(
-                "Registered Vivino Cellar panel '%s' via panel_custom", PANEL_TITLE
-            )
+            _LOGGER.info("Registered Vivino Cellar panel '%s' via panel_custom", title)
         except Exception as err:  # noqa: BLE001
             _LOGGER.warning(
                 "Failed to register Vivino Cellar panel via panel_custom: %s", err
@@ -156,12 +167,12 @@ async def async_register_frontend(hass: Any) -> None:
                 hass,
                 frontend_url_path=PANEL_URL,
                 webcomponent_name=PANEL_WEBCOMPONENT,
-                sidebar_title=PANEL_TITLE,
+                sidebar_title=title,
                 sidebar_icon=PANEL_ICON,
                 config={},
             )
             _LOGGER.info(
-                "Registered Vivino Cellar panel '%s' via frontend fallback", PANEL_TITLE
+                "Registered Vivino Cellar panel '%s' via frontend fallback", title
             )
         except Exception as err:  # noqa: BLE001
             _LOGGER.warning(
@@ -189,15 +200,27 @@ async def _async_register_lovelace_resource(hass: Any, url: str) -> None:
         elif hasattr(resources, "items"):
             items = list(resources.items)
 
+        base = url.split("?", 1)[0]
         for item in items:
             item_url = (
                 item.get("url")
                 if isinstance(item, dict)
                 else getattr(item, "url", None)
             )
+            if not item_url or item_url.split("?", 1)[0] != base:
+                continue
             if item_url == url:
                 _LOGGER.debug("Lovelace resource '%s' already registered", url)
                 return
+            item_id = (
+                item.get("id") if isinstance(item, dict) else getattr(item, "id", None)
+            )
+            if item_id and hasattr(resources, "async_update_item"):
+                await resources.async_update_item(
+                    item_id, {"res_type": "module", "url": url}
+                )
+                _LOGGER.debug("Updated Lovelace resource '%s' -> '%s'", item_url, url)
+            return
 
         if hasattr(resources, "async_create_item"):
             await resources.async_create_item({"res_type": "module", "url": url})

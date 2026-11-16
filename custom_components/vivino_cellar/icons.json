@@ -8,6 +8,9 @@
     },
     "refresh": {
       "service": "mdi:refresh"
+    },
+    "rate_wine": {
+      "service": "mdi:star-half-full"
     }
   }
 }

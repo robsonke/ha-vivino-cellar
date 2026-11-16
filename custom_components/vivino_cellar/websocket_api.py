@@ -8,16 +8,24 @@ import logging
 from typing import Any
 
 from .const import (
+    CONF_NOW_LIMIT,
+    CONF_WEATHER_ENTITY,
+    DEFAULT_NOW_LIMIT,
+    DEFAULT_TITLE,
     DOMAIN,
     WS_TYPE_CELLAR,
     WS_TYPE_DRINK,
     WS_TYPE_PAIRING,
+    WS_TYPE_RATE,
+    WS_TYPE_RATING,
     WS_TYPE_REFRESH,
     WS_TYPE_SUBSCRIBE,
+    parse_rating,
 )
 from .coordinator import VivinoCellarCoordinator
 from .exceptions import VivinoError
 from .window_engine import (
+    WINDOW_STATUS_CAN_WAIT,
     WINDOW_STATUS_HOLD,
     WINDOW_STATUS_NEAR_PAST_PEAK,
     WINDOW_STATUS_PAST_PEAK,
@@ -108,6 +116,10 @@ except ImportError:
         @staticmethod
         def Optional(key: str, default: Any = None) -> _Marker:
             return _Marker(key, default)
+
+        @staticmethod
+        def Coerce(type_: Any) -> Any:
+            return type_
 
         @staticmethod
         def All(*validators: Any) -> Any:
@@ -214,6 +226,20 @@ SCHEMA_WS_DRINK = {
     vol.Optional("entry_id"): cv.string,
 }
 
+SCHEMA_WS_RATING = {
+    vol.Required("type"): WS_TYPE_RATING,
+    vol.Required("vintage_id"): cv.positive_int,
+    vol.Optional("entry_id"): cv.string,
+}
+
+SCHEMA_WS_RATE = {
+    vol.Required("type"): WS_TYPE_RATE,
+    vol.Required("vintage_id"): cv.positive_int,
+    vol.Required("rating"): vol.Coerce(float),
+    vol.Optional("note"): cv.string,
+    vol.Optional("entry_id"): cv.string,
+}
+
 SCHEMA_WS_SUBSCRIBE = {
     vol.Required("type"): WS_TYPE_SUBSCRIBE,
     vol.Optional("entry_id"): cv.string,
@@ -257,6 +283,7 @@ def _get_all_coordinators(hass: Any) -> list[VivinoCellarCoordinator]:
 
 _STATUS_ORDER = (
     WINDOW_STATUS_READY,
+    WINDOW_STATUS_CAN_WAIT,
     WINDOW_STATUS_HOLD,
     WINDOW_STATUS_NEAR_PAST_PEAK,
     WINDOW_STATUS_PAST_PEAK,
@@ -272,6 +299,15 @@ def _last_refresh_iso(coordinator: Any) -> str | None:
     if not isinstance(last, datetime):
         last = getattr(coordinator, "last_update_success_time", None)
     return last.isoformat() if isinstance(last, datetime) else None
+
+
+def _vivino_url(vintage: Any) -> str | None:
+    """Link to the wine's Vivino page, opened at this vintage."""
+    wine_id = getattr(vintage, "wine_id", None)
+    if wine_id is None:
+        return None
+    url = f"https://www.vivino.com/w/{wine_id}"
+    return f"{url}?year={vintage.year}" if vintage.year else url
 
 
 def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
@@ -304,6 +340,11 @@ def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
             "region": vintage.region,
             "country": vintage.country,
             "type_id": vintage.type_id,
+            "grapes": list(vintage.grapes or []),
+            "vivino_url": _vivino_url(vintage),
+            "style": vintage.style.name if vintage.style else None,
+            "style_body": vintage.style.body if vintage.style else None,
+            "style_acidity": vintage.style.acidity if vintage.style else None,
             "rating": vintage.rating,
             "ratings_count": vintage.ratings_count,
             "image_url": vintage.image_url,
@@ -326,8 +367,14 @@ def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
         wines.append(wine_item)
         grouped.setdefault(status, []).append(wine_item)
 
+    settings = getattr(coordinator, "settings", None) or {}
     return {
         "cellar_id": cellar_data.cellar_id if cellar_data else None,
+        "settings": {
+            "title": settings.get("title") or DEFAULT_TITLE,
+            "now_limit": settings.get(CONF_NOW_LIMIT) or DEFAULT_NOW_LIMIT,
+            "weather_entity": settings.get(CONF_WEATHER_ENTITY) or None,
+        },
         "total_bottles": sum(w["bottle_count"] for w in wines),
         "last_refresh_time": _last_refresh_iso(coordinator),
         "last_update_success": bool(getattr(coordinator, "last_update_success", True)),
@@ -464,6 +511,44 @@ async def ws_pairing(
     connection.send_result(msg["id"], {"matches": matches})
 
 
+@websocket_api.websocket_command(SCHEMA_WS_RATING)
+@websocket_api.async_response
+async def ws_rating(hass: HomeAssistant, connection: Any, msg: dict[str, Any]) -> None:
+    """Handle vivino_cellar/rating: the user's own rating of a vintage."""
+    try:
+        coordinator = _get_coordinator(hass, msg.get("entry_id"))
+        review = await coordinator.async_get_rating(int(msg["vintage_id"]))
+    except VivinoError as err:
+        connection.send_error(msg["id"], "rating_failed", str(err))
+        return
+    review = review or {}
+    connection.send_result(
+        msg["id"], {"rating": review.get("rating"), "note": review.get("note")}
+    )
+
+
+@websocket_api.websocket_command(SCHEMA_WS_RATE)
+@websocket_api.async_response
+async def ws_rate(hass: HomeAssistant, connection: Any, msg: dict[str, Any]) -> None:
+    """Handle vivino_cellar/rate: set the user's rating (and optional note)."""
+    try:
+        rating = parse_rating(msg.get("rating"))
+    except ValueError as err:
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, str(err))
+        return
+    try:
+        coordinator = _get_coordinator(hass, msg.get("entry_id"))
+        review = await coordinator.async_rate_wine(
+            int(msg["vintage_id"]), rating, msg.get("note")
+        )
+    except VivinoError as err:
+        connection.send_error(msg["id"], "rate_failed", str(err))
+        return
+    connection.send_result(
+        msg["id"], {"rating": review.get("rating"), "note": review.get("note")}
+    )
+
+
 @websocket_api.websocket_command(SCHEMA_WS_DRINK)
 @websocket_api.async_response
 async def ws_drink(
@@ -584,6 +669,8 @@ async def async_setup_websocket_api(hass: Any) -> None:
     websocket_api.async_register_command(hass, ws_drink)
     websocket_api.async_register_command(hass, ws_refresh)
     websocket_api.async_register_command(hass, ws_subscribe)
+    websocket_api.async_register_command(hass, ws_rating)
+    websocket_api.async_register_command(hass, ws_rate)
 
 
 async def async_unload_websocket_api(hass: Any) -> None:
@@ -594,5 +681,7 @@ async def async_unload_websocket_api(hass: Any) -> None:
         WS_TYPE_DRINK,
         WS_TYPE_REFRESH,
         WS_TYPE_SUBSCRIBE,
+        WS_TYPE_RATING,
+        WS_TYPE_RATE,
     ):
         async_unregister_command(hass, cmd_type)

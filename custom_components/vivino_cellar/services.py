@@ -8,8 +8,10 @@ from typing import Any
 from .const import (
     DOMAIN,
     SERVICE_DRINK_BOTTLE,
+    SERVICE_RATE_WINE,
     SERVICE_REFRESH,
     SERVICE_SUGGEST_PAIRING,
+    parse_rating,
 )
 from .coordinator import VivinoCellarCoordinator
 
@@ -144,6 +146,23 @@ DRINK_BOTTLE_SCHEMA = vol.Schema(
     }
 )
 
+
+def _rating_validator(value: Any) -> float:
+    try:
+        return parse_rating(value)
+    except ValueError as err:
+        raise vol.Invalid(str(err)) from err
+
+
+RATE_WINE_SCHEMA = vol.Schema(
+    {
+        vol.Required("vintage_id"): cv.positive_int,
+        vol.Required("rating"): _rating_validator,
+        vol.Optional("note"): cv.string,
+        vol.Optional("entry_id"): cv.string,
+    }
+)
+
 REFRESH_SCHEMA = vol.Schema(
     {
         vol.Optional("entry_id"): cv.string,
@@ -255,6 +274,19 @@ async def async_setup_services(hass: Any) -> None:
             vintage_id=vintage_id,
         )
 
+    async def handle_rate_wine(call: ServiceCall) -> ServiceResponse:
+        """Handle vivino_cellar.rate_wine action."""
+        try:
+            vintage_id = int(call.data["vintage_id"])
+            rating = parse_rating(call.data.get("rating"))
+        except (KeyError, TypeError, ValueError) as err:
+            raise ServiceValidationError(f"Invalid rating request: {err}") from err
+        note = call.data.get("note")
+
+        coordinator = _get_coordinator(hass, call)
+        review = await coordinator.async_rate_wine(vintage_id, rating, note)
+        return {"rating": review.get("rating"), "note": review.get("note")}
+
     async def handle_refresh(call: ServiceCall) -> None:
         """Handle vivino_cellar.refresh action."""
         domain_data = hass.data.get(DOMAIN, {})
@@ -294,6 +326,14 @@ async def async_setup_services(hass: Any) -> None:
 
     hass.services.async_register(
         DOMAIN,
+        SERVICE_RATE_WINE,
+        handle_rate_wine,
+        schema=RATE_WINE_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
         SERVICE_REFRESH,
         handle_refresh,
         schema=REFRESH_SCHEMA,
@@ -305,6 +345,11 @@ async def async_unload_services(hass: Any) -> None:
     if not hasattr(hass, "services"):
         return
 
-    for service in (SERVICE_SUGGEST_PAIRING, SERVICE_DRINK_BOTTLE, SERVICE_REFRESH):
+    for service in (
+        SERVICE_SUGGEST_PAIRING,
+        SERVICE_DRINK_BOTTLE,
+        SERVICE_RATE_WINE,
+        SERVICE_REFRESH,
+    ):
         if hass.services.has_service(DOMAIN, service):
             hass.services.async_remove(DOMAIN, service)

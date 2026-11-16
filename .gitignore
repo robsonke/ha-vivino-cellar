@@ -79,3 +79,9 @@ yarn-error.log*
 
 # Local working notes
 tasks/
+
+# Superpowers plans/specs (local only)
+docs/superpowers/
+
+# Brainstorm mockups (local only)
+.superpowers/

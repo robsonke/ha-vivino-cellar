@@ -15,6 +15,7 @@ from custom_components.vivino_cellar.const import (
 )
 from custom_components.vivino_cellar.panel import (
     URL_BASE,
+    VERSION,
     async_register_frontend,
     async_unregister_frontend,
 )
@@ -76,13 +77,24 @@ class MockLovelaceResources:
         self.loaded = True
         self.async_load = AsyncMock()
         self.async_create_item = AsyncMock(side_effect=self._create_item)
+        self.async_update_item = AsyncMock(side_effect=self._update_item)
 
     async def _create_item(self, data):
         self._items.append(data)
         return data
 
+    async def _update_item(self, item_id, updates):
+        for item in self._items:
+            if item.get("id") == item_id:
+                item.update(updates)
+                return item
+        raise KeyError(item_id)
+
     def async_items(self):
         return list(self._items)
+
+
+CARD_URL = f"/vivino_cellar_frontend/vivino-cellar-card.js?v={VERSION}"
 
 
 @pytest.fixture
@@ -142,7 +154,7 @@ async def test_register_frontend_sidebar_panel(mock_hass):
     assert call_kwargs.get("frontend_url_path") == "vivino_cellar"
     assert call_kwargs.get("webcomponent_name") == "vivino-cellar-card"
     assert call_kwargs.get("sidebar_title") == "Wijnkelder"
-    assert call_kwargs.get("sidebar_icon") == "mdi:bottle-wine"
+    assert call_kwargs.get("sidebar_icon") == "mdi:barrel"
 
 
 @pytest.mark.asyncio
@@ -154,7 +166,7 @@ async def test_register_frontend_lovelace_resource(mock_hass):
     assert resources.async_create_item.called
     resource_data = resources.async_create_item.call_args[0][0]
     assert resource_data["res_type"] == "module"
-    assert resource_data["url"] == "/vivino_cellar_frontend/vivino-cellar-card.js"
+    assert resource_data["url"] == CARD_URL
 
 
 @pytest.mark.asyncio
@@ -163,6 +175,27 @@ async def test_register_frontend_lovelace_resource_already_exists(mock_hass):
     mock_hass.data["lovelace"].resources = MockLovelaceResources(
         initial_items=[
             {
+                "id": "res1",
+                "res_type": "module",
+                "url": CARD_URL,
+            }
+        ]
+    )
+
+    await async_register_frontend(mock_hass)
+
+    resources = mock_hass.data["lovelace"].resources
+    assert not resources.async_create_item.called
+    assert not resources.async_update_item.called
+
+
+@pytest.mark.asyncio
+async def test_register_frontend_lovelace_resource_stale_version_updated(mock_hass):
+    """An old (unversioned or older-version) resource URL is bumped in place."""
+    mock_hass.data["lovelace"].resources = MockLovelaceResources(
+        initial_items=[
+            {
+                "id": "res1",
                 "res_type": "module",
                 "url": "/vivino_cellar_frontend/vivino-cellar-card.js",
             }
@@ -173,6 +206,17 @@ async def test_register_frontend_lovelace_resource_already_exists(mock_hass):
 
     resources = mock_hass.data["lovelace"].resources
     assert not resources.async_create_item.called
+    resources.async_update_item.assert_called_once_with(
+        "res1", {"res_type": "module", "url": CARD_URL}
+    )
+
+
+@pytest.mark.asyncio
+async def test_register_frontend_versions_every_card_url(mock_hass):
+    """The extra JS URL carries the version, so browsers re-fetch on upgrade."""
+    await async_register_frontend(mock_hass)
+
+    assert mock_hass.components.frontend.extra_js_urls == [CARD_URL]
 
 
 @pytest.mark.asyncio
@@ -247,3 +291,22 @@ async def test_setup_and_unload_entry_panel_integration(mock_hass):
         unload_success = await async_unload_entry(mock_hass, entry)
         assert unload_success is True
         assert "vivino_cellar" not in mock_hass.components.frontend.panels
+
+
+@pytest.mark.asyncio
+async def test_register_frontend_uses_cellar_title(mock_hass):
+    """The sidebar shows the cellar name."""
+    await async_register_frontend(mock_hass, title="Kelder Kerkstraat")
+    kwargs = mock_hass.components.frontend.async_register_panel.call_args[1]
+    assert kwargs["sidebar_title"] == "Kelder Kerkstraat"
+
+
+@pytest.mark.asyncio
+async def test_register_frontend_hidden_panel_still_serves_card(mock_hass):
+    """With the panel off, the card stays available for dashboards."""
+    await async_register_frontend(mock_hass, show_panel=False)
+    frontend = mock_hass.components.frontend
+    assert not frontend.async_register_panel.called
+    assert "vivino_cellar" not in frontend.panels
+    assert frontend.extra_js_urls == [CARD_URL]
+    assert mock_hass.data["lovelace"].resources.async_create_item.called

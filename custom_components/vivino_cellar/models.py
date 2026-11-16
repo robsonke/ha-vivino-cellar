@@ -56,6 +56,9 @@ class Vintage:
     start_year: int | None
     end_year: int | None
     window_source: str
+    wine_id: int | None = (
+        None  # Vivino wine (all vintages); used for the wine page link
+    )
 
 
 @dataclass(slots=True)

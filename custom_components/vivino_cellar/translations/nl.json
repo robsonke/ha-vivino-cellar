@@ -29,6 +29,32 @@
       "reauth_successful": "Herauthenticatie is geslaagd."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Kelderinstellingen",
+        "description": "Wijzig de naam van de kelder met Naam wijzigen in het menu van deze integratie. De naam staat in de zijbalk en op de kaart.",
+        "data": {
+          "ai_task": "AI-taakentiteit",
+          "scan_interval_hours": "Verversinterval",
+          "show_panel": "Tonen in zijbalk",
+          "now_limit": "Wijnen in \"Nu drinken\"",
+          "weather_entity": "Weerentiteit"
+        },
+        "data_description": {
+          "ai_task": "Schat drinkvensters en stelt wijn-spijscombinaties voor. Laat leeg om AI uit te zetten.",
+          "scan_interval_hours": "Hoe vaak de kelder bij Vivino wordt opgehaald.",
+          "show_panel": "Zet uit als je alleen de dashboardkaart gebruikt.",
+          "now_limit": "Hoeveel wijnen het tabblad \"Nu drinken\" toont.",
+          "weather_entity": "Stelt Verfrissend voor als het warm is en Winteravond als het koud is."
+        }
+      },
+      "locations": {
+        "title": "Opslaglocaties",
+        "description": "Vivino geeft per opslaglocatie alleen een nummer. Geef elke locatie een naam, zoals Kelder of Koelkast. Laat een veld leeg om hem als \"Locatie 1\", \"Locatie 2\" enzovoort te tonen."
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "total_bottles": {
@@ -36,6 +62,9 @@
       },
       "ready": {
         "name": "Op dronk"
+      },
+      "can_wait": {
+        "name": "Kan nog liggen"
       },
       "near_past_peak": {
         "name": "Bijna over het hoogtepunt"
@@ -100,6 +129,28 @@
         "entry_id": {
           "name": "Kelder",
           "description": "Vivino-kelder die gebruikt wordt. Standaard de eerste geconfigureerde kelder."
+        }
+      }
+    },
+    "rate_wine": {
+      "name": "Wijn beoordelen",
+      "description": "Zet je eigen beoordeling van een jaargang op Vivino. Vervangt een bestaande beoordeling.",
+      "fields": {
+        "vintage_id": {
+          "name": "Jaargang-ID",
+          "description": "Vivino-jaargang om te beoordelen."
+        },
+        "rating": {
+          "name": "Beoordeling",
+          "description": "1 tot 5 sterren, in halve sterren."
+        },
+        "note": {
+          "name": "Notitie",
+          "description": "Proefnotitie. Laat leeg om de huidige notitie te houden."
+        },
+        "entry_id": {
+          "name": "Kelder",
+          "description": "Vivino Cellar-item om te gebruiken. Standaard de eerste kelder."
         }
       }
     }

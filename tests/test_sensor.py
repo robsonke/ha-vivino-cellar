@@ -63,7 +63,7 @@ def _create_sample_cellar_data() -> CellarData:
         style=None,
         bottles=[_create_test_bottle(101), _create_test_bottle(102)],
         start_year=current_year - 2,
-        end_year=current_year + 5,
+        end_year=current_year + 3,  # under CAN_WAIT_YEARS, so ready
         window_source="vivino",
     )
 
@@ -231,11 +231,12 @@ async def test_sensor_setup_entry(mock_coordinator: MagicMock) -> None:
 
     await async_setup_sensor_entry(hass, entry, async_add_entities)
 
-    assert len(added_entities) == 6
+    assert len(added_entities) == 7
     keys = {entity.entity_description.key for entity in added_entities}
     assert keys == {
         "total_bottles",
         "ready",
+        "can_wait",
         "near_past_peak",
         "hold",
         "past_peak",
@@ -260,6 +261,7 @@ def test_sensor_bottle_counts_and_attributes(mock_coordinator: MagicMock) -> Non
     # Total = 11 bottles
     assert sensors["total_bottles"].native_value == 11
     assert sensors["ready"].native_value == 2
+    assert sensors["can_wait"].native_value == 0
     assert sensors["near_past_peak"].native_value == 1
     assert sensors["hold"].native_value == 3
     assert sensors["past_peak"].native_value == 1

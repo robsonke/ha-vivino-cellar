@@ -10,6 +10,7 @@ from typing import Any
 from .const import CONF_CELLAR_URL, DOMAIN
 from .coordinator import VivinoCellarCoordinator
 from .window_engine import (
+    WINDOW_STATUS_CAN_WAIT,
     WINDOW_STATUS_HOLD,
     WINDOW_STATUS_NEAR_PAST_PEAK,
     WINDOW_STATUS_PAST_PEAK,
@@ -133,6 +134,13 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
         key=WINDOW_STATUS_READY,
         translation_key="ready",
         icon="mdi:glass-wine",
+        native_unit_of_measurement="bottles",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    SensorEntityDescription(
+        key=WINDOW_STATUS_CAN_WAIT,
+        translation_key="can_wait",
+        icon="mdi:timer-sand",
         native_unit_of_measurement="bottles",
         state_class=SensorStateClass.MEASUREMENT,
     ),

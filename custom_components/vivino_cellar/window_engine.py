@@ -7,9 +7,13 @@ if TYPE_CHECKING:
 
 WINDOW_STATUS_HOLD = "hold"
 WINDOW_STATUS_READY = "ready"
+WINDOW_STATUS_CAN_WAIT = "can_wait"
 WINDOW_STATUS_NEAR_PAST_PEAK = "near_past_peak"
 WINDOW_STATUS_PAST_PEAK = "past_peak"
 WINDOW_STATUS_UNKNOWN = "unknown"
+
+# Ready wines whose window ends this many years out or later can still wait.
+CAN_WAIT_YEARS = 5
 
 
 def compute_window_status(
@@ -23,6 +27,7 @@ def compute_window_status(
     - unknown: start_year or end_year is None
     - hold: start_year > current_year
     - near_past_peak: end_year == current_year
+    - can_wait: ready, and end_year is CAN_WAIT_YEARS or more from now
     - ready: start_year <= current_year < end_year
     - past_peak: end_year < current_year
     """
@@ -33,6 +38,8 @@ def compute_window_status(
     if end_year == current_year:
         return WINDOW_STATUS_NEAR_PAST_PEAK
     if start_year <= current_year < end_year:
+        if end_year - current_year >= CAN_WAIT_YEARS:
+            return WINDOW_STATUS_CAN_WAIT
         return WINDOW_STATUS_READY
     if end_year < current_year:
         return WINDOW_STATUS_PAST_PEAK

@@ -1,12 +1,12 @@
 # Vivino Cellar for Home Assistant 🍷
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/default)
+[![Marketplace](https://img.shields.io/badge/HA%20Marketplace-Custom-41BDF5.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=robsonke&repository=ha-vivino-cellar&category=integration)
 [![GitHub Release](https://img.shields.io/github/v/release/robsonke/ha-vivino-cellar?include_prereleases&color=blue)](https://github.com/robsonke/ha-vivino-cellar/releases)
 [![Validate](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/validate.yml/badge.svg)](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/validate.yml)
 [![Tests](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/tests.yml/badge.svg)](https://github.com/robsonke/ha-vivino-cellar/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Vivino Cellar** integrates your personal Vivino wine cellar into [Home Assistant](https://www.home-assistant.io/). Keep track of bottle counts, monitor drinking windows (hold, ready, near peak, past peak), discover food & wine pairings using Vivino food categories or Home Assistant Assist / AI, and mark bottles as drunk directly from your dashboard or voice assistant.
+**Vivino Cellar** integrates your personal Vivino wine cellar into [Home Assistant](https://www.home-assistant.io/). Keep track of bottle counts, monitor drinking windows (hold, ready, can wait, near peak, past peak), discover food & wine pairings using Vivino food categories or Home Assistant Assist / AI, and mark bottles as drunk directly from your dashboard or voice assistant.
 
 ---
 
@@ -29,7 +29,8 @@
   - Receive a spoken recommendation based on what you actually have in stock!
 - 📊 **Sensors & Diagnostics**:
   - `sensor.vivino_cellar_total_bottles`
-  - `sensor.vivino_cellar_bottles_ready`
+  - `sensor.vivino_cellar_bottles_ready` (window ends within 5 years)
+  - `sensor.vivino_cellar_bottles_can_wait` (ready, but the window runs 5+ more years)
   - `sensor.vivino_cellar_bottles_hold`
   - `sensor.vivino_cellar_bottles_near_past_peak`
   - `sensor.vivino_cellar_bottles_past_peak`
@@ -37,27 +38,31 @@
   - `button.vivino_cellar_refresh` (with automatic 30s rate limiting)
   - Full Home Assistant Diagnostics support with sensitive cookie & token redaction.
 - 📱 **Sidebar Panel & Lovelace Custom Card**:
-  - Dedicated **Wijnkelder** panel in your Home Assistant sidebar (`mdi:glass-wine`).
-  - Lit-based Lovelace card (`custom:vivino-cellar-card`) for dashboard embedding.
+  - Dedicated **Wijnkelder** panel in your Home Assistant sidebar (`mdi:barrel`).
+  - Lovelace card (`custom:vivino-cellar-card`) for dashboard embedding.
 
 ---
 
 ## Installation
 
-### Method 1: HACS (Custom Repository)
+<!-- ha-marketplace:exclude-start -->
+### Method 1: Home Assistant Marketplace (2026.11+)
 
-1. Open **HACS** in your Home Assistant interface.
-2. Click the three dots in the top right corner and select **Custom repositories**.
-3. Enter `https://github.com/robsonke/ha-vivino-cellar` in the **Repository** field.
-4. Select **Integration** as the category.
-5. Click **Add**, then find **Vivino Cellar** in the list and click **Download**.
-6. Restart Home Assistant.
+[![Open your Home Assistant instance and open a repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=robsonke&repository=ha-vivino-cellar&category=integration)
+
+1. Click the badge above, or go to **Settings** → **Marketplace** → **Add from link** and enter `https://github.com/robsonke/ha-vivino-cellar` (category **Integration**).
+2. Click **Download** on **Vivino Cellar**.
+3. Restart Home Assistant.
+
+On Home Assistant 2026.10 or older, add the same URL as a custom repository in HACS.
 
 ### Method 2: Manual Installation
 
 1. Download the latest release from the [Releases](https://github.com/robsonke/ha-vivino-cellar/releases) page.
 2. Copy the `custom_components/vivino_cellar` folder into your Home Assistant `<config_dir>/custom_components/` directory.
 3. Restart Home Assistant.
+
+<!-- ha-marketplace:exclude-end -->
 
 ---
 
@@ -99,6 +104,22 @@ Because Vivino does not provide a public developer API for private cellars, this
    - **AI Task Entity (Optional)**: Select an `ai_task` entity (from e.g. OpenAI, Google Generative AI, Anthropic or Ollama) to enable free-text dish pairing and drinking window estimation for vintages without a Vivino window.
 4. Click **Submit**. The initial cellar sync will begin immediately.
 
+### Step 3: Name and settings (optional)
+
+- **Name:** open the integration's ⋮ menu and choose **Rename**. The name appears in the sidebar and in the card header. Until you rename it, both show "Wijnkelder".
+- **Settings:** click **Configure** on the integration:
+
+| Setting | Default | What it does |
+|---|---|---|
+| AI task entity | (from setup) | Drinking-window estimates and dish pairing. Clear it to turn AI off. |
+| Refresh interval | 6 h | How often the cellar is fetched from Vivino (1–24 h). |
+| Show in sidebar | on | Turn off if you only use the dashboard card. |
+| Wines in "Drink now" | 5 | How many wines the **Nu drinken** tab lists (1–20). |
+| Weather entity | none | Suggests a mood chip from the temperature (≥ 24 °C Verfrissend, ≤ 8 °C Winteravond). |
+| Storage locations | Locatie 1, 2, … | Second page of Configure. Vivino's web data only has a number per location, so name each one here (e.g. Kelder, Koelkast). |
+
+Changes apply right away; the integration reloads itself.
+
 > **Note on Session Expiry:** Vivino session cookies typically remain active for weeks or months. The integration automatically captures cookie rotations during normal requests to extend session longevity. If your session eventually expires, Home Assistant will prompt you to re-authenticate via a notification and config entry repair flow.
 
 ---
@@ -118,11 +139,12 @@ type: custom:vivino-cellar-card
 ```yaml
 type: custom:vivino-cellar-card
 title: Mijn Wijnkelder
-default_tab: now    # Options: "now", "pairing" or "windows"
+now_limit: 8
+default_tab: now    # Options: "now", "pairing" or "cellar"
 tabs:
   - now
   - pairing
-  - windows
+  - cellar
 ```
 
 ### Configuration Parameters
@@ -130,9 +152,24 @@ tabs:
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `type` | string | **Required** | Must be `custom:vivino-cellar-card` |
-| `title` | string | `"Wijnkelder"` | Header title for the card |
-| `default_tab` | string | `"now"` | Initial tab to open (`"now"`, `"pairing"` or `"windows"`) |
-| `tabs` | list | `["now", "pairing", "windows"]` | Which tabs to display |
+| `title` | string | Integration name | Header title. Overrides the integration's name for this card only |
+| `now_limit` | number | Integration setting (5) | Wines on the **Nu drinken** tab, for this card only |
+| `default_tab` | string | `"now"` | Initial tab to open (`"now"`, `"pairing"` or `"cellar"`) |
+| `tabs` | list | `["now", "pairing", "cellar"]` | Which tabs to display. The old name `windows` still works and opens **Kelder** |
+
+### Tabs
+
+- **Nu drinken**: what to open tonight. One top pick with the reason ("Laatste jaar: drink in 2026") and an Ontkurken button, then "Ook goed vanavond". Mood chips narrow it down:
+  - 🥂 **Borrelen**: bubbles, rosé, whites and lighter reds; skips your best bottles.
+  - 🧊 **Verfrissend**: whites, rosé and bubbles with fresh acidity.
+  - 🔥 **Winteravond**: full-bodied reds, port and dessert wines.
+  - 🍽 **Bij het eten**: jumps to Wijn & Spijs.
+  - ✨ **Iets bijzonders**: your highest-rated, oldest bottles.
+  - ⏳ **Moet op**: last-year wines, then past peak.
+
+  When Vivino has no body score, the grape decides (Cabernet, Syrah, Nebbiolo… count as full; Pinot Noir, Gamay… as light). With a weather entity set in Configure, the card suggests Verfrissend from 24 °C and Winteravond at 8 °C or below.
+- **Wijn & Spijs**: food pairing from Vivino food categories, or free text via your AI task.
+- **Kelder**: every wine in the cellar. Filter by drinking-window status (tap a pill), type, country, region, grape and number of bottles, and search by name, winery, region or grape. Sort by drinking window (grouped), drink-by year, rating, vintage, bottle count or name. Each filter's counts follow the other filters.
 
 ---
 
@@ -166,6 +203,20 @@ data:
   bottle_id: 12345678
   vintage_id: 987654
 ```
+
+### `vivino_cellar.rate_wine`
+
+Set your own rating of a vintage on Vivino, from 1 to 5 in half stars. It replaces an existing rating. Leave out `note` to keep the current note. The card's wine detail sheet does the same with stars and a note field.
+
+```yaml
+action: vivino_cellar.rate_wine
+data:
+  vintage_id: 180601747
+  rating: 3.5
+  note: "Leuk aandenken aan een vakantie."
+```
+
+> Vivino has no public API for this. Changing an existing rating is verified; giving a wine its very first rating uses a request that has not been confirmed yet. If Vivino rejects it, you get an error and nothing is saved.
 
 ### `vivino_cellar.refresh`
 
@@ -210,12 +261,14 @@ Vivino Cellar supports Home Assistant's built-in **Download Diagnostics** featur
 
 ```bash
 uv sync --group dev
-uv run pytest            # unit tests
+uv run pytest            # backend tests
 uvx ruff check . && uvx ruff format --check .
-scripts/build_frontend.sh  # rebuild frontend/vivino-cellar-card.js from frontend/src/
+npm install              # Lit + esbuild
+npm test                 # card logic tests (node --test)
+npm run build            # bundle frontend/src/ into frontend/vivino-cellar-card.js
 ```
 
-Edit the card in `custom_components/vivino_cellar/frontend/src/` and run `scripts/build_frontend.sh`; Home Assistant serves the bundled `frontend/vivino-cellar-card.js`. Bump `version` in `manifest.json` (and `VERSION` in `panel.py`) for each release so browsers load the new card. Release tags must match the manifest version (`v0.2.0` ↔ `0.2.0`).
+The card is written in [Lit](https://lit.dev) under `custom_components/vivino_cellar/frontend/src/` (logic in `logic/`, elements in `components/`). `npm run build` bundles it, Lit included, into `frontend/vivino-cellar-card.js`, which Home Assistant serves; commit the built file (CI checks it matches the sources). Bump `version` in `manifest.json` (and `VERSION` in `panel.py`) for each release so browsers load the new card. Release tags must match the manifest version (`v0.2.0` ↔ `0.2.0`).
 
 ## Disclaimer
 

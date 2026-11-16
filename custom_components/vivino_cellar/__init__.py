@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 import logging
 from typing import Any
 
-from .const import CONF_AI_TASK, CONF_CELLAR_URL, CONF_COOKIE, DOMAIN
+from .const import (
+    CONF_AI_TASK,
+    CONF_CELLAR_URL,
+    CONF_COOKIE,
+    CONF_SCAN_INTERVAL,
+    CONF_SHOW_PANEL,
+    DOMAIN,
+    cellar_settings,
+)
 from .coordinator import VivinoCellarCoordinator
 from .intent import async_setup_intents, async_unload_intents
 from .panel import async_register_frontend, async_unregister_frontend
@@ -67,9 +76,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = async_get_clientsession(hass)
     cellar_url = entry.data[CONF_CELLAR_URL]
     cookie = entry.data[CONF_COOKIE]
-    ai_task = getattr(entry, "options", {}).get(CONF_AI_TASK) or entry.data.get(
-        CONF_AI_TASK
-    )
+    settings = cellar_settings(entry)
 
     client = VivinoClient(
         session=session,
@@ -80,8 +87,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = VivinoCellarCoordinator(
         hass=hass,
         client=client,
-        ai_task_entity=ai_task,
+        ai_task_entity=settings[CONF_AI_TASK],
+        update_interval=timedelta(hours=settings[CONF_SCAN_INTERVAL]),
     )
+    # Applied settings; the card reads title and list size from the payload.
+    coordinator.settings = settings
 
     await coordinator.async_config_entry_first_refresh()
 
@@ -104,11 +114,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await async_setup_services(hass)
     await async_setup_intents(hass)
     await async_setup_websocket_api(hass)
-    await async_register_frontend(hass)
+    await async_register_frontend(
+        hass, title=settings["title"], show_panel=settings[CONF_SHOW_PANEL]
+    )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    if hasattr(entry, "add_update_listener"):
+        entry.async_on_unload(entry.add_update_listener(_async_update_listener))
+
     return True
+
+
+async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload when the name or options change.
+
+    Update listeners also fire when the rotated session cookie is saved to
+    entry.data; that must not reload, so compare the resolved settings.
+    """
+    coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+    if coordinator is not None and getattr(coordinator, "settings", None) == (
+        cellar_settings(entry)
+    ):
+        return
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

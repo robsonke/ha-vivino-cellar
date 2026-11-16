@@ -29,6 +29,32 @@
       "reauth_successful": "Re-authentication was successful."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Cellar settings",
+        "description": "To rename the cellar, use Rename in this integration's menu. The name appears in the sidebar and the card.",
+        "data": {
+          "ai_task": "AI task entity",
+          "scan_interval_hours": "Refresh interval",
+          "show_panel": "Show in sidebar",
+          "now_limit": "Wines in \"Drink now\"",
+          "weather_entity": "Weather entity"
+        },
+        "data_description": {
+          "ai_task": "Estimates drinking windows and suggests food pairings. Leave empty to turn AI off.",
+          "scan_interval_hours": "How often the cellar is fetched from Vivino.",
+          "show_panel": "Turn off if you only use the dashboard card.",
+          "now_limit": "How many wines the \"Drink now\" tab shows.",
+          "weather_entity": "Suggests Verfrissend when it is warm and Winteravond when it is cold."
+        }
+      },
+      "locations": {
+        "title": "Storage locations",
+        "description": "Vivino only shares a number for each storage location. Give each one a name, like Cellar or Fridge. Leave a field empty to show it as \"Locatie 1\", \"Locatie 2\" and so on."
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "total_bottles": {
@@ -36,6 +62,9 @@
       },
       "ready": {
         "name": "Ready to drink"
+      },
+      "can_wait": {
+        "name": "Can wait"
       },
       "near_past_peak": {
         "name": "Near past peak"
@@ -97,6 +126,28 @@
       "name": "Refresh",
       "description": "Fetches the latest cellar data from Vivino.",
       "fields": {
+        "entry_id": {
+          "name": "Cellar",
+          "description": "Vivino Cellar entry to use. Defaults to the first configured cellar."
+        }
+      }
+    },
+    "rate_wine": {
+      "name": "Rate wine",
+      "description": "Sets your own rating of a vintage on Vivino. Replaces an existing rating.",
+      "fields": {
+        "vintage_id": {
+          "name": "Vintage ID",
+          "description": "Vivino vintage to rate."
+        },
+        "rating": {
+          "name": "Rating",
+          "description": "1 to 5 stars, in half stars."
+        },
+        "note": {
+          "name": "Note",
+          "description": "Tasting note. Leave out to keep the current note."
+        },
         "entry_id": {
           "name": "Cellar",
           "description": "Vivino Cellar entry to use. Defaults to the first configured cellar."

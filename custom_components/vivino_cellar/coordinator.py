@@ -9,7 +9,9 @@ import json
 import logging
 from typing import Any
 
+from .const import CONF_LOCATION_NAMES
 from .exceptions import VivinoAuthError, VivinoError
+from .locations import apply_location_names
 from .models import CellarData, Vintage
 from .pairing import PairingResult, score_vintages
 from .vivino_client import VivinoClient
@@ -231,16 +233,18 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
         hass: HomeAssistant,
         client: VivinoClient,
         ai_task_entity: str | None = None,
+        update_interval: timedelta = timedelta(hours=6),
     ) -> None:
         """Initialize the Vivino Cellar coordinator."""
         super().__init__(
             hass,
             _LOGGER,
             name="Vivino Cellar",
-            update_interval=timedelta(hours=6),
+            update_interval=update_interval,
         )
         self.client = client
         self.ai_task_entity = ai_task_entity
+        self.settings: dict[str, Any] = {}
         self.last_refresh_time: datetime | None = None
 
         cellar_key = getattr(client, "cellar_id", "default")
@@ -268,6 +272,10 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
             raise UpdateFailed(
                 f"Error fetching cellar data from Vivino: {err}"
             ) from err
+
+        apply_location_names(
+            cellar_data, getattr(self, "settings", {}).get(CONF_LOCATION_NAMES) or {}
+        )
 
         vintages_needing_estimate: list[Vintage] = []
 
@@ -437,6 +445,19 @@ class VivinoCellarCoordinator(DataUpdateCoordinator[CellarData]):
             return score_vintages(self.data.vintages, target_weights, current_year)
 
         return []
+
+    async def async_get_rating(self, vintage_id: int) -> dict[str, Any] | None:
+        """The user's own Vivino rating of a vintage, or None."""
+        return await self.client.async_get_rating(vintage_id)
+
+    async def async_rate_wine(
+        self, vintage_id: int, rating: float, note: str | None = None
+    ) -> dict[str, Any]:
+        """Rate a vintage on Vivino (1-5 in half stars); None keeps the note."""
+        try:
+            return await self.client.async_rate_vintage(vintage_id, rating, note)
+        except ValueError as err:
+            raise VivinoError(str(err)) from err
 
     async def async_drink_bottle(
         self,
