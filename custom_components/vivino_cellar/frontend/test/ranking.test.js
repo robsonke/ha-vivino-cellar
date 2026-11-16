@@ -134,3 +134,9 @@ test("hintLine never shows null/undefined/NaN", () => {
     assert.ok(!/null|undefined|NaN/.test(line), `${chip}: ${line}`);
   }
 });
+
+test("styleLine names the wine type for the top pick", async () => {
+  const { styleLine } = await import("../src/logic/ranking.js");
+  assert.equal(styleLine(wine({ style_body: 2 })), "Licht, rood");
+  assert.equal(styleLine(wine({ type_id: 2, style_acidity: 4 })), "Fris, wit");
+});

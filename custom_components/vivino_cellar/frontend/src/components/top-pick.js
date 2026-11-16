@@ -1,6 +1,7 @@
 /** The one wine to open tonight: big photo, reason line, primary Ontkurken. */
 import { LitElement, css, html, nothing } from "lit";
 
+import { styleLine } from "../logic/ranking.js";
 import { reasonLine } from "../logic/status.js";
 import { safeUrl, vintageId } from "../logic/util.js";
 import { themeStyles } from "../styles/theme.js";
@@ -18,7 +19,7 @@ export class VcTopPick extends LitElement {
     if (!w) return nothing;
     const name = w.name || "Onbekende wijn";
     const image = safeUrl(w.image_url);
-    const sub = [w.winery, w.region].filter(Boolean).join(" · ");
+    const sub = [styleLine(w), w.winery, w.region].filter(Boolean).join(" · ");
     return html`
       <div
         class="pick s-${w.window_status || "unknown"}"
