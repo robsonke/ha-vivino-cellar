@@ -1,9 +1,11 @@
-/** Mood chips: single select, tap the active one to clear. Bij het eten opens Wijn & Spijs. */
+/** Mood chips: single select, tap the active one to clear. The food chip opens the pairing tab. */
 import { LitElement, css, html } from "lit";
 
+import { t } from "../logic/i18n.js";
 import { CHIPS } from "../logic/ranking.js";
 import { themeStyles } from "../styles/theme.js";
 import { fire } from "./events.js";
+import { LanguageController } from "./language.js";
 
 export class VcMoodChips extends LitElement {
   static properties = {
@@ -11,8 +13,13 @@ export class VcMoodChips extends LitElement {
     showEatChip: { type: Boolean },
   };
 
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
+
   _pick(id) {
-    if (id === "eten") {
+    if (id === "with_food") {
       fire(this, "vc-tab", { tab: "pairing", focusDish: true });
       return;
     }
@@ -20,9 +27,9 @@ export class VcMoodChips extends LitElement {
   }
 
   render() {
-    const chips = CHIPS.filter((c) => c.id !== "eten" || this.showEatChip);
+    const chips = CHIPS.filter((c) => c.id !== "with_food" || this.showEatChip);
     return html`
-      <div class="chips" role="group" aria-label="Waar heb je zin in?">
+      <div class="chips" role="group" aria-label=${t("chip.label")}>
         ${chips.map(
           (c) => html`<button class="chip" aria-pressed=${this.chip === c.id} @click=${() => this._pick(c.id)}>
             ${c.label}

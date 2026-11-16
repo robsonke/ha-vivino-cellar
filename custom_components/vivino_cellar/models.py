@@ -13,6 +13,8 @@ class Bottle:
     location_name: str
     bin: str | None
     created_at: str
+    # 1-based number of the storage location, for unnamed ones; set by locations.py
+    location_number: int | None = None
 
 
 @dataclass(slots=True)

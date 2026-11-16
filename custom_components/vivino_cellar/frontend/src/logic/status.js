@@ -1,40 +1,44 @@
 /** Drinking-window statuses, labels and wine types. */
+import { t } from "./i18n.js";
 
 export const STATUS_ORDER = ["near_past_peak", "ready", "can_wait", "hold", "past_peak", "unknown"];
 
-export const STATUS_LABELS = {
-  near_past_peak: "Binnenkort drinken",
-  ready: "Op dronk",
-  can_wait: "Kan nog liggen",
-  hold: "Nog wegleggen",
-  past_peak: "Voorbij piek",
-  unknown: "Venster onbekend",
-};
+/** Vivino type ids with a name. */
+export const WINE_TYPE_IDS = [1, 2, 3, 4, 7, 24];
 
-export const WINE_TYPES = {
-  1: "Rood",
-  2: "Wit",
-  3: "Mousserend",
-  4: "Rosé",
-  7: "Dessert",
-  24: "Versterkt",
-};
+/** {key: text} whose texts are looked up on every read, so they follow the language. */
+function textMap(keys, keyOf) {
+  const map = {};
+  for (const k of keys) {
+    Object.defineProperty(map, k, { enumerable: true, get: () => t(keyOf(k)) });
+  }
+  return Object.freeze(map);
+}
+
+export const STATUS_LABELS = textMap(STATUS_ORDER, (s) => `status.${s}`);
+
+export const WINE_TYPES = textMap(WINE_TYPE_IDS, (id) => `wine_type.${id}`);
+
+/** Name of a Vivino wine type; "Type 9" for one we do not know. */
+export function wineTypeName(typeId) {
+  return WINE_TYPES[typeId] || t("wine_type.fallback", { id: typeId });
+}
 
 /** One-line reason shown on the top pick. */
 export function reasonLine(wine, year) {
   const end = wine.end_year;
   switch (wine.window_status) {
     case "near_past_peak":
-      return `Laatste jaar: drink in ${end ?? year}`;
+      return t("reason.near_past_peak", { year: end ?? year });
     case "ready":
-      return end ? `Op dronk tot ${end}` : "Op dronk";
+      return end ? t("reason.ready", { year: end }) : t("reason.ready_open");
     case "can_wait":
-      return end ? `Kan nog liggen tot ${end}, mag ook nu` : "Kan nog liggen, mag ook nu";
+      return end ? t("reason.can_wait", { year: end }) : t("reason.can_wait_open");
     case "past_peak":
-      return end ? `Voorbij de piek sinds ${end}: snel open` : "Voorbij de piek: snel open";
+      return end ? t("reason.past_peak", { year: end }) : t("reason.past_peak_open");
     case "hold":
-      return wine.start_year ? `Nog wegleggen tot ${wine.start_year}` : "Nog wegleggen";
+      return wine.start_year ? t("reason.hold", { year: wine.start_year }) : t("reason.hold_open");
     default:
-      return "Drinkvenster onbekend";
+      return t("reason.unknown");
   }
 }

@@ -240,6 +240,7 @@ async def async_setup_services(hass: Any) -> None:
                             "id": b.id,
                             "storage_location_id": b.storage_location_id,
                             "location_name": b.location_name,
+                            "location_number": b.location_number,
                             "bin": b.bin,
                         }
                         for b in vintage.bottles

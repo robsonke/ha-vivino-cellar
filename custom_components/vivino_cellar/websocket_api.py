@@ -11,7 +11,6 @@ from .const import (
     CONF_NOW_LIMIT,
     CONF_WEATHER_ENTITY,
     DEFAULT_NOW_LIMIT,
-    DEFAULT_TITLE,
     DOMAIN,
     WS_TYPE_CELLAR,
     WS_TYPE_DRINK,
@@ -326,6 +325,7 @@ def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
                 "size_id": b.size_id,
                 "storage_location_id": b.storage_location_id,
                 "location_name": b.location_name,
+                "location_number": b.location_number,
                 "bin": b.bin,
                 "created_at": b.created_at,
             }
@@ -371,7 +371,7 @@ def _build_cellar_payload(coordinator: Any) -> dict[str, Any]:
     return {
         "cellar_id": cellar_data.cellar_id if cellar_data else None,
         "settings": {
-            "title": settings.get("title") or DEFAULT_TITLE,
+            "title": settings.get("title") or "",
             "now_limit": settings.get(CONF_NOW_LIMIT) or DEFAULT_NOW_LIMIT,
             "weather_entity": settings.get(CONF_WEATHER_ENTITY) or None,
         },
@@ -501,6 +501,7 @@ async def ws_pairing(
                         "id": b.id,
                         "storage_location_id": b.storage_location_id,
                         "location_name": b.location_name,
+                        "location_number": b.location_number,
                         "bin": b.bin,
                     }
                     for b in vintage.bottles

@@ -1,34 +1,41 @@
-/** "Welke fles pak je?" — pick a location when a wine sits in more than one spot. */
+/** "Which bottle are you taking?": pick a location when a wine sits in more than one spot. */
 import { css, html, nothing } from "lit";
 
-import { bottleSpots } from "../logic/util.js";
+import { t } from "../logic/i18n.js";
+import { bottleSpots, spotLabel } from "../logic/util.js";
 import { themeStyles } from "../styles/theme.js";
 import { fire } from "./events.js";
+import { LanguageController } from "./language.js";
 import { VcModal } from "./modal.js";
 
 export class VcSpotPicker extends VcModal {
   static properties = { wine: { attribute: false } };
 
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
+
   render() {
     const w = this.wine;
     if (!w) return nothing;
     return html`
-      <dialog aria-label="Welke fles pak je?" @cancel=${this._cancel} @close=${this._closed} @click=${this._backdrop}>
+      <dialog aria-label=${t("picker.title")} @cancel=${this._cancel} @close=${this._closed} @click=${this._backdrop}>
         <div class="sheet picker">
-          <div class="head"><ha-icon icon="mdi:glass-wine"></ha-icon> Welke fles pak je?</div>
+          <div class="head"><ha-icon icon="mdi:glass-wine"></ha-icon> ${t("picker.title")}</div>
           <div class="body">
-            <div class="wine">${w.name || "Wijn"}${w.year ? ` (${w.year})` : ""}</div>
+            <div class="wine">${w.name || t("wine.fallback")}${w.year ? ` (${w.year})` : ""}</div>
             ${bottleSpots(w.bottles).map(
               (s, i) => html`
                 <button class="spot" @click=${() => fire(this, "vc-pick-spot", { index: i })}>
-                  <span><ha-icon icon="mdi:map-marker"></ha-icon> ${s.location}${s.bin ? ` · vak ${s.bin}` : ""}</span>
+                  <span><ha-icon icon="mdi:map-marker"></ha-icon> ${spotLabel(s)}</span>
                   <span class="count">${s.bottles.length}×</span>
                 </button>
               `
             )}
           </div>
           <div class="foot">
-            <button class="btn" @click=${() => fire(this, "vc-close")}>Annuleren</button>
+            <button class="btn" @click=${() => fire(this, "vc-close")}>${t("common.cancel")}</button>
           </div>
         </div>
       </dialog>

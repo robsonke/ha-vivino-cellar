@@ -1,0 +1,171 @@
+{
+  "card": {
+    "default_title": "Wine cellar",
+    "summary": { "one": "{count} bottle · updated {time}", "other": "{count} bottles · updated {time}" },
+    "never": "Never",
+    "refresh": "Refresh",
+    "loading": "Loading cellar…",
+    "stale": "The last update from Vivino failed. Data may be out of date; check the Vivino session.",
+    "load_error": "Could not load the cellar.",
+    "refresh_error": "Could not refresh the cellar.",
+    "drink_error": "Could not uncork {label}: {error}"
+  },
+  "tabs": {
+    "now": "Drink now",
+    "pairing": "Food pairing",
+    "cellar": "Cellar"
+  },
+  "common": {
+    "bottles": { "one": "{count} bottle", "other": "{count} bottles" },
+    "wines": { "one": "{count} wine", "other": "{count} wines" },
+    "uncork": "Uncork",
+    "close": "Close",
+    "cancel": "Cancel",
+    "loading": "Loading…"
+  },
+  "wine": {
+    "unknown": "Unknown wine",
+    "fallback": "Wine",
+    "bottle_fallback": "Bottle",
+    "details": "Details: {name}",
+    "uncork_name": "Uncork: {name}"
+  },
+  "status": {
+    "near_past_peak": "Drink soon",
+    "ready": "Ready",
+    "can_wait": "Can wait",
+    "hold": "Keep",
+    "past_peak": "Past peak",
+    "unknown": "Window unknown"
+  },
+  "wine_type": {
+    "1": "Red",
+    "2": "White",
+    "3": "Sparkling",
+    "4": "Rosé",
+    "7": "Dessert",
+    "24": "Fortified",
+    "fallback": "Type {id}"
+  },
+  "reason": {
+    "near_past_peak": "Last year: drink in {year}",
+    "ready": "Ready until {year}",
+    "ready_open": "Ready",
+    "can_wait": "Can wait until {year}, fine now too",
+    "can_wait_open": "Can wait, fine now too",
+    "past_peak": "Past its peak since {year}: open soon",
+    "past_peak_open": "Past its peak: open soon",
+    "hold": "Keep until {year}",
+    "hold_open": "Keep for now",
+    "unknown": "Drinking window unknown"
+  },
+  "window": {
+    "from": "from {year}",
+    "until": "until {year}",
+    "since": "since {year}",
+    "drink_in": "drink in {year}",
+    "unknown": "unknown"
+  },
+  "style": {
+    "full_bold": "Full, bold",
+    "fresh": "Fresh, {type}",
+    "light": "Light",
+    "smooth": "Smooth",
+    "full": "Full",
+    "with_type": "{style}, {type}",
+    "past_peak": "Past its peak"
+  },
+  "location": {
+    "numbered": "Location {n}",
+    "unknown": "Unknown location",
+    "bin": "bin {bin}"
+  },
+  "chip": {
+    "label": "What are you in the mood for?",
+    "aperitif": "Drinks",
+    "refreshing": "Refreshing",
+    "winter_evening": "Winter evening",
+    "with_food": "With dinner",
+    "special": "Something special",
+    "drink_up": "Drink up"
+  },
+  "weather": {
+    "warm": "☀️ It's {temp}°. Something fresh?",
+    "cold": "❄️ It's {temp}°. Something for by the fire?"
+  },
+  "now": {
+    "also_good": "Also good tonight",
+    "nothing_for_choice": "Nothing for this choice.",
+    "show_all": "Show all",
+    "nothing_ready": "Nothing ready to drink right now.",
+    "past_peak": { "one": "{count} bottle past its peak · View", "other": "{count} bottles past their peak · View" }
+  },
+  "cellar": {
+    "search_placeholder": "Search wine, winery, region or grape…",
+    "clear_filters": "Clear filters",
+    "no_results": "No wines match these filters.",
+    "filter": {
+      "all_types": "All types",
+      "all_countries": "All countries",
+      "all_regions": "All regions",
+      "all_grapes": "All grapes",
+      "bottle_count": "Number of bottles",
+      "min_bottles": "{n}+ bottles",
+      "any_count": "Any number"
+    },
+    "sort": {
+      "label": "Sort",
+      "option": "Sort: {label}",
+      "status": "Drinking window",
+      "drink_by": "Drink by",
+      "rating": "Rating",
+      "vintage": "Vintage (oldest first)",
+      "bottles": "Number of bottles",
+      "name": "Name"
+    }
+  },
+  "pairing": {
+    "dish_placeholder": "What are you eating? E.g. truffle pasta",
+    "search": "Search",
+    "categories_label": "Or pick a category",
+    "reset": "Start over",
+    "searching": "Searching…",
+    "no_match": "No matching wine in your cellar.",
+    "matches": "Good matches",
+    "need_input": "Enter a dish or pick a category.",
+    "error": "Could not search for a pairing."
+  },
+  "detail": {
+    "ratings_count": { "one": "{count} rating", "other": "{count} ratings" },
+    "window": "Drinking window",
+    "type": "Type",
+    "origin": "Origin",
+    "grapes": "Grapes",
+    "foods": "Goes with",
+    "bottles": "Bottles",
+    "no_bottles": "No bottles in stock",
+    "view_on_vivino": "View on Vivino",
+    "source": {
+      "vivino": "per Vivino",
+      "ai_estimate": "AI estimate"
+    }
+  },
+  "rating": {
+    "title": "Your rating",
+    "choose": "Choose a rating",
+    "stars": { "one": "{value} star", "other": "{value} stars" },
+    "note_placeholder": "Note (optional)",
+    "save": "Save",
+    "saving": "Saving…",
+    "failed": "Failed",
+    "saved": "Saved to Vivino",
+    "not_rated": "Not rated yet"
+  },
+  "picker": {
+    "title": "Which bottle are you taking?"
+  },
+  "toast": {
+    "uncorked": "Uncorked: {label}",
+    "undo": "Undo"
+  }
+}

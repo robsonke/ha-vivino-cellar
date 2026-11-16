@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
+import { setLanguage } from "../src/logic/i18n.js";
+
+setLanguage("nl"); // these tests pin the Dutch texts the card showed before i18n
+
 import {
   EMPTY_FILTERS,
   filterOptions,

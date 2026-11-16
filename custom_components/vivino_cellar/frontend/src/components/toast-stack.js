@@ -1,8 +1,10 @@
 /** Undo toasts for pending drinks and error toasts. Fires vc-undo, vc-dismiss-error. */
 import { LitElement, css, html } from "lit";
 
+import { t } from "../logic/i18n.js";
 import { themeStyles } from "../styles/theme.js";
 import { fire } from "./events.js";
+import { LanguageController } from "./language.js";
 
 export class VcToastStack extends LitElement {
   static properties = {
@@ -16,6 +18,7 @@ export class VcToastStack extends LitElement {
     this.pending = [];
     this.errors = [];
     this.undoMs = 8000;
+    this._language = new LanguageController(this);
   }
 
   render() {
@@ -30,7 +33,7 @@ export class VcToastStack extends LitElement {
               <ha-icon icon="mdi:alert"></ha-icon>
               <span class="text">${e.message}</span>
               <button class="action" @click=${() => fire(this, "vc-dismiss-error", { id: e.id })}>
-                Sluiten
+                ${t("common.close")}
               </button>
             </div>
           `
@@ -39,9 +42,9 @@ export class VcToastStack extends LitElement {
           ([id, p]) => html`
             <div class="toast">
               <ha-icon icon="mdi:glass-wine"></ha-icon>
-              <span class="text">Ontkurkt: ${p.label}</span>
+              <span class="text">${t("toast.uncorked", { label: p.label })}</span>
               <button class="action" @click=${() => fire(this, "vc-undo", { bottleId: id })}>
-                Ongedaan maken
+                ${t("toast.undo")}
               </button>
               <div
                 class="progress"

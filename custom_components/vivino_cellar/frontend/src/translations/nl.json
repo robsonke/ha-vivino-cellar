@@ -1,0 +1,171 @@
+{
+  "card": {
+    "default_title": "Wijnkelder",
+    "summary": { "one": "{count} fles · bijgewerkt {time}", "other": "{count} flessen · bijgewerkt {time}" },
+    "never": "Nooit",
+    "refresh": "Vernieuwen",
+    "loading": "Kelder laden…",
+    "stale": "Laatste update van Vivino mislukt. Gegevens kunnen verouderd zijn; controleer de Vivino-sessie.",
+    "load_error": "Fout bij ophalen van keldergegevens.",
+    "refresh_error": "Fout bij vernieuwen van kelder.",
+    "drink_error": "Ontkurken van {label} mislukt: {error}"
+  },
+  "tabs": {
+    "now": "Nu drinken",
+    "pairing": "Wijn & Spijs",
+    "cellar": "Kelder"
+  },
+  "common": {
+    "bottles": { "one": "{count} fles", "other": "{count} flessen" },
+    "wines": { "one": "{count} wijn", "other": "{count} wijnen" },
+    "uncork": "Ontkurken",
+    "close": "Sluiten",
+    "cancel": "Annuleren",
+    "loading": "Laden…"
+  },
+  "wine": {
+    "unknown": "Onbekende wijn",
+    "fallback": "Wijn",
+    "bottle_fallback": "Fles",
+    "details": "Details: {name}",
+    "uncork_name": "Ontkurken: {name}"
+  },
+  "status": {
+    "near_past_peak": "Binnenkort drinken",
+    "ready": "Op dronk",
+    "can_wait": "Kan nog liggen",
+    "hold": "Nog wegleggen",
+    "past_peak": "Voorbij piek",
+    "unknown": "Venster onbekend"
+  },
+  "wine_type": {
+    "1": "Rood",
+    "2": "Wit",
+    "3": "Mousserend",
+    "4": "Rosé",
+    "7": "Dessert",
+    "24": "Versterkt",
+    "fallback": "Type {id}"
+  },
+  "reason": {
+    "near_past_peak": "Laatste jaar: drink in {year}",
+    "ready": "Op dronk tot {year}",
+    "ready_open": "Op dronk",
+    "can_wait": "Kan nog liggen tot {year}, mag ook nu",
+    "can_wait_open": "Kan nog liggen, mag ook nu",
+    "past_peak": "Voorbij de piek sinds {year}: snel open",
+    "past_peak_open": "Voorbij de piek: snel open",
+    "hold": "Nog wegleggen tot {year}",
+    "hold_open": "Nog wegleggen",
+    "unknown": "Drinkvenster onbekend"
+  },
+  "window": {
+    "from": "vanaf {year}",
+    "until": "tot {year}",
+    "since": "sinds {year}",
+    "drink_in": "drink in {year}",
+    "unknown": "onbekend"
+  },
+  "style": {
+    "full_bold": "Vol, krachtig",
+    "fresh": "Fris, {type}",
+    "light": "Licht",
+    "smooth": "Soepel",
+    "full": "Vol",
+    "with_type": "{style}, {type}",
+    "past_peak": "Voorbij de piek"
+  },
+  "location": {
+    "numbered": "Locatie {n}",
+    "unknown": "Onbekende locatie",
+    "bin": "vak {bin}"
+  },
+  "chip": {
+    "label": "Waar heb je zin in?",
+    "aperitif": "Borrelen",
+    "refreshing": "Verfrissend",
+    "winter_evening": "Winteravond",
+    "with_food": "Bij het eten",
+    "special": "Iets bijzonders",
+    "drink_up": "Moet op"
+  },
+  "weather": {
+    "warm": "☀️ Het is {temp}°. Iets fris?",
+    "cold": "❄️ Het is {temp}°. Iets voor bij de haard?"
+  },
+  "now": {
+    "also_good": "Ook goed vanavond",
+    "nothing_for_choice": "Niets voor deze keuze.",
+    "show_all": "Toon alles",
+    "nothing_ready": "Niets op dronk op dit moment.",
+    "past_peak": { "one": "{count} fles voorbij de piek · Bekijken", "other": "{count} flessen voorbij de piek · Bekijken" }
+  },
+  "cellar": {
+    "search_placeholder": "Zoek op wijn, wijnhuis, regio of druif…",
+    "clear_filters": "Wis filters",
+    "no_results": "Geen wijnen voor deze filters.",
+    "filter": {
+      "all_types": "Alle soorten",
+      "all_countries": "Alle landen",
+      "all_regions": "Alle regio's",
+      "all_grapes": "Alle druiven",
+      "bottle_count": "Aantal flessen",
+      "min_bottles": "{n}+ flessen",
+      "any_count": "Elk aantal"
+    },
+    "sort": {
+      "label": "Sorteren",
+      "option": "Sorteer: {label}",
+      "status": "Drinkvenster",
+      "drink_by": "Drinken voor",
+      "rating": "Beoordeling",
+      "vintage": "Jaargang (oud eerst)",
+      "bottles": "Aantal flessen",
+      "name": "Naam"
+    }
+  },
+  "pairing": {
+    "dish_placeholder": "Wat eet je? Bijv. pasta met truffel",
+    "search": "Zoek",
+    "categories_label": "Of kies een categorie",
+    "reset": "Opnieuw",
+    "searching": "Zoeken…",
+    "no_match": "Geen passende wijn in je kelder.",
+    "matches": "Past erbij",
+    "need_input": "Voer een gerecht in of kies een categorie.",
+    "error": "Fout bij zoeken naar pairing."
+  },
+  "detail": {
+    "ratings_count": { "one": "{count} beoordeling", "other": "{count} beoordelingen" },
+    "window": "Drinkvenster",
+    "type": "Soort",
+    "origin": "Herkomst",
+    "grapes": "Druiven",
+    "foods": "Past bij",
+    "bottles": "Flessen",
+    "no_bottles": "Geen flessen op voorraad",
+    "view_on_vivino": "Bekijk op Vivino",
+    "source": {
+      "vivino": "volgens Vivino",
+      "ai_estimate": "AI-schatting"
+    }
+  },
+  "rating": {
+    "title": "Jouw beoordeling",
+    "choose": "Kies een beoordeling",
+    "stars": { "one": "{value} ster", "other": "{value} sterren" },
+    "note_placeholder": "Notitie (optioneel)",
+    "save": "Opslaan",
+    "saving": "Opslaan…",
+    "failed": "Mislukt",
+    "saved": "Opgeslagen op Vivino",
+    "not_rated": "Nog niet beoordeeld"
+  },
+  "picker": {
+    "title": "Welke fles pak je?"
+  },
+  "toast": {
+    "uncorked": "Ontkurkt: {label}",
+    "undo": "Ongedaan maken"
+  }
+}

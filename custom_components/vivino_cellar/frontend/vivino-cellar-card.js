@@ -8,44 +8,44 @@ var e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "a
 var s = Symbol();
 var o = /* @__PURE__ */ new WeakMap();
 var n = class {
-  constructor(t3, e4, o5) {
+  constructor(t4, e4, o5) {
     if (this._$cssResult$ = true, o5 !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
-    this.cssText = t3, this.t = e4;
+    this.cssText = t4, this.t = e4;
   }
   get styleSheet() {
-    let t3 = this.o;
+    let t4 = this.o;
     const s4 = this.t;
-    if (e && void 0 === t3) {
+    if (e && void 0 === t4) {
       const e4 = void 0 !== s4 && 1 === s4.length;
-      e4 && (t3 = o.get(s4)), void 0 === t3 && ((this.o = t3 = new CSSStyleSheet()).replaceSync(this.cssText), e4 && o.set(s4, t3));
+      e4 && (t4 = o.get(s4)), void 0 === t4 && ((this.o = t4 = new CSSStyleSheet()).replaceSync(this.cssText), e4 && o.set(s4, t4));
     }
-    return t3;
+    return t4;
   }
   toString() {
     return this.cssText;
   }
 };
-var r = (t3) => new n("string" == typeof t3 ? t3 : t3 + "", void 0, s);
-var i = (t3, ...e4) => {
-  const o5 = 1 === t3.length ? t3[0] : e4.reduce((e5, s4, o6) => e5 + ((t4) => {
-    if (true === t4._$cssResult$) return t4.cssText;
-    if ("number" == typeof t4) return t4;
-    throw Error("Value passed to 'css' function must be a 'css' function result: " + t4 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
-  })(s4) + t3[o6 + 1], t3[0]);
-  return new n(o5, t3, s);
+var r = (t4) => new n("string" == typeof t4 ? t4 : t4 + "", void 0, s);
+var i = (t4, ...e4) => {
+  const o5 = 1 === t4.length ? t4[0] : e4.reduce((e5, s4, o6) => e5 + ((t5) => {
+    if (true === t5._$cssResult$) return t5.cssText;
+    if ("number" == typeof t5) return t5;
+    throw Error("Value passed to 'css' function must be a 'css' function result: " + t5 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+  })(s4) + t4[o6 + 1], t4[0]);
+  return new n(o5, t4, s);
 };
 var S = (s4, o5) => {
-  if (e) s4.adoptedStyleSheets = o5.map((t3) => t3 instanceof CSSStyleSheet ? t3 : t3.styleSheet);
+  if (e) s4.adoptedStyleSheets = o5.map((t4) => t4 instanceof CSSStyleSheet ? t4 : t4.styleSheet);
   else for (const e4 of o5) {
     const o6 = document.createElement("style"), n4 = t.litNonce;
     void 0 !== n4 && o6.setAttribute("nonce", n4), o6.textContent = e4.cssText, s4.appendChild(o6);
   }
 };
-var c = e ? (t3) => t3 : (t3) => t3 instanceof CSSStyleSheet ? ((t4) => {
+var c = e ? (t4) => t4 : (t4) => t4 instanceof CSSStyleSheet ? ((t5) => {
   let e4 = "";
-  for (const s4 of t4.cssRules) e4 += s4.cssText;
+  for (const s4 of t5.cssRules) e4 += s4.cssText;
   return r(e4);
-})(t3) : t3;
+})(t4) : t4;
 
 // node_modules/@lit/reactive-element/reactive-element.js
 var { is: i2, defineProperty: e2, getOwnPropertyDescriptor: h, getOwnPropertyNames: r2, getOwnPropertySymbols: o2, getPrototypeOf: n2 } = Object;
@@ -53,86 +53,86 @@ var a = globalThis;
 var c2 = a.trustedTypes;
 var l = c2 ? c2.emptyScript : "";
 var p = a.reactiveElementPolyfillSupport;
-var d = (t3, s4) => t3;
-var u = { toAttribute(t3, s4) {
+var d = (t4, s4) => t4;
+var u = { toAttribute(t4, s4) {
   switch (s4) {
     case Boolean:
-      t3 = t3 ? l : null;
+      t4 = t4 ? l : null;
       break;
     case Object:
     case Array:
-      t3 = null == t3 ? t3 : JSON.stringify(t3);
+      t4 = null == t4 ? t4 : JSON.stringify(t4);
   }
-  return t3;
-}, fromAttribute(t3, s4) {
-  let i5 = t3;
+  return t4;
+}, fromAttribute(t4, s4) {
+  let i5 = t4;
   switch (s4) {
     case Boolean:
-      i5 = null !== t3;
+      i5 = null !== t4;
       break;
     case Number:
-      i5 = null === t3 ? null : Number(t3);
+      i5 = null === t4 ? null : Number(t4);
       break;
     case Object:
     case Array:
       try {
-        i5 = JSON.parse(t3);
-      } catch (t4) {
+        i5 = JSON.parse(t4);
+      } catch (t5) {
         i5 = null;
       }
   }
   return i5;
 } };
-var f = (t3, s4) => !i2(t3, s4);
+var f = (t4, s4) => !i2(t4, s4);
 var b = { attribute: true, type: String, converter: u, reflect: false, useDefault: false, hasChanged: f };
 Symbol.metadata ??= Symbol("metadata"), a.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 var y = class extends HTMLElement {
-  static addInitializer(t3) {
-    this._$Ei(), (this.l ??= []).push(t3);
+  static addInitializer(t4) {
+    this._$Ei(), (this.l ??= []).push(t4);
   }
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(t3, s4 = b) {
-    if (s4.state && (s4.attribute = false), this._$Ei(), this.prototype.hasOwnProperty(t3) && ((s4 = Object.create(s4)).wrapped = true), this.elementProperties.set(t3, s4), !s4.noAccessor) {
-      const i5 = Symbol(), h3 = this.getPropertyDescriptor(t3, i5, s4);
-      void 0 !== h3 && e2(this.prototype, t3, h3);
+  static createProperty(t4, s4 = b) {
+    if (s4.state && (s4.attribute = false), this._$Ei(), this.prototype.hasOwnProperty(t4) && ((s4 = Object.create(s4)).wrapped = true), this.elementProperties.set(t4, s4), !s4.noAccessor) {
+      const i5 = Symbol(), h3 = this.getPropertyDescriptor(t4, i5, s4);
+      void 0 !== h3 && e2(this.prototype, t4, h3);
     }
   }
-  static getPropertyDescriptor(t3, s4, i5) {
-    const { get: e4, set: r4 } = h(this.prototype, t3) ?? { get() {
+  static getPropertyDescriptor(t4, s4, i5) {
+    const { get: e4, set: r4 } = h(this.prototype, t4) ?? { get() {
       return this[s4];
-    }, set(t4) {
-      this[s4] = t4;
+    }, set(t5) {
+      this[s4] = t5;
     } };
     return { get: e4, set(s5) {
       const h3 = e4?.call(this);
-      r4?.call(this, s5), this.requestUpdate(t3, h3, i5);
+      r4?.call(this, s5), this.requestUpdate(t4, h3, i5);
     }, configurable: true, enumerable: true };
   }
-  static getPropertyOptions(t3) {
-    return this.elementProperties.get(t3) ?? b;
+  static getPropertyOptions(t4) {
+    return this.elementProperties.get(t4) ?? b;
   }
   static _$Ei() {
     if (this.hasOwnProperty(d("elementProperties"))) return;
-    const t3 = n2(this);
-    t3.finalize(), void 0 !== t3.l && (this.l = [...t3.l]), this.elementProperties = new Map(t3.elementProperties);
+    const t4 = n2(this);
+    t4.finalize(), void 0 !== t4.l && (this.l = [...t4.l]), this.elementProperties = new Map(t4.elementProperties);
   }
   static finalize() {
     if (this.hasOwnProperty(d("finalized"))) return;
     if (this.finalized = true, this._$Ei(), this.hasOwnProperty(d("properties"))) {
-      const t4 = this.properties, s4 = [...r2(t4), ...o2(t4)];
-      for (const i5 of s4) this.createProperty(i5, t4[i5]);
+      const t5 = this.properties, s4 = [...r2(t5), ...o2(t5)];
+      for (const i5 of s4) this.createProperty(i5, t5[i5]);
     }
-    const t3 = this[Symbol.metadata];
-    if (null !== t3) {
-      const s4 = litPropertyMetadata.get(t3);
-      if (void 0 !== s4) for (const [t4, i5] of s4) this.elementProperties.set(t4, i5);
+    const t4 = this[Symbol.metadata];
+    if (null !== t4) {
+      const s4 = litPropertyMetadata.get(t4);
+      if (void 0 !== s4) for (const [t5, i5] of s4) this.elementProperties.set(t5, i5);
     }
     this._$Eh = /* @__PURE__ */ new Map();
-    for (const [t4, s4] of this.elementProperties) {
-      const i5 = this._$Eu(t4, s4);
-      void 0 !== i5 && this._$Eh.set(i5, t4);
+    for (const [t5, s4] of this.elementProperties) {
+      const i5 = this._$Eu(t5, s4);
+      void 0 !== i5 && this._$Eh.set(i5, t5);
     }
     this.elementStyles = this.finalizeStyles(this.styles);
   }
@@ -144,78 +144,78 @@ var y = class extends HTMLElement {
     } else void 0 !== s4 && i5.push(c(s4));
     return i5;
   }
-  static _$Eu(t3, s4) {
+  static _$Eu(t4, s4) {
     const i5 = s4.attribute;
-    return false === i5 ? void 0 : "string" == typeof i5 ? i5 : "string" == typeof t3 ? t3.toLowerCase() : void 0;
+    return false === i5 ? void 0 : "string" == typeof i5 ? i5 : "string" == typeof t4 ? t4.toLowerCase() : void 0;
   }
   constructor() {
     super(), this._$Ep = void 0, this.isUpdatePending = false, this.hasUpdated = false, this._$Em = null, this._$Ev();
   }
   _$Ev() {
-    this._$ES = new Promise((t3) => this.enableUpdating = t3), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), this.constructor.l?.forEach((t3) => t3(this));
+    this._$ES = new Promise((t4) => this.enableUpdating = t4), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), this.constructor.l?.forEach((t4) => t4(this));
   }
-  addController(t3) {
-    (this._$EO ??= /* @__PURE__ */ new Set()).add(t3), void 0 !== this.renderRoot && this.isConnected && t3.hostConnected?.();
+  addController(t4) {
+    (this._$EO ??= /* @__PURE__ */ new Set()).add(t4), void 0 !== this.renderRoot && this.isConnected && t4.hostConnected?.();
   }
-  removeController(t3) {
-    this._$EO?.delete(t3);
+  removeController(t4) {
+    this._$EO?.delete(t4);
   }
   _$E_() {
-    const t3 = /* @__PURE__ */ new Map(), s4 = this.constructor.elementProperties;
-    for (const i5 of s4.keys()) this.hasOwnProperty(i5) && (t3.set(i5, this[i5]), delete this[i5]);
-    t3.size > 0 && (this._$Ep = t3);
+    const t4 = /* @__PURE__ */ new Map(), s4 = this.constructor.elementProperties;
+    for (const i5 of s4.keys()) this.hasOwnProperty(i5) && (t4.set(i5, this[i5]), delete this[i5]);
+    t4.size > 0 && (this._$Ep = t4);
   }
   createRenderRoot() {
-    const t3 = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return S(t3, this.constructor.elementStyles), t3;
+    const t4 = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
+    return S(t4, this.constructor.elementStyles), t4;
   }
   connectedCallback() {
-    this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(true), this._$EO?.forEach((t3) => t3.hostConnected?.());
+    this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(true), this._$EO?.forEach((t4) => t4.hostConnected?.());
   }
-  enableUpdating(t3) {
+  enableUpdating(t4) {
   }
   disconnectedCallback() {
-    this._$EO?.forEach((t3) => t3.hostDisconnected?.());
+    this._$EO?.forEach((t4) => t4.hostDisconnected?.());
   }
-  attributeChangedCallback(t3, s4, i5) {
-    this._$AK(t3, i5);
+  attributeChangedCallback(t4, s4, i5) {
+    this._$AK(t4, i5);
   }
-  _$ET(t3, s4) {
-    const i5 = this.constructor.elementProperties.get(t3), e4 = this.constructor._$Eu(t3, i5);
+  _$ET(t4, s4) {
+    const i5 = this.constructor.elementProperties.get(t4), e4 = this.constructor._$Eu(t4, i5);
     if (void 0 !== e4 && true === i5.reflect) {
       const h3 = (void 0 !== i5.converter?.toAttribute ? i5.converter : u).toAttribute(s4, i5.type);
-      this._$Em = t3, null == h3 ? this.removeAttribute(e4) : this.setAttribute(e4, h3), this._$Em = null;
+      this._$Em = t4, null == h3 ? this.removeAttribute(e4) : this.setAttribute(e4, h3), this._$Em = null;
     }
   }
-  _$AK(t3, s4) {
-    const i5 = this.constructor, e4 = i5._$Eh.get(t3);
+  _$AK(t4, s4) {
+    const i5 = this.constructor, e4 = i5._$Eh.get(t4);
     if (void 0 !== e4 && this._$Em !== e4) {
-      const t4 = i5.getPropertyOptions(e4), h3 = "function" == typeof t4.converter ? { fromAttribute: t4.converter } : void 0 !== t4.converter?.fromAttribute ? t4.converter : u;
+      const t5 = i5.getPropertyOptions(e4), h3 = "function" == typeof t5.converter ? { fromAttribute: t5.converter } : void 0 !== t5.converter?.fromAttribute ? t5.converter : u;
       this._$Em = e4;
-      const r4 = h3.fromAttribute(s4, t4.type);
+      const r4 = h3.fromAttribute(s4, t5.type);
       this[e4] = r4 ?? this._$Ej?.get(e4) ?? r4, this._$Em = null;
     }
   }
-  requestUpdate(t3, s4, i5, e4 = false, h3) {
-    if (void 0 !== t3) {
+  requestUpdate(t4, s4, i5, e4 = false, h3) {
+    if (void 0 !== t4) {
       const r4 = this.constructor;
-      if (false === e4 && (h3 = this[t3]), i5 ??= r4.getPropertyOptions(t3), !((i5.hasChanged ?? f)(h3, s4) || i5.useDefault && i5.reflect && h3 === this._$Ej?.get(t3) && !this.hasAttribute(r4._$Eu(t3, i5)))) return;
-      this.C(t3, s4, i5);
+      if (false === e4 && (h3 = this[t4]), i5 ??= r4.getPropertyOptions(t4), !((i5.hasChanged ?? f)(h3, s4) || i5.useDefault && i5.reflect && h3 === this._$Ej?.get(t4) && !this.hasAttribute(r4._$Eu(t4, i5)))) return;
+      this.C(t4, s4, i5);
     }
     false === this.isUpdatePending && (this._$ES = this._$EP());
   }
-  C(t3, s4, { useDefault: i5, reflect: e4, wrapped: h3 }, r4) {
-    i5 && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(t3) && (this._$Ej.set(t3, r4 ?? s4 ?? this[t3]), true !== h3 || void 0 !== r4) || (this._$AL.has(t3) || (this.hasUpdated || i5 || (s4 = void 0), this._$AL.set(t3, s4)), true === e4 && this._$Em !== t3 && (this._$Eq ??= /* @__PURE__ */ new Set()).add(t3));
+  C(t4, s4, { useDefault: i5, reflect: e4, wrapped: h3 }, r4) {
+    i5 && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(t4) && (this._$Ej.set(t4, r4 ?? s4 ?? this[t4]), true !== h3 || void 0 !== r4) || (this._$AL.has(t4) || (this.hasUpdated || i5 || (s4 = void 0), this._$AL.set(t4, s4)), true === e4 && this._$Em !== t4 && (this._$Eq ??= /* @__PURE__ */ new Set()).add(t4));
   }
   async _$EP() {
     this.isUpdatePending = true;
     try {
       await this._$ES;
-    } catch (t4) {
-      Promise.reject(t4);
+    } catch (t5) {
+      Promise.reject(t5);
     }
-    const t3 = this.scheduleUpdate();
-    return null != t3 && await t3, !this.isUpdatePending;
+    const t4 = this.scheduleUpdate();
+    return null != t4 && await t4, !this.isUpdatePending;
   }
   scheduleUpdate() {
     return this.performUpdate();
@@ -224,28 +224,28 @@ var y = class extends HTMLElement {
     if (!this.isUpdatePending) return;
     if (!this.hasUpdated) {
       if (this.renderRoot ??= this.createRenderRoot(), this._$Ep) {
-        for (const [t5, s5] of this._$Ep) this[t5] = s5;
+        for (const [t6, s5] of this._$Ep) this[t6] = s5;
         this._$Ep = void 0;
       }
-      const t4 = this.constructor.elementProperties;
-      if (t4.size > 0) for (const [s5, i5] of t4) {
-        const { wrapped: t5 } = i5, e4 = this[s5];
-        true !== t5 || this._$AL.has(s5) || void 0 === e4 || this.C(s5, void 0, i5, e4);
+      const t5 = this.constructor.elementProperties;
+      if (t5.size > 0) for (const [s5, i5] of t5) {
+        const { wrapped: t6 } = i5, e4 = this[s5];
+        true !== t6 || this._$AL.has(s5) || void 0 === e4 || this.C(s5, void 0, i5, e4);
       }
     }
-    let t3 = false;
+    let t4 = false;
     const s4 = this._$AL;
     try {
-      t3 = this.shouldUpdate(s4), t3 ? (this.willUpdate(s4), this._$EO?.forEach((t4) => t4.hostUpdate?.()), this.update(s4)) : this._$EM();
+      t4 = this.shouldUpdate(s4), t4 ? (this.willUpdate(s4), this._$EO?.forEach((t5) => t5.hostUpdate?.()), this.update(s4)) : this._$EM();
     } catch (s5) {
-      throw t3 = false, this._$EM(), s5;
+      throw t4 = false, this._$EM(), s5;
     }
-    t3 && this._$AE(s4);
+    t4 && this._$AE(s4);
   }
-  willUpdate(t3) {
+  willUpdate(t4) {
   }
-  _$AE(t3) {
-    this._$EO?.forEach((t4) => t4.hostUpdated?.()), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t3)), this.updated(t3);
+  _$AE(t4) {
+    this._$EO?.forEach((t5) => t5.hostUpdated?.()), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t4)), this.updated(t4);
   }
   _$EM() {
     this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
@@ -256,33 +256,33 @@ var y = class extends HTMLElement {
   getUpdateComplete() {
     return this._$ES;
   }
-  shouldUpdate(t3) {
+  shouldUpdate(t4) {
     return true;
   }
-  update(t3) {
-    this._$Eq &&= this._$Eq.forEach((t4) => this._$ET(t4, this[t4])), this._$EM();
+  update(t4) {
+    this._$Eq &&= this._$Eq.forEach((t5) => this._$ET(t5, this[t5])), this._$EM();
   }
-  updated(t3) {
+  updated(t4) {
   }
-  firstUpdated(t3) {
+  firstUpdated(t4) {
   }
 };
 y.elementStyles = [], y.shadowRootOptions = { mode: "open" }, y[d("elementProperties")] = /* @__PURE__ */ new Map(), y[d("finalized")] = /* @__PURE__ */ new Map(), p?.({ ReactiveElement: y }), (a.reactiveElementVersions ??= []).push("2.1.2");
 
 // node_modules/lit-html/lit-html.js
 var t2 = globalThis;
-var i3 = (t3) => t3;
+var i3 = (t4) => t4;
 var s2 = t2.trustedTypes;
-var e3 = s2 ? s2.createPolicy("lit-html", { createHTML: (t3) => t3 }) : void 0;
+var e3 = s2 ? s2.createPolicy("lit-html", { createHTML: (t4) => t4 }) : void 0;
 var h2 = "$lit$";
 var o3 = `lit$${Math.random().toFixed(9).slice(2)}$`;
 var n3 = "?" + o3;
 var r3 = `<${n3}>`;
 var l2 = document;
 var c3 = () => l2.createComment("");
-var a2 = (t3) => null === t3 || "object" != typeof t3 && "function" != typeof t3;
+var a2 = (t4) => null === t4 || "object" != typeof t4 && "function" != typeof t4;
 var u2 = Array.isArray;
-var d2 = (t3) => u2(t3) || "function" == typeof t3?.[Symbol.iterator];
+var d2 = (t4) => u2(t4) || "function" == typeof t4?.[Symbol.iterator];
 var f2 = "[ 	\n\f\r]";
 var v = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
 var _ = /-->/g;
@@ -292,7 +292,7 @@ var p2 = RegExp(`>|${f2}(?:([^\\s"'>=/]+)(${f2}*=${f2}*(?:[^
 var g = /'/g;
 var $ = /"/g;
 var y2 = /^(?:script|style|textarea|title)$/i;
-var x = (t3) => (i5, ...s4) => ({ _$litType$: t3, strings: i5, values: s4 });
+var x = (t4) => (i5, ...s4) => ({ _$litType$: t4, strings: i5, values: s4 });
 var b2 = x(1);
 var w = x(2);
 var T = x(3);
@@ -300,68 +300,68 @@ var E = Symbol.for("lit-noChange");
 var A = Symbol.for("lit-nothing");
 var C = /* @__PURE__ */ new WeakMap();
 var P = l2.createTreeWalker(l2, 129);
-function V(t3, i5) {
-  if (!u2(t3) || !t3.hasOwnProperty("raw")) throw Error("invalid template strings array");
+function V(t4, i5) {
+  if (!u2(t4) || !t4.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return void 0 !== e3 ? e3.createHTML(i5) : i5;
 }
-var N = (t3, i5) => {
-  const s4 = t3.length - 1, e4 = [];
+var N = (t4, i5) => {
+  const s4 = t4.length - 1, e4 = [];
   let n4, l3 = 2 === i5 ? "<svg>" : 3 === i5 ? "<math>" : "", c4 = v;
   for (let i6 = 0; i6 < s4; i6++) {
-    const s5 = t3[i6];
+    const s5 = t4[i6];
     let a3, u3, d3 = -1, f3 = 0;
     for (; f3 < s5.length && (c4.lastIndex = f3, u3 = c4.exec(s5), null !== u3); ) f3 = c4.lastIndex, c4 === v ? "!--" === u3[1] ? c4 = _ : void 0 !== u3[1] ? c4 = m : void 0 !== u3[2] ? (y2.test(u3[2]) && (n4 = RegExp("</" + u3[2], "g")), c4 = p2) : void 0 !== u3[3] && (c4 = p2) : c4 === p2 ? ">" === u3[0] ? (c4 = n4 ?? v, d3 = -1) : void 0 === u3[1] ? d3 = -2 : (d3 = c4.lastIndex - u3[2].length, a3 = u3[1], c4 = void 0 === u3[3] ? p2 : '"' === u3[3] ? $ : g) : c4 === $ || c4 === g ? c4 = p2 : c4 === _ || c4 === m ? c4 = v : (c4 = p2, n4 = void 0);
-    const x2 = c4 === p2 && t3[i6 + 1].startsWith("/>") ? " " : "";
+    const x2 = c4 === p2 && t4[i6 + 1].startsWith("/>") ? " " : "";
     l3 += c4 === v ? s5 + r3 : d3 >= 0 ? (e4.push(a3), s5.slice(0, d3) + h2 + s5.slice(d3) + o3 + x2) : s5 + o3 + (-2 === d3 ? i6 : x2);
   }
-  return [V(t3, l3 + (t3[s4] || "<?>") + (2 === i5 ? "</svg>" : 3 === i5 ? "</math>" : "")), e4];
+  return [V(t4, l3 + (t4[s4] || "<?>") + (2 === i5 ? "</svg>" : 3 === i5 ? "</math>" : "")), e4];
 };
 var S2 = class _S {
-  constructor({ strings: t3, _$litType$: i5 }, e4) {
+  constructor({ strings: t4, _$litType$: i5 }, e4) {
     let r4;
     this.parts = [];
     let l3 = 0, a3 = 0;
-    const u3 = t3.length - 1, d3 = this.parts, [f3, v2] = N(t3, i5);
+    const u3 = t4.length - 1, d3 = this.parts, [f3, v2] = N(t4, i5);
     if (this.el = _S.createElement(f3, e4), P.currentNode = this.el.content, 2 === i5 || 3 === i5) {
-      const t4 = this.el.content.firstChild;
-      t4.replaceWith(...t4.childNodes);
+      const t5 = this.el.content.firstChild;
+      t5.replaceWith(...t5.childNodes);
     }
     for (; null !== (r4 = P.nextNode()) && d3.length < u3; ) {
       if (1 === r4.nodeType) {
-        if (r4.hasAttributes()) for (const t4 of r4.getAttributeNames()) if (t4.endsWith(h2)) {
-          const i6 = v2[a3++], s4 = r4.getAttribute(t4).split(o3), e5 = /([.?@])?(.*)/.exec(i6);
-          d3.push({ type: 1, index: l3, name: e5[2], strings: s4, ctor: "." === e5[1] ? I : "?" === e5[1] ? L : "@" === e5[1] ? z : H }), r4.removeAttribute(t4);
-        } else t4.startsWith(o3) && (d3.push({ type: 6, index: l3 }), r4.removeAttribute(t4));
+        if (r4.hasAttributes()) for (const t5 of r4.getAttributeNames()) if (t5.endsWith(h2)) {
+          const i6 = v2[a3++], s4 = r4.getAttribute(t5).split(o3), e5 = /([.?@])?(.*)/.exec(i6);
+          d3.push({ type: 1, index: l3, name: e5[2], strings: s4, ctor: "." === e5[1] ? I : "?" === e5[1] ? L : "@" === e5[1] ? z : H }), r4.removeAttribute(t5);
+        } else t5.startsWith(o3) && (d3.push({ type: 6, index: l3 }), r4.removeAttribute(t5));
         if (y2.test(r4.tagName)) {
-          const t4 = r4.textContent.split(o3), i6 = t4.length - 1;
+          const t5 = r4.textContent.split(o3), i6 = t5.length - 1;
           if (i6 > 0) {
             r4.textContent = s2 ? s2.emptyScript : "";
-            for (let s4 = 0; s4 < i6; s4++) r4.append(t4[s4], c3()), P.nextNode(), d3.push({ type: 2, index: ++l3 });
-            r4.append(t4[i6], c3());
+            for (let s4 = 0; s4 < i6; s4++) r4.append(t5[s4], c3()), P.nextNode(), d3.push({ type: 2, index: ++l3 });
+            r4.append(t5[i6], c3());
           }
         }
       } else if (8 === r4.nodeType) if (r4.data === n3) d3.push({ type: 2, index: l3 });
       else {
-        let t4 = -1;
-        for (; -1 !== (t4 = r4.data.indexOf(o3, t4 + 1)); ) d3.push({ type: 7, index: l3 }), t4 += o3.length - 1;
+        let t5 = -1;
+        for (; -1 !== (t5 = r4.data.indexOf(o3, t5 + 1)); ) d3.push({ type: 7, index: l3 }), t5 += o3.length - 1;
       }
       l3++;
     }
   }
-  static createElement(t3, i5) {
+  static createElement(t4, i5) {
     const s4 = l2.createElement("template");
-    return s4.innerHTML = t3, s4;
+    return s4.innerHTML = t4, s4;
   }
 };
-function M(t3, i5, s4 = t3, e4) {
+function M(t4, i5, s4 = t4, e4) {
   if (i5 === E) return i5;
   let h3 = void 0 !== e4 ? s4._$Co?.[e4] : s4._$Cl;
   const o5 = a2(i5) ? void 0 : i5._$litDirective$;
-  return h3?.constructor !== o5 && (h3?._$AO?.(false), void 0 === o5 ? h3 = void 0 : (h3 = new o5(t3), h3._$AT(t3, s4, e4)), void 0 !== e4 ? (s4._$Co ??= [])[e4] = h3 : s4._$Cl = h3), void 0 !== h3 && (i5 = M(t3, h3._$AS(t3, i5.values), h3, e4)), i5;
+  return h3?.constructor !== o5 && (h3?._$AO?.(false), void 0 === o5 ? h3 = void 0 : (h3 = new o5(t4), h3._$AT(t4, s4, e4)), void 0 !== e4 ? (s4._$Co ??= [])[e4] = h3 : s4._$Cl = h3), void 0 !== h3 && (i5 = M(t4, h3._$AS(t4, i5.values), h3, e4)), i5;
 }
 var R = class {
-  constructor(t3, i5) {
-    this._$AV = [], this._$AN = void 0, this._$AD = t3, this._$AM = i5;
+  constructor(t4, i5) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t4, this._$AM = i5;
   }
   get parentNode() {
     return this._$AM.parentNode;
@@ -369,35 +369,35 @@ var R = class {
   get _$AU() {
     return this._$AM._$AU;
   }
-  u(t3) {
-    const { el: { content: i5 }, parts: s4 } = this._$AD, e4 = (t3?.creationScope ?? l2).importNode(i5, true);
+  u(t4) {
+    const { el: { content: i5 }, parts: s4 } = this._$AD, e4 = (t4?.creationScope ?? l2).importNode(i5, true);
     P.currentNode = e4;
     let h3 = P.nextNode(), o5 = 0, n4 = 0, r4 = s4[0];
     for (; void 0 !== r4; ) {
       if (o5 === r4.index) {
         let i6;
-        2 === r4.type ? i6 = new k(h3, h3.nextSibling, this, t3) : 1 === r4.type ? i6 = new r4.ctor(h3, r4.name, r4.strings, this, t3) : 6 === r4.type && (i6 = new Z(h3, this, t3)), this._$AV.push(i6), r4 = s4[++n4];
+        2 === r4.type ? i6 = new k(h3, h3.nextSibling, this, t4) : 1 === r4.type ? i6 = new r4.ctor(h3, r4.name, r4.strings, this, t4) : 6 === r4.type && (i6 = new Z(h3, this, t4)), this._$AV.push(i6), r4 = s4[++n4];
       }
       o5 !== r4?.index && (h3 = P.nextNode(), o5++);
     }
     return P.currentNode = l2, e4;
   }
-  p(t3) {
+  p(t4) {
     let i5 = 0;
-    for (const s4 of this._$AV) void 0 !== s4 && (void 0 !== s4.strings ? (s4._$AI(t3, s4, i5), i5 += s4.strings.length - 2) : s4._$AI(t3[i5])), i5++;
+    for (const s4 of this._$AV) void 0 !== s4 && (void 0 !== s4.strings ? (s4._$AI(t4, s4, i5), i5 += s4.strings.length - 2) : s4._$AI(t4[i5])), i5++;
   }
 };
 var k = class _k {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
-  constructor(t3, i5, s4, e4) {
-    this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = t3, this._$AB = i5, this._$AM = s4, this.options = e4, this._$Cv = e4?.isConnected ?? true;
+  constructor(t4, i5, s4, e4) {
+    this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = t4, this._$AB = i5, this._$AM = s4, this.options = e4, this._$Cv = e4?.isConnected ?? true;
   }
   get parentNode() {
-    let t3 = this._$AA.parentNode;
+    let t4 = this._$AA.parentNode;
     const i5 = this._$AM;
-    return void 0 !== i5 && 11 === t3?.nodeType && (t3 = i5.parentNode), t3;
+    return void 0 !== i5 && 11 === t4?.nodeType && (t4 = i5.parentNode), t4;
   }
   get startNode() {
     return this._$AA;
@@ -405,45 +405,45 @@ var k = class _k {
   get endNode() {
     return this._$AB;
   }
-  _$AI(t3, i5 = this) {
-    t3 = M(this, t3, i5), a2(t3) ? t3 === A || null == t3 || "" === t3 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t3 !== this._$AH && t3 !== E && this._(t3) : void 0 !== t3._$litType$ ? this.$(t3) : void 0 !== t3.nodeType ? this.T(t3) : d2(t3) ? this.k(t3) : this._(t3);
+  _$AI(t4, i5 = this) {
+    t4 = M(this, t4, i5), a2(t4) ? t4 === A || null == t4 || "" === t4 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t4 !== this._$AH && t4 !== E && this._(t4) : void 0 !== t4._$litType$ ? this.$(t4) : void 0 !== t4.nodeType ? this.T(t4) : d2(t4) ? this.k(t4) : this._(t4);
   }
-  O(t3) {
-    return this._$AA.parentNode.insertBefore(t3, this._$AB);
+  O(t4) {
+    return this._$AA.parentNode.insertBefore(t4, this._$AB);
   }
-  T(t3) {
-    this._$AH !== t3 && (this._$AR(), this._$AH = this.O(t3));
+  T(t4) {
+    this._$AH !== t4 && (this._$AR(), this._$AH = this.O(t4));
   }
-  _(t3) {
-    this._$AH !== A && a2(this._$AH) ? this._$AA.nextSibling.data = t3 : this.T(l2.createTextNode(t3)), this._$AH = t3;
+  _(t4) {
+    this._$AH !== A && a2(this._$AH) ? this._$AA.nextSibling.data = t4 : this.T(l2.createTextNode(t4)), this._$AH = t4;
   }
-  $(t3) {
-    const { values: i5, _$litType$: s4 } = t3, e4 = "number" == typeof s4 ? this._$AC(t3) : (void 0 === s4.el && (s4.el = S2.createElement(V(s4.h, s4.h[0]), this.options)), s4);
+  $(t4) {
+    const { values: i5, _$litType$: s4 } = t4, e4 = "number" == typeof s4 ? this._$AC(t4) : (void 0 === s4.el && (s4.el = S2.createElement(V(s4.h, s4.h[0]), this.options)), s4);
     if (this._$AH?._$AD === e4) this._$AH.p(i5);
     else {
-      const t4 = new R(e4, this), s5 = t4.u(this.options);
-      t4.p(i5), this.T(s5), this._$AH = t4;
+      const t5 = new R(e4, this), s5 = t5.u(this.options);
+      t5.p(i5), this.T(s5), this._$AH = t5;
     }
   }
-  _$AC(t3) {
-    let i5 = C.get(t3.strings);
-    return void 0 === i5 && C.set(t3.strings, i5 = new S2(t3)), i5;
+  _$AC(t4) {
+    let i5 = C.get(t4.strings);
+    return void 0 === i5 && C.set(t4.strings, i5 = new S2(t4)), i5;
   }
-  k(t3) {
+  k(t4) {
     u2(this._$AH) || (this._$AH = [], this._$AR());
     const i5 = this._$AH;
     let s4, e4 = 0;
-    for (const h3 of t3) e4 === i5.length ? i5.push(s4 = new _k(this.O(c3()), this.O(c3()), this, this.options)) : s4 = i5[e4], s4._$AI(h3), e4++;
+    for (const h3 of t4) e4 === i5.length ? i5.push(s4 = new _k(this.O(c3()), this.O(c3()), this, this.options)) : s4 = i5[e4], s4._$AI(h3), e4++;
     e4 < i5.length && (this._$AR(s4 && s4._$AB.nextSibling, e4), i5.length = e4);
   }
-  _$AR(t3 = this._$AA.nextSibling, s4) {
-    for (this._$AP?.(false, true, s4); t3 !== this._$AB; ) {
-      const s5 = i3(t3).nextSibling;
-      i3(t3).remove(), t3 = s5;
+  _$AR(t4 = this._$AA.nextSibling, s4) {
+    for (this._$AP?.(false, true, s4); t4 !== this._$AB; ) {
+      const s5 = i3(t4).nextSibling;
+      i3(t4).remove(), t4 = s5;
     }
   }
-  setConnected(t3) {
-    void 0 === this._$AM && (this._$Cv = t3, this._$AP?.(t3));
+  setConnected(t4) {
+    void 0 === this._$AM && (this._$Cv = t4, this._$AP?.(t4));
   }
 };
 var H = class {
@@ -453,74 +453,74 @@ var H = class {
   get _$AU() {
     return this._$AM._$AU;
   }
-  constructor(t3, i5, s4, e4, h3) {
-    this.type = 1, this._$AH = A, this._$AN = void 0, this.element = t3, this.name = i5, this._$AM = e4, this.options = h3, s4.length > 2 || "" !== s4[0] || "" !== s4[1] ? (this._$AH = Array(s4.length - 1).fill(new String()), this.strings = s4) : this._$AH = A;
+  constructor(t4, i5, s4, e4, h3) {
+    this.type = 1, this._$AH = A, this._$AN = void 0, this.element = t4, this.name = i5, this._$AM = e4, this.options = h3, s4.length > 2 || "" !== s4[0] || "" !== s4[1] ? (this._$AH = Array(s4.length - 1).fill(new String()), this.strings = s4) : this._$AH = A;
   }
-  _$AI(t3, i5 = this, s4, e4) {
+  _$AI(t4, i5 = this, s4, e4) {
     const h3 = this.strings;
     let o5 = false;
-    if (void 0 === h3) t3 = M(this, t3, i5, 0), o5 = !a2(t3) || t3 !== this._$AH && t3 !== E, o5 && (this._$AH = t3);
+    if (void 0 === h3) t4 = M(this, t4, i5, 0), o5 = !a2(t4) || t4 !== this._$AH && t4 !== E, o5 && (this._$AH = t4);
     else {
-      const e5 = t3;
+      const e5 = t4;
       let n4, r4;
-      for (t3 = h3[0], n4 = 0; n4 < h3.length - 1; n4++) r4 = M(this, e5[s4 + n4], i5, n4), r4 === E && (r4 = this._$AH[n4]), o5 ||= !a2(r4) || r4 !== this._$AH[n4], r4 === A ? t3 = A : t3 !== A && (t3 += (r4 ?? "") + h3[n4 + 1]), this._$AH[n4] = r4;
+      for (t4 = h3[0], n4 = 0; n4 < h3.length - 1; n4++) r4 = M(this, e5[s4 + n4], i5, n4), r4 === E && (r4 = this._$AH[n4]), o5 ||= !a2(r4) || r4 !== this._$AH[n4], r4 === A ? t4 = A : t4 !== A && (t4 += (r4 ?? "") + h3[n4 + 1]), this._$AH[n4] = r4;
     }
-    o5 && !e4 && this.j(t3);
+    o5 && !e4 && this.j(t4);
   }
-  j(t3) {
-    t3 === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t3 ?? "");
+  j(t4) {
+    t4 === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t4 ?? "");
   }
 };
 var I = class extends H {
   constructor() {
     super(...arguments), this.type = 3;
   }
-  j(t3) {
-    this.element[this.name] = t3 === A ? void 0 : t3;
+  j(t4) {
+    this.element[this.name] = t4 === A ? void 0 : t4;
   }
 };
 var L = class extends H {
   constructor() {
     super(...arguments), this.type = 4;
   }
-  j(t3) {
-    this.element.toggleAttribute(this.name, !!t3 && t3 !== A);
+  j(t4) {
+    this.element.toggleAttribute(this.name, !!t4 && t4 !== A);
   }
 };
 var z = class extends H {
-  constructor(t3, i5, s4, e4, h3) {
-    super(t3, i5, s4, e4, h3), this.type = 5;
+  constructor(t4, i5, s4, e4, h3) {
+    super(t4, i5, s4, e4, h3), this.type = 5;
   }
-  _$AI(t3, i5 = this) {
-    if ((t3 = M(this, t3, i5, 0) ?? A) === E) return;
-    const s4 = this._$AH, e4 = t3 === A && s4 !== A || t3.capture !== s4.capture || t3.once !== s4.once || t3.passive !== s4.passive, h3 = t3 !== A && (s4 === A || e4);
-    e4 && this.element.removeEventListener(this.name, this, s4), h3 && this.element.addEventListener(this.name, this, t3), this._$AH = t3;
+  _$AI(t4, i5 = this) {
+    if ((t4 = M(this, t4, i5, 0) ?? A) === E) return;
+    const s4 = this._$AH, e4 = t4 === A && s4 !== A || t4.capture !== s4.capture || t4.once !== s4.once || t4.passive !== s4.passive, h3 = t4 !== A && (s4 === A || e4);
+    e4 && this.element.removeEventListener(this.name, this, s4), h3 && this.element.addEventListener(this.name, this, t4), this._$AH = t4;
   }
-  handleEvent(t3) {
-    "function" == typeof this._$AH ? this._$AH.call(this.options?.host ?? this.element, t3) : this._$AH.handleEvent(t3);
+  handleEvent(t4) {
+    "function" == typeof this._$AH ? this._$AH.call(this.options?.host ?? this.element, t4) : this._$AH.handleEvent(t4);
   }
 };
 var Z = class {
-  constructor(t3, i5, s4) {
-    this.element = t3, this.type = 6, this._$AN = void 0, this._$AM = i5, this.options = s4;
+  constructor(t4, i5, s4) {
+    this.element = t4, this.type = 6, this._$AN = void 0, this._$AM = i5, this.options = s4;
   }
   get _$AU() {
     return this._$AM._$AU;
   }
-  _$AI(t3) {
-    M(this, t3);
+  _$AI(t4) {
+    M(this, t4);
   }
 };
 var B = t2.litHtmlPolyfillSupport;
 B?.(S2, k), (t2.litHtmlVersions ??= []).push("3.3.3");
-var D = (t3, i5, s4) => {
+var D = (t4, i5, s4) => {
   const e4 = s4?.renderBefore ?? i5;
   let h3 = e4._$litPart$;
   if (void 0 === h3) {
-    const t4 = s4?.renderBefore ?? null;
-    e4._$litPart$ = h3 = new k(i5.insertBefore(c3(), t4), t4, void 0, s4 ?? {});
+    const t5 = s4?.renderBefore ?? null;
+    e4._$litPart$ = h3 = new k(i5.insertBefore(c3(), t5), t5, void 0, s4 ?? {});
   }
-  return h3._$AI(t3), h3;
+  return h3._$AI(t4), h3;
 };
 
 // node_modules/lit-element/lit-element.js
@@ -530,12 +530,12 @@ var i4 = class extends y {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
   createRenderRoot() {
-    const t3 = super.createRenderRoot();
-    return this.renderOptions.renderBefore ??= t3.firstChild, t3;
+    const t4 = super.createRenderRoot();
+    return this.renderOptions.renderBefore ??= t4.firstChild, t4;
   }
-  update(t3) {
+  update(t4) {
     const r4 = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t3), this._$Do = D(r4, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t4), this._$Do = D(r4, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(true);
@@ -552,39 +552,436 @@ var o4 = s3.litElementPolyfillSupport;
 o4?.({ LitElement: i4 });
 (s3.litElementVersions ??= []).push("4.2.2");
 
+// custom_components/vivino_cellar/frontend/src/translations/en.json
+var en_default = {
+  card: {
+    default_title: "Wine cellar",
+    summary: { one: "{count} bottle \xB7 updated {time}", other: "{count} bottles \xB7 updated {time}" },
+    never: "Never",
+    refresh: "Refresh",
+    loading: "Loading cellar\u2026",
+    stale: "The last update from Vivino failed. Data may be out of date; check the Vivino session.",
+    load_error: "Could not load the cellar.",
+    refresh_error: "Could not refresh the cellar.",
+    drink_error: "Could not uncork {label}: {error}"
+  },
+  tabs: {
+    now: "Drink now",
+    pairing: "Food pairing",
+    cellar: "Cellar"
+  },
+  common: {
+    bottles: { one: "{count} bottle", other: "{count} bottles" },
+    wines: { one: "{count} wine", other: "{count} wines" },
+    uncork: "Uncork",
+    close: "Close",
+    cancel: "Cancel",
+    loading: "Loading\u2026"
+  },
+  wine: {
+    unknown: "Unknown wine",
+    fallback: "Wine",
+    bottle_fallback: "Bottle",
+    details: "Details: {name}",
+    uncork_name: "Uncork: {name}"
+  },
+  status: {
+    near_past_peak: "Drink soon",
+    ready: "Ready",
+    can_wait: "Can wait",
+    hold: "Keep",
+    past_peak: "Past peak",
+    unknown: "Window unknown"
+  },
+  wine_type: {
+    "1": "Red",
+    "2": "White",
+    "3": "Sparkling",
+    "4": "Ros\xE9",
+    "7": "Dessert",
+    "24": "Fortified",
+    fallback: "Type {id}"
+  },
+  reason: {
+    near_past_peak: "Last year: drink in {year}",
+    ready: "Ready until {year}",
+    ready_open: "Ready",
+    can_wait: "Can wait until {year}, fine now too",
+    can_wait_open: "Can wait, fine now too",
+    past_peak: "Past its peak since {year}: open soon",
+    past_peak_open: "Past its peak: open soon",
+    hold: "Keep until {year}",
+    hold_open: "Keep for now",
+    unknown: "Drinking window unknown"
+  },
+  window: {
+    from: "from {year}",
+    until: "until {year}",
+    since: "since {year}",
+    drink_in: "drink in {year}",
+    unknown: "unknown"
+  },
+  style: {
+    full_bold: "Full, bold",
+    fresh: "Fresh, {type}",
+    light: "Light",
+    smooth: "Smooth",
+    full: "Full",
+    with_type: "{style}, {type}",
+    past_peak: "Past its peak"
+  },
+  location: {
+    numbered: "Location {n}",
+    unknown: "Unknown location",
+    bin: "bin {bin}"
+  },
+  chip: {
+    label: "What are you in the mood for?",
+    aperitif: "Drinks",
+    refreshing: "Refreshing",
+    winter_evening: "Winter evening",
+    with_food: "With dinner",
+    special: "Something special",
+    drink_up: "Drink up"
+  },
+  weather: {
+    warm: "\u2600\uFE0F It's {temp}\xB0. Something fresh?",
+    cold: "\u2744\uFE0F It's {temp}\xB0. Something for by the fire?"
+  },
+  now: {
+    also_good: "Also good tonight",
+    nothing_for_choice: "Nothing for this choice.",
+    show_all: "Show all",
+    nothing_ready: "Nothing ready to drink right now.",
+    past_peak: { one: "{count} bottle past its peak \xB7 View", other: "{count} bottles past their peak \xB7 View" }
+  },
+  cellar: {
+    search_placeholder: "Search wine, winery, region or grape\u2026",
+    clear_filters: "Clear filters",
+    no_results: "No wines match these filters.",
+    filter: {
+      all_types: "All types",
+      all_countries: "All countries",
+      all_regions: "All regions",
+      all_grapes: "All grapes",
+      bottle_count: "Number of bottles",
+      min_bottles: "{n}+ bottles",
+      any_count: "Any number"
+    },
+    sort: {
+      label: "Sort",
+      option: "Sort: {label}",
+      status: "Drinking window",
+      drink_by: "Drink by",
+      rating: "Rating",
+      vintage: "Vintage (oldest first)",
+      bottles: "Number of bottles",
+      name: "Name"
+    }
+  },
+  pairing: {
+    dish_placeholder: "What are you eating? E.g. truffle pasta",
+    search: "Search",
+    categories_label: "Or pick a category",
+    reset: "Start over",
+    searching: "Searching\u2026",
+    no_match: "No matching wine in your cellar.",
+    matches: "Good matches",
+    need_input: "Enter a dish or pick a category.",
+    error: "Could not search for a pairing."
+  },
+  detail: {
+    ratings_count: { one: "{count} rating", other: "{count} ratings" },
+    window: "Drinking window",
+    type: "Type",
+    origin: "Origin",
+    grapes: "Grapes",
+    foods: "Goes with",
+    bottles: "Bottles",
+    no_bottles: "No bottles in stock",
+    view_on_vivino: "View on Vivino",
+    source: {
+      vivino: "per Vivino",
+      ai_estimate: "AI estimate"
+    }
+  },
+  rating: {
+    title: "Your rating",
+    choose: "Choose a rating",
+    stars: { one: "{value} star", other: "{value} stars" },
+    note_placeholder: "Note (optional)",
+    save: "Save",
+    saving: "Saving\u2026",
+    failed: "Failed",
+    saved: "Saved to Vivino",
+    not_rated: "Not rated yet"
+  },
+  picker: {
+    title: "Which bottle are you taking?"
+  },
+  toast: {
+    uncorked: "Uncorked: {label}",
+    undo: "Undo"
+  }
+};
+
+// custom_components/vivino_cellar/frontend/src/translations/nl.json
+var nl_default = {
+  card: {
+    default_title: "Wijnkelder",
+    summary: { one: "{count} fles \xB7 bijgewerkt {time}", other: "{count} flessen \xB7 bijgewerkt {time}" },
+    never: "Nooit",
+    refresh: "Vernieuwen",
+    loading: "Kelder laden\u2026",
+    stale: "Laatste update van Vivino mislukt. Gegevens kunnen verouderd zijn; controleer de Vivino-sessie.",
+    load_error: "Fout bij ophalen van keldergegevens.",
+    refresh_error: "Fout bij vernieuwen van kelder.",
+    drink_error: "Ontkurken van {label} mislukt: {error}"
+  },
+  tabs: {
+    now: "Nu drinken",
+    pairing: "Wijn & Spijs",
+    cellar: "Kelder"
+  },
+  common: {
+    bottles: { one: "{count} fles", other: "{count} flessen" },
+    wines: { one: "{count} wijn", other: "{count} wijnen" },
+    uncork: "Ontkurken",
+    close: "Sluiten",
+    cancel: "Annuleren",
+    loading: "Laden\u2026"
+  },
+  wine: {
+    unknown: "Onbekende wijn",
+    fallback: "Wijn",
+    bottle_fallback: "Fles",
+    details: "Details: {name}",
+    uncork_name: "Ontkurken: {name}"
+  },
+  status: {
+    near_past_peak: "Binnenkort drinken",
+    ready: "Op dronk",
+    can_wait: "Kan nog liggen",
+    hold: "Nog wegleggen",
+    past_peak: "Voorbij piek",
+    unknown: "Venster onbekend"
+  },
+  wine_type: {
+    "1": "Rood",
+    "2": "Wit",
+    "3": "Mousserend",
+    "4": "Ros\xE9",
+    "7": "Dessert",
+    "24": "Versterkt",
+    fallback: "Type {id}"
+  },
+  reason: {
+    near_past_peak: "Laatste jaar: drink in {year}",
+    ready: "Op dronk tot {year}",
+    ready_open: "Op dronk",
+    can_wait: "Kan nog liggen tot {year}, mag ook nu",
+    can_wait_open: "Kan nog liggen, mag ook nu",
+    past_peak: "Voorbij de piek sinds {year}: snel open",
+    past_peak_open: "Voorbij de piek: snel open",
+    hold: "Nog wegleggen tot {year}",
+    hold_open: "Nog wegleggen",
+    unknown: "Drinkvenster onbekend"
+  },
+  window: {
+    from: "vanaf {year}",
+    until: "tot {year}",
+    since: "sinds {year}",
+    drink_in: "drink in {year}",
+    unknown: "onbekend"
+  },
+  style: {
+    full_bold: "Vol, krachtig",
+    fresh: "Fris, {type}",
+    light: "Licht",
+    smooth: "Soepel",
+    full: "Vol",
+    with_type: "{style}, {type}",
+    past_peak: "Voorbij de piek"
+  },
+  location: {
+    numbered: "Locatie {n}",
+    unknown: "Onbekende locatie",
+    bin: "vak {bin}"
+  },
+  chip: {
+    label: "Waar heb je zin in?",
+    aperitif: "Borrelen",
+    refreshing: "Verfrissend",
+    winter_evening: "Winteravond",
+    with_food: "Bij het eten",
+    special: "Iets bijzonders",
+    drink_up: "Moet op"
+  },
+  weather: {
+    warm: "\u2600\uFE0F Het is {temp}\xB0. Iets fris?",
+    cold: "\u2744\uFE0F Het is {temp}\xB0. Iets voor bij de haard?"
+  },
+  now: {
+    also_good: "Ook goed vanavond",
+    nothing_for_choice: "Niets voor deze keuze.",
+    show_all: "Toon alles",
+    nothing_ready: "Niets op dronk op dit moment.",
+    past_peak: { one: "{count} fles voorbij de piek \xB7 Bekijken", other: "{count} flessen voorbij de piek \xB7 Bekijken" }
+  },
+  cellar: {
+    search_placeholder: "Zoek op wijn, wijnhuis, regio of druif\u2026",
+    clear_filters: "Wis filters",
+    no_results: "Geen wijnen voor deze filters.",
+    filter: {
+      all_types: "Alle soorten",
+      all_countries: "Alle landen",
+      all_regions: "Alle regio's",
+      all_grapes: "Alle druiven",
+      bottle_count: "Aantal flessen",
+      min_bottles: "{n}+ flessen",
+      any_count: "Elk aantal"
+    },
+    sort: {
+      label: "Sorteren",
+      option: "Sorteer: {label}",
+      status: "Drinkvenster",
+      drink_by: "Drinken voor",
+      rating: "Beoordeling",
+      vintage: "Jaargang (oud eerst)",
+      bottles: "Aantal flessen",
+      name: "Naam"
+    }
+  },
+  pairing: {
+    dish_placeholder: "Wat eet je? Bijv. pasta met truffel",
+    search: "Zoek",
+    categories_label: "Of kies een categorie",
+    reset: "Opnieuw",
+    searching: "Zoeken\u2026",
+    no_match: "Geen passende wijn in je kelder.",
+    matches: "Past erbij",
+    need_input: "Voer een gerecht in of kies een categorie.",
+    error: "Fout bij zoeken naar pairing."
+  },
+  detail: {
+    ratings_count: { one: "{count} beoordeling", other: "{count} beoordelingen" },
+    window: "Drinkvenster",
+    type: "Soort",
+    origin: "Herkomst",
+    grapes: "Druiven",
+    foods: "Past bij",
+    bottles: "Flessen",
+    no_bottles: "Geen flessen op voorraad",
+    view_on_vivino: "Bekijk op Vivino",
+    source: {
+      vivino: "volgens Vivino",
+      ai_estimate: "AI-schatting"
+    }
+  },
+  rating: {
+    title: "Jouw beoordeling",
+    choose: "Kies een beoordeling",
+    stars: { one: "{value} ster", other: "{value} sterren" },
+    note_placeholder: "Notitie (optioneel)",
+    save: "Opslaan",
+    saving: "Opslaan\u2026",
+    failed: "Mislukt",
+    saved: "Opgeslagen op Vivino",
+    not_rated: "Nog niet beoordeeld"
+  },
+  picker: {
+    title: "Welke fles pak je?"
+  },
+  toast: {
+    uncorked: "Ontkurkt: {label}",
+    undo: "Ongedaan maken"
+  }
+};
+
+// custom_components/vivino_cellar/frontend/src/logic/i18n.js
+var TRANSLATIONS = { en: en_default, nl: nl_default };
+var FALLBACK_LANGUAGE = "en";
+var PLURAL_FORMS = /* @__PURE__ */ new Set(["zero", "one", "two", "few", "many", "other"]);
+var current = FALLBACK_LANGUAGE;
+var listeners = /* @__PURE__ */ new Set();
+function setLanguage(lang) {
+  const base = String(lang || "").toLowerCase().split(/[-_]/)[0];
+  const next = Object.hasOwn(TRANSLATIONS, base) ? base : FALLBACK_LANGUAGE;
+  if (next !== current) {
+    current = next;
+    for (const fn of listeners) fn(current);
+  }
+  return current;
+}
+function getLanguage() {
+  return current;
+}
+function onLanguageChange(fn) {
+  listeners.add(fn);
+  return () => listeners.delete(fn);
+}
+function isPlural(value) {
+  return Boolean(value) && typeof value === "object" && "other" in value && Object.keys(value).every((k2) => PLURAL_FORMS.has(k2));
+}
+function lookup(table, key) {
+  let node = table;
+  for (const part of key.split(".")) {
+    if (!node || typeof node !== "object" || !Object.hasOwn(node, part)) return void 0;
+    node = node[part];
+  }
+  return typeof node === "string" || isPlural(node) ? node : void 0;
+}
+function t3(key, params = {}) {
+  let lang = current;
+  let value = lookup(TRANSLATIONS[lang], key);
+  if (value === void 0 && lang !== FALLBACK_LANGUAGE) {
+    lang = FALLBACK_LANGUAGE;
+    value = lookup(TRANSLATIONS[lang], key);
+  }
+  if (value === void 0) return key;
+  if (typeof value === "object") {
+    const form = new Intl.PluralRules(lang).select(Number(params.count ?? 0));
+    value = value[form] ?? value.other;
+  }
+  return value.replace(
+    /\{(\w+)\}/g,
+    (match, name) => Object.hasOwn(params, name) && params[name] !== void 0 && params[name] !== null ? String(params[name]) : match
+  );
+}
+function formatDecimal(value) {
+  return new Intl.NumberFormat(current, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
+}
+
 // custom_components/vivino_cellar/frontend/src/logic/status.js
 var STATUS_ORDER = ["near_past_peak", "ready", "can_wait", "hold", "past_peak", "unknown"];
-var STATUS_LABELS = {
-  near_past_peak: "Binnenkort drinken",
-  ready: "Op dronk",
-  can_wait: "Kan nog liggen",
-  hold: "Nog wegleggen",
-  past_peak: "Voorbij piek",
-  unknown: "Venster onbekend"
-};
-var WINE_TYPES = {
-  1: "Rood",
-  2: "Wit",
-  3: "Mousserend",
-  4: "Ros\xE9",
-  7: "Dessert",
-  24: "Versterkt"
-};
+var WINE_TYPE_IDS = [1, 2, 3, 4, 7, 24];
+function textMap(keys, keyOf) {
+  const map = {};
+  for (const k2 of keys) {
+    Object.defineProperty(map, k2, { enumerable: true, get: () => t3(keyOf(k2)) });
+  }
+  return Object.freeze(map);
+}
+var STATUS_LABELS = textMap(STATUS_ORDER, (s4) => `status.${s4}`);
+var WINE_TYPES = textMap(WINE_TYPE_IDS, (id) => `wine_type.${id}`);
+function wineTypeName(typeId) {
+  return WINE_TYPES[typeId] || t3("wine_type.fallback", { id: typeId });
+}
 function reasonLine(wine, year) {
   const end = wine.end_year;
   switch (wine.window_status) {
     case "near_past_peak":
-      return `Laatste jaar: drink in ${end ?? year}`;
+      return t3("reason.near_past_peak", { year: end ?? year });
     case "ready":
-      return end ? `Op dronk tot ${end}` : "Op dronk";
+      return end ? t3("reason.ready", { year: end }) : t3("reason.ready_open");
     case "can_wait":
-      return end ? `Kan nog liggen tot ${end}, mag ook nu` : "Kan nog liggen, mag ook nu";
+      return end ? t3("reason.can_wait", { year: end }) : t3("reason.can_wait_open");
     case "past_peak":
-      return end ? `Voorbij de piek sinds ${end}: snel open` : "Voorbij de piek: snel open";
+      return end ? t3("reason.past_peak", { year: end }) : t3("reason.past_peak_open");
     case "hold":
-      return wine.start_year ? `Nog wegleggen tot ${wine.start_year}` : "Nog wegleggen";
+      return wine.start_year ? t3("reason.hold", { year: wine.start_year }) : t3("reason.hold_open");
     default:
-      return "Drinkvenster onbekend";
+      return t3("reason.unknown");
   }
 }
 
@@ -626,9 +1023,9 @@ function filterOptions(wines, key, valuesOf, labelOf, ctx, alsoSkip = []) {
   }
   const selected = ctx.filters[key];
   if (selected && !counts.has(selected)) counts.set(selected, 0);
-  return [...counts.entries()].map(([value, n4]) => ({ value, label: labelOf(value), n: n4 })).sort((a3, b3) => a3.label.localeCompare(b3.label, "nl"));
+  return [...counts.entries()].map(([value, n4]) => ({ value, label: labelOf(value), n: n4 })).sort((a3, b3) => a3.label.localeCompare(b3.label, getLanguage()));
 }
-var byName = (a3, b3) => (a3.name || "").localeCompare(b3.name || "", "nl");
+var byName = (a3, b3) => (a3.name || "").localeCompare(b3.name || "", getLanguage());
 var nullsLast = (v2) => v2 === null || v2 === void 0 ? Infinity : v2;
 var SORTERS = {
   drink_by: (a3, b3) => nullsLast(a3.end_year) - nullsLast(b3.end_year),
@@ -663,10 +1060,15 @@ function bottleId(bottle) {
 function vintageId(wine) {
   return wine.vintage_id ?? wine.id;
 }
+function locationName(bottle) {
+  if (bottle.location_name) return bottle.location_name;
+  if (bottle.location_number) return t3("location.numbered", { n: bottle.location_number });
+  return t3("location.unknown");
+}
 function bottleSpots(bottles) {
   const spots = /* @__PURE__ */ new Map();
   for (const b3 of bottles || []) {
-    const location = b3.location_name || "Kelder";
+    const location = locationName(b3);
     const bin = b3.bin || null;
     const key = JSON.stringify([location, bin]);
     if (!spots.has(key)) spots.set(key, { location, bin, bottles: [] });
@@ -674,8 +1076,11 @@ function bottleSpots(bottles) {
   }
   return [...spots.values()];
 }
+function spotLabel(spot) {
+  return spot.bin ? `${spot.location} \xB7 ${t3("location.bin", { bin: spot.bin })}` : spot.location;
+}
 function formatRating(value) {
-  return typeof value === "number" ? value.toFixed(1).replace(".", ",") : "";
+  return typeof value === "number" ? formatDecimal(value) : "";
 }
 function viewWines(wines, pendingIds) {
   return (wines || []).map((wine) => {
@@ -688,12 +1093,10 @@ function viewWines(wines, pendingIds) {
 var MAX_SPOTS = 2;
 function cellarLines(wine) {
   const status = wine.window_status || "unknown";
-  const when = status === "hold" && wine.start_year ? `vanaf ${wine.start_year}` : wine.end_year ? `tot ${wine.end_year}` : "";
+  const when = status === "hold" && wine.start_year ? t3("window.from", { year: wine.start_year }) : wine.end_year ? t3("window.until", { year: wine.end_year }) : "";
   const rating = typeof wine.rating === "number" ? `\u2605 ${formatRating(wine.rating)}` : "";
   const first = [STATUS_LABELS[status] || status, when, rating].filter(Boolean).join(" \xB7 ");
-  const spots = bottleSpots(wine.bottles).map(
-    (s4) => `${s4.location}${s4.bin ? ` \xB7 vak ${s4.bin}` : ""} \xB7 ${s4.bottles.length}\xD7`
-  );
+  const spots = bottleSpots(wine.bottles).map((s4) => `${spotLabel(s4)} \xB7 ${s4.bottles.length}\xD7`);
   const extra = spots.length - MAX_SPOTS;
   const second = spots.slice(0, MAX_SPOTS).join(" \xB7 ") + (extra > 0 ? ` \xB7 +${extra}` : "");
   return [first, second];
@@ -889,11 +1292,27 @@ function fire(el, type, detail = {}) {
   el.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
 }
 
+// custom_components/vivino_cellar/frontend/src/components/language.js
+var LanguageController = class {
+  constructor(host) {
+    this.host = host;
+    host.addController(this);
+  }
+  hostConnected() {
+    this._off = onLanguageChange(() => this.host.requestUpdate());
+  }
+  hostDisconnected() {
+    this._off?.();
+    this._off = null;
+  }
+};
+
 // custom_components/vivino_cellar/frontend/src/components/wine-row.js
 var VcWineRow = class extends i4 {
   constructor() {
     super();
     this.lines = [];
+    this._language = new LanguageController(this);
   }
   _open() {
     fire(this, "vc-open", { vintageId: vintageId(this.wine) });
@@ -912,7 +1331,7 @@ var VcWineRow = class extends i4 {
   render() {
     const w2 = this.wine;
     if (!w2) return A;
-    const name = w2.name || "Onbekende wijn";
+    const name = w2.name || t3("wine.unknown");
     const image = safeUrl(w2.image_url);
     const status = w2.window_status || "unknown";
     return b2`
@@ -920,7 +1339,7 @@ var VcWineRow = class extends i4 {
         class="row s-${status}"
         role="button"
         tabindex="0"
-        aria-label="Details: ${name}"
+        aria-label=${t3("wine.details", { name })}
         @click=${this._open}
         @keydown=${this._key}
       >
@@ -931,8 +1350,8 @@ var VcWineRow = class extends i4 {
         </div>
         <button
           class="icon-btn glass"
-          title="Ontkurken"
-          aria-label="Ontkurken: ${name}"
+          title=${t3("common.uncork")}
+          aria-label=${t3("wine.uncork_name", { name })}
           ?disabled=${!(w2.bottles || []).length}
           @click=${this._drink}
         >
@@ -994,14 +1413,7 @@ __publicField(VcWineRow, "styles", [
 if (!customElements.get("vc-wine-row")) customElements.define("vc-wine-row", VcWineRow);
 
 // custom_components/vivino_cellar/frontend/src/components/cellar-tab.js
-var SORTS = {
-  status: "Drinkvenster",
-  drink_by: "Drinken voor",
-  rating: "Beoordeling",
-  vintage: "Jaargang (oud eerst)",
-  bottles: "Aantal flessen",
-  name: "Naam"
-};
+var SORTS = ["status", "drink_by", "rating", "vintage", "bottles", "name"];
 var MIN_BOTTLES = [0, 2, 3, 6];
 var VcCellarTab = class extends i4 {
   constructor() {
@@ -1009,6 +1421,7 @@ var VcCellarTab = class extends i4 {
     this.filters = { ...EMPTY_FILTERS };
     this.expanded = {};
     this.query = "";
+    this._language = new LanguageController(this);
   }
   get _ctx() {
     return { filters: this.filters, statusFilter: this.statusFilter || null, query: this.query || "" };
@@ -1023,11 +1436,11 @@ var VcCellarTab = class extends i4 {
     return Boolean(this.statusFilter || this.query || f3.type || f3.country || f3.region || f3.grape || f3.minBottles);
   }
   _select(key, allLabel, options) {
-    const current = this.filters[key];
+    const current2 = this.filters[key];
     return b2`
-      <select class="select ${current ? "active" : ""}" aria-label=${allLabel} @change=${(e4) => this._set(key, e4.target.value)}>
-        <option value="" ?selected=${!current}>${allLabel}</option>
-        ${options.map((o5) => b2`<option value=${o5.value} ?selected=${o5.value === current}>${o5.label} (${o5.n})</option>`)}
+      <select class="select ${current2 ? "active" : ""}" aria-label=${allLabel} @change=${(e4) => this._set(key, e4.target.value)}>
+        <option value="" ?selected=${!current2}>${allLabel}</option>
+        ${options.map((o5) => b2`<option value=${o5.value} ?selected=${o5.value === current2}>${o5.label} (${o5.n})</option>`)}
       </select>
     `;
   }
@@ -1041,7 +1454,7 @@ var VcCellarTab = class extends i4 {
     const wines = all.filter((w2) => matchesFilters(w2, f3, ctx.statusFilter, ctx.query));
     const bottles = wines.reduce((n4, w2) => n4 + w2.bottles.length, 0);
     const counts = statusCounts(all, ctx);
-    const typeOpts = filterOptions(all, "type", (w2) => [w2.type_id], (v2) => WINE_TYPES[v2] || `Type ${v2}`, ctx);
+    const typeOpts = filterOptions(all, "type", (w2) => [w2.type_id], wineTypeName, ctx);
     const countryOpts = filterOptions(all, "country", (w2) => [w2.country], (v2) => v2, ctx, ["region"]);
     const regionOpts = filterOptions(all, "region", (w2) => [w2.region], (v2) => v2, ctx);
     const grapeOpts = filterOptions(all, "grape", (w2) => w2.grapes || [], (v2) => v2, ctx);
@@ -1057,7 +1470,7 @@ var VcCellarTab = class extends i4 {
           <section class="group s-${status}">
             <button class="group-head" aria-expanded=${open} @click=${() => fire(this, "vc-toggle-group", { status })}>
               <span class="badge">${STATUS_LABELS[status]}</span>
-              <span class="muted">${n4} ${n4 === 1 ? "fles" : "flessen"}</span>
+              <span class="muted">${t3("common.bottles", { count: n4 })}</span>
               <ha-icon class="chev" icon="mdi:chevron-down"></ha-icon>
             </button>
             ${open ? b2`<div class="list">${group.map((w2) => this._row(w2))}</div>` : A}
@@ -1071,7 +1484,7 @@ var VcCellarTab = class extends i4 {
       <input
         class="input search"
         type="search"
-        placeholder="Zoek op wijn, wijnhuis, regio of druif…"
+        placeholder=${t3("cellar.search_placeholder")}
         .value=${this.query || ""}
         @input=${(e4) => fire(this, "vc-filters", { query: e4.target.value })}
       />
@@ -1092,29 +1505,41 @@ var VcCellarTab = class extends i4 {
       </div>
 
       <div class="selects">
-        ${this._select("type", "Alle soorten", typeOpts)}
-        ${this._select("country", "Alle landen", countryOpts)}
-        ${this._select("region", "Alle regio's", regionOpts)}
-        ${this._select("grape", "Alle druiven", grapeOpts)}
-        <select class="select ${f3.minBottles ? "active" : ""}" aria-label="Aantal flessen" @change=${(e4) => this._set("minBottles", e4.target.value)}>
-          ${MIN_BOTTLES.map((n4) => b2`<option value=${n4} ?selected=${n4 === f3.minBottles}>${n4 ? `${n4}+ flessen` : "Elk aantal"}</option>`)}
+        ${this._select("type", t3("cellar.filter.all_types"), typeOpts)}
+        ${this._select("country", t3("cellar.filter.all_countries"), countryOpts)}
+        ${this._select("region", t3("cellar.filter.all_regions"), regionOpts)}
+        ${this._select("grape", t3("cellar.filter.all_grapes"), grapeOpts)}
+        <select
+          class="select ${f3.minBottles ? "active" : ""}"
+          aria-label=${t3("cellar.filter.bottle_count")}
+          @change=${(e4) => this._set("minBottles", e4.target.value)}
+        >
+          ${MIN_BOTTLES.map(
+      (n4) => b2`<option value=${n4} ?selected=${n4 === f3.minBottles}>
+              ${n4 ? t3("cellar.filter.min_bottles", { n: n4 }) : t3("cellar.filter.any_count")}
+            </option>`
+    )}
         </select>
-        <select class="select sort" aria-label="Sorteren" @change=${(e4) => this._set("sort", e4.target.value)}>
-          ${Object.entries(SORTS).map(([k2, label]) => b2`<option value=${k2} ?selected=${k2 === f3.sort}>Sorteer: ${label}</option>`)}
+        <select class="select sort" aria-label=${t3("cellar.sort.label")} @change=${(e4) => this._set("sort", e4.target.value)}>
+          ${SORTS.map(
+      (k2) => b2`<option value=${k2} ?selected=${k2 === f3.sort}>
+              ${t3("cellar.sort.option", { label: t3(`cellar.sort.${k2}`) })}
+            </option>`
+    )}
         </select>
       </div>
 
       <div class="result">
-        <span>${wines.length} ${wines.length === 1 ? "wijn" : "wijnen"} · ${bottles} ${bottles === 1 ? "fles" : "flessen"}</span>
+        <span>${t3("common.wines", { count: wines.length })} · ${t3("common.bottles", { count: bottles })}</span>
         ${this._active() ? b2`<button
               class="btn btn-link"
               @click=${() => fire(this, "vc-filters", { filters: { ...EMPTY_FILTERS, sort: f3.sort }, statusFilter: null, query: "" })}
             >
-              Wis filters
+              ${t3("cellar.clear_filters")}
             </button>` : A}
       </div>
 
-      ${wines.length ? list : b2`<div class="empty">Geen wijnen voor deze filters.</div>`}
+      ${wines.length ? list : b2`<div class="empty">${t3("cellar.no_results")}</div>`}
     `;
   }
 };
@@ -1255,8 +1680,12 @@ __publicField(VcModal, "modalStyles", i`
   `);
 
 // custom_components/vivino_cellar/frontend/src/components/detail-sheet.js
-var SOURCES = { vivino: "volgens Vivino", ai_estimate: "AI-schatting" };
+var SOURCES = ["vivino", "ai_estimate"];
 var VcDetailSheet = class extends VcModal {
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
   willUpdate(changed) {
     if (!changed.has("draft") || !this.draft) return;
     const prev = changed.get("draft");
@@ -1279,7 +1708,7 @@ var VcDetailSheet = class extends VcModal {
     const value = this._rating ?? 0;
     return [1, 2, 3, 4, 5].map((n4) => {
       const icon = value >= n4 ? "mdi:star" : value >= n4 - 0.5 ? "mdi:star-half-full" : "mdi:star-outline";
-      const label = (v2) => `${String(v2).replace(".", ",")} ${v2 === 1 ? "ster" : "sterren"}`;
+      const label = (v2) => t3("rating.stars", { count: v2, value: new Intl.NumberFormat(getLanguage()).format(v2) });
       return b2`
         <span class="star ${value >= n4 - 0.5 ? "on" : ""}">
           <ha-icon icon=${icon}></ha-icon>
@@ -1294,13 +1723,13 @@ var VcDetailSheet = class extends VcModal {
     const d3 = this.draft;
     if (!d3) return A;
     if (d3.status === "loading") {
-      return b2`<section class="rating"><h4>Jouw beoordeling</h4><div class="muted">Laden…</div></section>`;
+      return b2`<section class="rating"><h4>${t3("rating.title")}</h4><div class="muted">${t3("common.loading")}</div></section>`;
     }
-    const status = d3.status === "saving" ? b2`<span class="muted">Opslaan…</span>` : d3.status === "error" ? b2`<span class="err">${d3.error || "Mislukt"}</span>` : d3.status === "saved" && !this._changed ? b2`<span class="ok">Opgeslagen op Vivino</span>` : this.saved ? A : b2`<span class="muted">Nog niet beoordeeld</span>`;
+    const status = d3.status === "saving" ? b2`<span class="muted">${t3("rating.saving")}</span>` : d3.status === "error" ? b2`<span class="err">${d3.error || t3("rating.failed")}</span>` : d3.status === "saved" && !this._changed ? b2`<span class="ok">${t3("rating.saved")}</span>` : this.saved ? A : b2`<span class="muted">${t3("rating.not_rated")}</span>`;
     return b2`
       <section class="rating">
-        <h4>Jouw beoordeling</h4>
-        <div class="stars" role="group" aria-label="Kies een beoordeling">
+        <h4>${t3("rating.title")}</h4>
+        <div class="stars" role="group" aria-label=${t3("rating.choose")}>
           ${this._stars()}
           <span class="value">${this._rating ? formatRating(this._rating) : "\u2013"}</span>
         </div>
@@ -1308,14 +1737,14 @@ var VcDetailSheet = class extends VcModal {
           class="input"
           id="rating-note"
           rows="2"
-          placeholder="Notitie (optioneel)"
+          placeholder=${t3("rating.note_placeholder")}
           .value=${this._note ?? ""}
           @input=${(e4) => this._note = e4.target.value}
         ></textarea>
         <div class="actions">
           ${status}
           <button class="btn btn-primary save" ?disabled=${!this._changed || d3.status === "saving"} @click=${this._save}>
-            Opslaan
+            ${t3("rating.save")}
           </button>
         </div>
       </section>
@@ -1324,12 +1753,12 @@ var VcDetailSheet = class extends VcModal {
   render() {
     const w2 = this.wine;
     if (!w2) return A;
-    const name = w2.name || "Onbekende wijn";
+    const name = w2.name || t3("wine.unknown");
     const status = w2.window_status || "unknown";
     const image = safeUrl(w2.image_url);
     const link = safeUrl(w2.vivino_url);
-    const window2 = w2.start_year && w2.end_year ? `${w2.start_year} \u2013 ${w2.end_year}` : w2.start_year ? `vanaf ${w2.start_year}` : w2.end_year ? `tot ${w2.end_year}` : "onbekend";
-    const source = SOURCES[w2.window_source];
+    const window2 = w2.start_year && w2.end_year ? `${w2.start_year} \u2013 ${w2.end_year}` : w2.start_year ? t3("window.from", { year: w2.start_year }) : w2.end_year ? t3("window.until", { year: w2.end_year }) : t3("window.unknown");
+    const source = SOURCES.includes(w2.window_source) ? t3(`detail.source.${w2.window_source}`) : "";
     const type = [WINE_TYPES[w2.type_id], w2.style].filter(Boolean).join(" \xB7 ");
     const origin = [w2.region, w2.country].filter(Boolean).join(", ");
     const foods = (w2.foods || []).map((f3) => f3.name).filter(Boolean).join(", ");
@@ -1345,7 +1774,7 @@ var VcDetailSheet = class extends VcModal {
               <div class="name" id="t">${name}${w2.year ? ` ${w2.year}` : ""}</div>
               ${w2.winery ? b2`<div class="muted">${w2.winery}</div>` : A}
               <div class="badges">
-                ${typeof w2.rating === "number" ? b2`<span class="badge star-badge"><ha-icon icon="mdi:star"></ha-icon>${formatRating(w2.rating)}${w2.ratings_count ? ` \xB7 ${w2.ratings_count} beoordelingen` : ""}</span>` : A}
+                ${typeof w2.rating === "number" ? b2`<span class="badge star-badge"><ha-icon icon="mdi:star"></ha-icon>${formatRating(w2.rating)}${w2.ratings_count ? ` \xB7 ${t3("detail.ratings_count", { count: w2.ratings_count })}` : ""}</span>` : A}
                 <span class="badge">${STATUS_LABELS[status] || status}</span>
               </div>
               <div class="reason">${reasonLine(w2, (/* @__PURE__ */ new Date()).getFullYear())}</div>
@@ -1353,25 +1782,25 @@ var VcDetailSheet = class extends VcModal {
           </div>
           <div class="body">
             <dl>
-              ${row("Drinkvenster", b2`${window2}${source ? b2` <span class="muted">(${source})</span>` : A}`)}
-              ${row("Soort", type)}
-              ${row("Herkomst", origin)}
-              ${row("Druiven", grapes)}
-              ${row("Past bij", foods)}
+              ${row(t3("detail.window"), b2`${window2}${source ? b2` <span class="muted">(${source})</span>` : A}`)}
+              ${row(t3("detail.type"), type)}
+              ${row(t3("detail.origin"), origin)}
+              ${row(t3("detail.grapes"), grapes)}
+              ${row(t3("detail.foods"), foods)}
               ${row(
-      "Flessen",
-      spots.length ? spots.map((s4) => b2`<div>${s4.location}${s4.bin ? ` \xB7 vak ${s4.bin}` : ""}: ${s4.bottles.length}×</div>`) : "Geen flessen op voorraad"
+      t3("detail.bottles"),
+      spots.length ? spots.map((s4) => b2`<div>${spotLabel(s4)}: ${s4.bottles.length}×</div>`) : t3("detail.no_bottles")
     )}
             </dl>
             ${this._ratingSection()}
           </div>
           <div class="foot">
             ${link ? b2`<a class="vivino" href=${link} target="_blank" rel="noopener noreferrer">
-                  Bekijk op Vivino <ha-icon icon="mdi:open-in-new"></ha-icon>
+                  ${t3("detail.view_on_vivino")} <ha-icon icon="mdi:open-in-new"></ha-icon>
                 </a>` : A}
-            <button class="btn" id="close" autofocus @click=${() => fire(this, "vc-close")}>Sluiten</button>
+            <button class="btn" id="close" autofocus @click=${() => fire(this, "vc-close")}>${t3("common.close")}</button>
             ${(w2.bottles || []).length ? b2`<button class="btn btn-primary" @click=${() => fire(this, "vc-drink", { vintageId: vintageId(w2) })}>
-                  <ha-icon icon="mdi:glass-wine"></ha-icon> Ontkurken
+                  <ha-icon icon="mdi:glass-wine"></ha-icon> ${t3("common.uncork")}
                 </button>` : A}
           </div>
         </div>
@@ -1448,14 +1877,25 @@ __publicField(VcDetailSheet, "styles", [
 if (!customElements.get("vc-detail-sheet")) customElements.define("vc-detail-sheet", VcDetailSheet);
 
 // custom_components/vivino_cellar/frontend/src/logic/ranking.js
-var CHIPS = [
-  { id: "borrelen", label: "\u{1F942} Borrelen" },
-  { id: "verfrissend", label: "\u{1F9CA} Verfrissend" },
-  { id: "winteravond", label: "\u{1F525} Winteravond" },
-  { id: "eten", label: "\u{1F37D} Bij het eten" },
-  { id: "bijzonder", label: "\u2728 Iets bijzonders" },
-  { id: "moet_op", label: "\u23F3 Moet op" }
-];
+var CHIP_ICONS = {
+  aperitif: "\u{1F942}",
+  refreshing: "\u{1F9CA}",
+  winter_evening: "\u{1F525}",
+  with_food: "\u{1F37D}",
+  special: "\u2728",
+  drink_up: "\u23F3"
+};
+var CHIPS = Object.freeze(
+  Object.entries(CHIP_ICONS).map(
+    ([id, icon]) => Object.freeze({
+      id,
+      icon,
+      get label() {
+        return `${icon} ${t3(`chip.${id}`)}`;
+      }
+    })
+  )
+);
 var RED = 1;
 var WHITE = 2;
 var SPARKLING = 3;
@@ -1498,29 +1938,29 @@ function byDefault(a3, b3) {
   return (DRINKABLE[a3.window_status] ?? 9) - (DRINKABLE[b3.window_status] ?? 9) || nullsLast2(a3.end_year) - nullsLast2(b3.end_year) || (b3.rating ?? 0) - (a3.rating ?? 0);
 }
 var CHIP_RULES = {
-  borrelen: {
+  aperitif: {
     keep: (w2) => [SPARKLING, ROSE, WHITE].includes(w2.type_id) || w2.type_id === RED && bodyOf(w2) <= 3,
     rank: (a3, b3) => {
       const group = (w2) => [SPARKLING, ROSE].includes(w2.type_id) ? 0 : w2.type_id === WHITE ? 1 : 2;
       return group(a3) - group(b3) || bodyOf(a3) - bodyOf(b3);
     }
   },
-  verfrissend: {
+  refreshing: {
     keep: (w2) => [WHITE, ROSE, SPARKLING].includes(w2.type_id),
     rank: (a3, b3) => (b3.style_acidity ?? -Infinity) - (a3.style_acidity ?? -Infinity) || bodyOf(a3) - bodyOf(b3)
   },
-  winteravond: {
+  winter_evening: {
     keep: (w2) => w2.type_id === RED && bodyOf(w2) >= 4 || [FORTIFIED, DESSERT].includes(w2.type_id),
     rank: (a3, b3) => bodyOf(b3) - bodyOf(a3) || (b3.rating ?? 0) - (a3.rating ?? 0)
   },
-  bijzonder: {
+  special: {
     keep: () => true,
     rank: (a3, b3) => (b3.rating ?? -Infinity) - (a3.rating ?? -Infinity) || nullsLast2(a3.year) - nullsLast2(b3.year)
   }
 };
 function rankTonight(wines, chipId) {
   const stock = (wines || []).filter(inStock);
-  if (chipId === "moet_op") {
+  if (chipId === "drink_up") {
     const near = stock.filter((w2) => w2.window_status === "near_past_peak").sort(byDefault);
     const past = stock.filter((w2) => w2.window_status === "past_peak").sort((a3, b3) => (b3.end_year ?? -Infinity) - (a3.end_year ?? -Infinity) || byDefault(a3, b3));
     return [...near, ...past];
@@ -1529,7 +1969,7 @@ function rankTonight(wines, chipId) {
   const rule = CHIP_RULES[chipId];
   if (!rule) return drinkable.sort(byDefault);
   let picks = drinkable.filter(rule.keep);
-  if (chipId === "borrelen") {
+  if (chipId === "aperitif") {
     const everyday = picks.filter((w2) => (w2.rating ?? 0) < SAVE_FOR_LATER);
     if (everyday.length) picks = everyday;
   }
@@ -1537,34 +1977,45 @@ function rankTonight(wines, chipId) {
 }
 function styleLine(wine) {
   const type = WINE_TYPES[wine.type_id];
+  const lowerType = type ? type.toLocaleLowerCase(getLanguage()) : "";
   const body = bodyOf(wine);
-  if (wine.type_id === RED && body >= 4) return "Vol, krachtig";
-  if (wine.type_id !== RED && type && (wine.style_acidity ?? 0) >= 3.5) return `Fris, ${type.toLowerCase()}`;
-  const adjective = body <= 2 ? "Licht" : body >= 4 ? "Vol" : "Soepel";
-  return type ? `${adjective}, ${type.toLowerCase()}` : adjective;
+  if (wine.type_id === RED && body >= 4) return t3("style.full_bold");
+  if (wine.type_id !== RED && type && (wine.style_acidity ?? 0) >= 3.5) return t3("style.fresh", { type: lowerType });
+  const style = t3(body <= 2 ? "style.light" : body >= 4 ? "style.full" : "style.smooth");
+  return type ? t3("style.with_type", { style, type: lowerType }) : style;
 }
 function hintLine(wine, chipId, year) {
   const end = wine.end_year;
-  if (wine.window_status === "past_peak") return end ? `Voorbij de piek \xB7 sinds ${end}` : "Voorbij de piek";
-  if (wine.window_status === "can_wait") return end ? `Kan nog liggen \xB7 tot ${end}` : "Kan nog liggen";
+  if (wine.window_status === "past_peak") {
+    const text2 = t3("style.past_peak");
+    return end ? `${text2} \xB7 ${t3("window.since", { year: end })}` : text2;
+  }
+  if (wine.window_status === "can_wait") {
+    const text2 = STATUS_LABELS.can_wait;
+    return end ? `${text2} \xB7 ${t3("window.until", { year: end })}` : text2;
+  }
   const text = styleLine(wine);
-  if (wine.window_status === "near_past_peak") return `${text} \xB7 drink in ${end ?? year}`;
-  return end ? `${text} \xB7 tot ${end}` : text;
+  if (wine.window_status === "near_past_peak") return `${text} \xB7 ${t3("window.drink_in", { year: end ?? year })}`;
+  return end ? `${text} \xB7 ${t3("window.until", { year: end })}` : text;
 }
 
 // custom_components/vivino_cellar/frontend/src/components/mood-chips.js
 var VcMoodChips = class extends i4 {
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
   _pick(id) {
-    if (id === "eten") {
+    if (id === "with_food") {
       fire(this, "vc-tab", { tab: "pairing", focusDish: true });
       return;
     }
     fire(this, "vc-chip", { chip: this.chip === id ? null : id });
   }
   render() {
-    const chips = CHIPS.filter((c4) => c4.id !== "eten" || this.showEatChip);
+    const chips = CHIPS.filter((c4) => c4.id !== "with_food" || this.showEatChip);
     return b2`
-      <div class="chips" role="group" aria-label="Waar heb je zin in?">
+      <div class="chips" role="group" aria-label=${t3("chip.label")}>
         ${chips.map(
       (c4) => b2`<button class="chip" aria-pressed=${this.chip === c4.id} @click=${() => this._pick(c4.id)}>
             ${c4.label}
@@ -1597,13 +2048,17 @@ if (!customElements.get("vc-mood-chips")) customElements.define("vc-mood-chips",
 
 // custom_components/vivino_cellar/frontend/src/components/top-pick.js
 var VcTopPick = class extends i4 {
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
   _open() {
     fire(this, "vc-open", { vintageId: vintageId(this.wine) });
   }
   render() {
     const w2 = this.wine;
     if (!w2) return A;
-    const name = w2.name || "Onbekende wijn";
+    const name = w2.name || t3("wine.unknown");
     const image = safeUrl(w2.image_url);
     const sub = [styleLine(w2), w2.winery, w2.region].filter(Boolean).join(" \xB7 ");
     return b2`
@@ -1611,7 +2066,7 @@ var VcTopPick = class extends i4 {
         class="pick s-${w2.window_status || "unknown"}"
         role="button"
         tabindex="0"
-        aria-label="Details: ${name}"
+        aria-label=${t3("wine.details", { name })}
         @click=${this._open}
         @keydown=${(e4) => {
       if (e4.target === e4.currentTarget && (e4.key === "Enter" || e4.key === " ")) {
@@ -1632,7 +2087,7 @@ var VcTopPick = class extends i4 {
       fire(this, "vc-drink", { vintageId: vintageId(w2) });
     }}
           >
-            <ha-icon icon="mdi:glass-wine"></ha-icon> Ontkurken
+            <ha-icon icon="mdi:glass-wine"></ha-icon> ${t3("common.uncork")}
           </button>
         </div>
       </div>
@@ -1666,14 +2121,18 @@ if (!customElements.get("vc-top-pick")) customElements.define("vc-top-pick", VcT
 
 // custom_components/vivino_cellar/frontend/src/components/now-tab.js
 var VcNowTab = class extends i4 {
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
   render() {
     const year = (/* @__PURE__ */ new Date()).getFullYear();
-    const ranked = rankTonight(this.wines || [], this.chip === "eten" ? null : this.chip);
+    const ranked = rankTonight(this.wines || [], this.chip === "with_food" ? null : this.chip);
     const [top, ...rest] = ranked;
     const more = rest.slice(0, Math.max(0, (this.limit || 5) - 1));
     return b2`
       ${this.hint ? b2`<button
-            class="hint ${this.hint.chip === "winteravond" ? "cold" : "warm"}"
+            class="hint ${this.hint.chip === "winter_evening" ? "cold" : "warm"}"
             @click=${() => this.chip !== this.hint.chip && fire(this, "vc-chip", { chip: this.hint.chip })}
           >
             ${this.hint.text}
@@ -1682,20 +2141,22 @@ var VcNowTab = class extends i4 {
 
       ${top ? b2`
             <vc-top-pick .wine=${top}></vc-top-pick>
-            ${more.length ? b2`<div class="section-label">Ook goed vanavond</div>
+            ${more.length ? b2`<div class="section-label">${t3("now.also_good")}</div>
                   <div class="list">
                     ${more.map(
       (w2) => b2`<vc-wine-row .wine=${w2} .lines=${[hintLine(w2, this.chip, year)]} data-id=${vintageId(w2)}></vc-wine-row>`
     )}
                   </div>` : A}
           ` : b2`<div class="empty">
-            ${this.chip ? b2`Niets voor deze keuze.
-                  <button class="btn-link btn" @click=${() => fire(this, "vc-chip", { chip: null })}>Toon alles</button>` : "Niets op dronk op dit moment."}
+            ${this.chip ? b2`${t3("now.nothing_for_choice")}
+                  <button class="btn-link btn" @click=${() => fire(this, "vc-chip", { chip: null })}>
+                    ${t3("now.show_all")}
+                  </button>` : t3("now.nothing_ready")}
           </div>`}
 
-      ${this.pastPeakCount && this.chip !== "moet_op" ? b2`<button class="past" @click=${() => fire(this, "vc-tab", { tab: "cellar", statusFilter: "past_peak" })}>
+      ${this.pastPeakCount && this.chip !== "drink_up" ? b2`<button class="past" @click=${() => fire(this, "vc-tab", { tab: "cellar", statusFilter: "past_peak" })}>
             <ha-icon icon="mdi:alert"></ha-icon>
-            ${this.pastPeakCount} ${this.pastPeakCount === 1 ? "fles" : "flessen"} voorbij de piek · Bekijken
+            ${t3("now.past_peak", { count: this.pastPeakCount })}
           </button>` : A}
     `;
   }
@@ -1750,6 +2211,10 @@ if (!customElements.get("vc-now-tab")) customElements.define("vc-now-tab", VcNow
 
 // custom_components/vivino_cellar/frontend/src/components/pairing-tab.js
 var VcPairingTab = class extends i4 {
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
   willUpdate(changed) {
     if (changed.has("pairing") && this._dish === void 0) this._dish = this.pairing?.dish || "";
   }
@@ -1773,19 +2238,19 @@ var VcPairingTab = class extends i4 {
   }
   _results() {
     const p3 = this.pairing || {};
-    if (p3.loading) return b2`<div class="empty">Zoeken…</div>`;
+    if (p3.loading) return b2`<div class="empty">${t3("pairing.searching")}</div>`;
     if (p3.error) return b2`<div class="error">${p3.error}</div>`;
     if (!p3.results) return A;
-    if (!p3.results.length) return b2`<div class="empty">Geen passende wijn in je kelder.</div>`;
+    if (!p3.results.length) return b2`<div class="empty">${t3("pairing.no_match")}</div>`;
     const byId = new Map((this.wines || []).map((w2) => [vintageId(w2), w2]));
     return b2`
-      <div class="section-label">Past erbij</div>
+      <div class="section-label">${t3("pairing.matches")}</div>
       <div class="list">
         ${p3.results.map((match) => {
       const wine = { ...match, ...byId.get(vintageId(match)) || {} };
       if (!(wine.bottles || []).length) return A;
       const status = wine.window_status || "unknown";
-      const when = [STATUS_LABELS[status], wine.end_year ? `tot ${wine.end_year}` : ""].filter(Boolean).join(" \xB7 ");
+      const when = [STATUS_LABELS[status], wine.end_year ? t3("window.until", { year: wine.end_year }) : ""].filter(Boolean).join(" \xB7 ");
       return b2`<vc-wine-row .wine=${wine} .lines=${[match.explanation, when]}></vc-wine-row>`;
     })}
       </div>
@@ -1801,17 +2266,17 @@ var VcPairingTab = class extends i4 {
           id="dish"
           class="input"
           type="search"
-          placeholder="Wat eet je? Bijv. pasta met truffel"
+          placeholder=${t3("pairing.dish_placeholder")}
           .value=${this._dish ?? ""}
           @input=${(e4) => this._dish = e4.target.value}
           @keydown=${(e4) => e4.key === "Enter" && this._search()}
         />
         <button class="btn btn-primary" ?disabled=${!(this._dish || "").trim()} @click=${this._search}>
-          Zoek
+          ${t3("pairing.search")}
         </button>
       </div>
 
-      ${categories.length ? b2`<div class="foods" role="group" aria-label="Of kies een categorie">
+      ${categories.length ? b2`<div class="foods" role="group" aria-label=${t3("pairing.categories_label")}>
             ${categories.map(
       (c4) => b2`<button class="chip" aria-pressed=${selected.has(c4.id)} @click=${() => this._toggleFood(c4.id)}>
                 ${c4.name}
@@ -1819,7 +2284,7 @@ var VcPairingTab = class extends i4 {
     )}
           </div>` : A}
 
-      ${p3.results || p3.error || (this._dish || "") || selected.size ? b2`<button class="btn btn-link reset" @click=${this._reset}>Opnieuw</button>` : A}
+      ${p3.results || p3.error || (this._dish || "") || selected.size ? b2`<button class="btn btn-link reset" @click=${this._reset}>${t3("pairing.reset")}</button>` : A}
 
       ${this._results()}
     `;
@@ -1856,26 +2321,30 @@ if (!customElements.get("vc-pairing-tab")) customElements.define("vc-pairing-tab
 
 // custom_components/vivino_cellar/frontend/src/components/spot-picker.js
 var VcSpotPicker = class extends VcModal {
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
   render() {
     const w2 = this.wine;
     if (!w2) return A;
     return b2`
-      <dialog aria-label="Welke fles pak je?" @cancel=${this._cancel} @close=${this._closed} @click=${this._backdrop}>
+      <dialog aria-label=${t3("picker.title")} @cancel=${this._cancel} @close=${this._closed} @click=${this._backdrop}>
         <div class="sheet picker">
-          <div class="head"><ha-icon icon="mdi:glass-wine"></ha-icon> Welke fles pak je?</div>
+          <div class="head"><ha-icon icon="mdi:glass-wine"></ha-icon> ${t3("picker.title")}</div>
           <div class="body">
-            <div class="wine">${w2.name || "Wijn"}${w2.year ? ` (${w2.year})` : ""}</div>
+            <div class="wine">${w2.name || t3("wine.fallback")}${w2.year ? ` (${w2.year})` : ""}</div>
             ${bottleSpots(w2.bottles).map(
       (s4, i5) => b2`
                 <button class="spot" @click=${() => fire(this, "vc-pick-spot", { index: i5 })}>
-                  <span><ha-icon icon="mdi:map-marker"></ha-icon> ${s4.location}${s4.bin ? ` \xB7 vak ${s4.bin}` : ""}</span>
+                  <span><ha-icon icon="mdi:map-marker"></ha-icon> ${spotLabel(s4)}</span>
                   <span class="count">${s4.bottles.length}×</span>
                 </button>
               `
     )}
           </div>
           <div class="foot">
-            <button class="btn" @click=${() => fire(this, "vc-close")}>Annuleren</button>
+            <button class="btn" @click=${() => fire(this, "vc-close")}>${t3("common.cancel")}</button>
           </div>
         </div>
       </dialog>
@@ -1925,6 +2394,7 @@ var VcToastStack = class extends i4 {
     this.pending = [];
     this.errors = [];
     this.undoMs = 8e3;
+    this._language = new LanguageController(this);
   }
   render() {
     const undoable = this.pending.filter(([, p3]) => !p3.committing);
@@ -1938,7 +2408,7 @@ var VcToastStack = class extends i4 {
               <ha-icon icon="mdi:alert"></ha-icon>
               <span class="text">${e4.message}</span>
               <button class="action" @click=${() => fire(this, "vc-dismiss-error", { id: e4.id })}>
-                Sluiten
+                ${t3("common.close")}
               </button>
             </div>
           `
@@ -1947,9 +2417,9 @@ var VcToastStack = class extends i4 {
       ([id, p3]) => b2`
             <div class="toast">
               <ha-icon icon="mdi:glass-wine"></ha-icon>
-              <span class="text">Ontkurkt: ${p3.label}</span>
+              <span class="text">${t3("toast.uncorked", { label: p3.label })}</span>
               <button class="action" @click=${() => fire(this, "vc-undo", { bottleId: id })}>
-                Ongedaan maken
+                ${t3("toast.undo")}
               </button>
               <div
                 class="progress"
@@ -2038,16 +2508,14 @@ function weatherSuggestion(hass, entityId) {
   const fahrenheit = hass.config?.unit_system?.temperature === "\xB0F";
   const celsius = fahrenheit ? (temp - 32) * 5 / 9 : temp;
   const shown = Math.round(temp);
-  if (celsius >= WARM_C) return { chip: "verfrissend", text: `\u2600\uFE0F Het is ${shown}\xB0. Iets fris?` };
-  if (celsius <= COLD_C) return { chip: "winteravond", text: `\u2744\uFE0F Het is ${shown}\xB0. Iets voor bij de haard?` };
+  if (celsius >= WARM_C) return { chip: "refreshing", text: t3("weather.warm", { temp: shown }) };
+  if (celsius <= COLD_C) return { chip: "winter_evening", text: t3("weather.cold", { temp: shown }) };
   return null;
 }
 
 // custom_components/vivino_cellar/frontend/src/vivino-cellar-card.js
 var DEFAULT_TABS = ["now", "pairing", "cellar"];
 var TAB_ALIASES = { windows: "cellar" };
-var TAB_LABELS = { now: "Nu drinken", pairing: "Wijn & Spijs", cellar: "Kelder" };
-var DEFAULT_TITLE = "Wijnkelder";
 var DEFAULT_NOW_LIMIT = 5;
 var UNDO_MS = 8e3;
 var ERROR_TOAST_MS = 8e3;
@@ -2090,7 +2558,7 @@ var VivinoCellarCard = class extends i4 {
     this._tab = this._config.tabs.includes(this._config.default_tab) ? this._config.default_tab : this._config.tabs[0];
   }
   _parseConfig(config) {
-    const tabs = (Array.isArray(config.tabs) && config.tabs.length ? config.tabs : DEFAULT_TABS).map((t3) => TAB_ALIASES[t3] || t3).filter((t3) => TAB_LABELS[t3]);
+    const tabs = (Array.isArray(config.tabs) && config.tabs.length ? config.tabs : DEFAULT_TABS).map((tab) => TAB_ALIASES[tab] || tab).filter((tab) => DEFAULT_TABS.includes(tab));
     return {
       ...config,
       tabs: tabs.length ? tabs : DEFAULT_TABS,
@@ -2104,7 +2572,7 @@ var VivinoCellarCard = class extends i4 {
     return {};
   }
   get title() {
-    return this._config.title || this._data?.settings?.title || DEFAULT_TITLE;
+    return this._config.title || this._data?.settings?.title || t3("card.default_title");
   }
   get nowLimit() {
     const n4 = Number(this._config.now_limit) || Number(this._data?.settings?.now_limit);
@@ -2127,6 +2595,7 @@ var VivinoCellarCard = class extends i4 {
   }
   willUpdate(changed) {
     if (changed.has("hass") && this.hass) {
+      setLanguage(this.hass.locale?.language || this.hass.language);
       this.toggleAttribute("dark", Boolean(this.hass.themes?.darkMode));
       if (this.isConnected) this._subscribe();
     }
@@ -2177,7 +2646,7 @@ var VivinoCellarCard = class extends i4 {
       this._data = await this.hass.callWS({ type: "vivino_cellar/cellar" });
       this._error = null;
     } catch (err) {
-      this._error = err?.message || "Fout bij ophalen van keldergegevens.";
+      this._error = err?.message || t3("card.load_error");
     } finally {
       this._loading = false;
     }
@@ -2190,7 +2659,7 @@ var VivinoCellarCard = class extends i4 {
       if (!this._unsubscribe) this._data = await this.hass.callWS({ type: "vivino_cellar/cellar" });
       this._error = null;
     } catch (err) {
-      this._error = err?.message || "Fout bij vernieuwen van kelder.";
+      this._error = err?.message || t3("card.refresh_error");
     } finally {
       this._refreshing = false;
     }
@@ -2225,7 +2694,7 @@ var VivinoCellarCard = class extends i4 {
   _startDrink(wine, bottle) {
     const id = bottleId(bottle);
     if (this._pending.has(id)) return;
-    const name = wine.name || "Fles";
+    const name = wine.name || t3("wine.bottle_fallback");
     this._pending.set(id, {
       timer: setTimeout(() => this._commitDrink(id), UNDO_MS),
       startedAt: Date.now(),
@@ -2254,7 +2723,7 @@ var VivinoCellarCard = class extends i4 {
       if (!this._unsubscribe) await this._loadOnce();
     } catch (err) {
       this._pending.delete(id);
-      this._showError(`Ontkurken van ${pending.label} mislukt: ${err?.message || err}`);
+      this._showError(t3("card.drink_error", { label: pending.label, error: err?.message || err }));
     }
     this.requestUpdate();
   }
@@ -2331,7 +2800,7 @@ var VivinoCellarCard = class extends i4 {
     const ids = [...foodIds || []];
     const state = { ...this._pairing, dish: cleanDish, foodIds: new Set(ids) };
     if (!cleanDish && ids.length === 0) {
-      this._pairing = { ...state, results: null, error: "Voer een gerecht in of kies een categorie." };
+      this._pairing = { ...state, results: null, error: t3("pairing.need_input") };
       return;
     }
     this._pairing = { ...state, loading: true, error: null };
@@ -2340,7 +2809,7 @@ var VivinoCellarCard = class extends i4 {
       const res = await this.hass.callWS(payload);
       this._pairing = { ...this._pairing, loading: false, results: res.matches || res.pairings || [] };
     } catch (err) {
-      this._pairing = { ...this._pairing, loading: false, results: null, error: err?.message || "Fout bij zoeken naar pairing." };
+      this._pairing = { ...this._pairing, loading: false, results: null, error: err?.message || t3("pairing.error") };
     }
   }
   // ---------------------------------------------------------------------------
@@ -2386,9 +2855,9 @@ var VivinoCellarCard = class extends i4 {
   // ---------------------------------------------------------------------------
   _lastRefresh() {
     const iso = this._data?.last_refresh_time;
-    if (!iso) return "Nooit";
+    if (!iso) return t3("card.never");
     const d3 = new Date(iso);
-    return Number.isNaN(d3.getTime()) ? iso : d3.toLocaleDateString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    return Number.isNaN(d3.getTime()) ? iso : d3.toLocaleDateString(getLanguage(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   }
   render() {
     const wines = this._wines;
@@ -2400,12 +2869,12 @@ var VivinoCellarCard = class extends i4 {
             <div class="logo"><ha-icon icon="mdi:barrel"></ha-icon></div>
             <div class="titles">
               <div class="title">${this.title}</div>
-              <div class="muted sub">${total} flessen · bijgewerkt ${this._lastRefresh()}</div>
+              <div class="muted sub">${t3("card.summary", { count: total, time: this._lastRefresh() })}</div>
             </div>
             <button
               class="icon-btn ${this._refreshing ? "spinning" : ""}"
-              title="Vernieuwen"
-              aria-label="Vernieuwen"
+              title=${t3("card.refresh")}
+              aria-label=${t3("card.refresh")}
               ?disabled=${this._refreshing}
               @click=${this._refresh}
             >
@@ -2415,27 +2884,27 @@ var VivinoCellarCard = class extends i4 {
 
           ${this._data?.last_update_success === false ? b2`<div class="banner warn">
                 <ha-icon icon="mdi:alert"></ha-icon>
-                Laatste update van Vivino mislukt. Gegevens kunnen verouderd zijn; controleer de Vivino-sessie.
+                ${t3("card.stale")}
               </div>` : A}
           ${this._error ? b2`<div class="banner error"><ha-icon icon="mdi:alert-circle"></ha-icon>${this._error}</div>` : A}
 
           ${this._config.tabs.length > 1 ? b2`<nav class="tabs" role="tablist">
                 ${this._config.tabs.map(
-      (t3) => b2`<button
+      (tab) => b2`<button
                     role="tab"
                     class="tab"
-                    aria-selected=${this._tab === t3}
+                    aria-selected=${this._tab === tab}
                     @click=${() => {
-        this._tab = t3;
+        this._tab = tab;
         this._focusDish = false;
       }}
                   >
-                    ${TAB_LABELS[t3]}
+                    ${t3(`tabs.${tab}`)}
                   </button>`
     )}
               </nav>` : A}
 
-          ${this._loading && !this._data ? b2`<div class="empty">Kelder laden…</div>` : this._renderTab(wines)}
+          ${this._loading && !this._data ? b2`<div class="empty">${t3("card.loading")}</div>` : this._renderTab(wines)}
         </div>
       </ha-card>
       ${this._renderModals(wines)}

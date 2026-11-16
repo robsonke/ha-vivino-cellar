@@ -46,12 +46,12 @@
           "scan_interval_hours": "How often the cellar is fetched from Vivino.",
           "show_panel": "Turn off if you only use the dashboard card.",
           "now_limit": "How many wines the \"Drink now\" tab shows.",
-          "weather_entity": "Suggests Verfrissend when it is warm and Winteravond when it is cold."
+          "weather_entity": "Suggests Refreshing when it is warm and Winter evening when it is cold."
         }
       },
       "locations": {
         "title": "Storage locations",
-        "description": "Vivino only shares a number for each storage location. Give each one a name, like Cellar or Fridge. Leave a field empty to show it as \"Locatie 1\", \"Locatie 2\" and so on."
+        "description": "Vivino only shares a number for each storage location. Give each one a name, like Cellar or Fridge. Leave a field empty to show it as \"Location 1\", \"Location 2\" and so on."
       }
     }
   },
@@ -154,5 +154,10 @@
         }
       }
     }
+  },
+  "common": {
+    "panel_title": "Wine cellar",
+    "location_field_one": "Location {id} · {count} bottle",
+    "location_field_other": "Location {id} · {count} bottles"
   }
 }

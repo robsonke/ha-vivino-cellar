@@ -1,16 +1,18 @@
 /**
- * Wine detail sheet with "Jouw beoordeling".
+ * Wine detail sheet with the user's own rating.
  * Fires vc-close, vc-drink {vintageId}, vc-rate {vintageId, rating, note}.
  */
 import { css, html, nothing } from "lit";
 
+import { getLanguage, t } from "../logic/i18n.js";
 import { reasonLine, STATUS_LABELS, WINE_TYPES } from "../logic/status.js";
-import { bottleSpots, formatRating, safeUrl, vintageId } from "../logic/util.js";
+import { bottleSpots, formatRating, safeUrl, spotLabel, vintageId } from "../logic/util.js";
 import { themeStyles } from "../styles/theme.js";
 import { fire } from "./events.js";
+import { LanguageController } from "./language.js";
 import { VcModal } from "./modal.js";
 
-const SOURCES = { vivino: "volgens Vivino", ai_estimate: "AI-schatting" };
+const SOURCES = ["vivino", "ai_estimate"];
 
 export class VcDetailSheet extends VcModal {
   static properties = {
@@ -20,6 +22,11 @@ export class VcDetailSheet extends VcModal {
     _rating: { state: true },
     _note: { state: true },
   };
+
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
 
   willUpdate(changed) {
     if (!changed.has("draft") || !this.draft) return;
@@ -46,7 +53,7 @@ export class VcDetailSheet extends VcModal {
     const value = this._rating ?? 0;
     return [1, 2, 3, 4, 5].map((n) => {
       const icon = value >= n ? "mdi:star" : value >= n - 0.5 ? "mdi:star-half-full" : "mdi:star-outline";
-      const label = (v) => `${String(v).replace(".", ",")} ${v === 1 ? "ster" : "sterren"}`;
+      const label = (v) => t("rating.stars", { count: v, value: new Intl.NumberFormat(getLanguage()).format(v) });
       return html`
         <span class="star ${value >= n - 0.5 ? "on" : ""}">
           <ha-icon icon=${icon}></ha-icon>
@@ -62,22 +69,22 @@ export class VcDetailSheet extends VcModal {
     const d = this.draft;
     if (!d) return nothing;
     if (d.status === "loading") {
-      return html`<section class="rating"><h4>Jouw beoordeling</h4><div class="muted">Laden…</div></section>`;
+      return html`<section class="rating"><h4>${t("rating.title")}</h4><div class="muted">${t("common.loading")}</div></section>`;
     }
     const status =
       d.status === "saving"
-        ? html`<span class="muted">Opslaan…</span>`
+        ? html`<span class="muted">${t("rating.saving")}</span>`
         : d.status === "error"
-          ? html`<span class="err">${d.error || "Mislukt"}</span>`
+          ? html`<span class="err">${d.error || t("rating.failed")}</span>`
           : d.status === "saved" && !this._changed
-            ? html`<span class="ok">Opgeslagen op Vivino</span>`
+            ? html`<span class="ok">${t("rating.saved")}</span>`
             : this.saved
               ? nothing
-              : html`<span class="muted">Nog niet beoordeeld</span>`;
+              : html`<span class="muted">${t("rating.not_rated")}</span>`;
     return html`
       <section class="rating">
-        <h4>Jouw beoordeling</h4>
-        <div class="stars" role="group" aria-label="Kies een beoordeling">
+        <h4>${t("rating.title")}</h4>
+        <div class="stars" role="group" aria-label=${t("rating.choose")}>
           ${this._stars()}
           <span class="value">${this._rating ? formatRating(this._rating) : "–"}</span>
         </div>
@@ -85,14 +92,14 @@ export class VcDetailSheet extends VcModal {
           class="input"
           id="rating-note"
           rows="2"
-          placeholder="Notitie (optioneel)"
+          placeholder=${t("rating.note_placeholder")}
           .value=${this._note ?? ""}
           @input=${(e) => (this._note = e.target.value)}
         ></textarea>
         <div class="actions">
           ${status}
           <button class="btn btn-primary save" ?disabled=${!this._changed || d.status === "saving"} @click=${this._save}>
-            Opslaan
+            ${t("rating.save")}
           </button>
         </div>
       </section>
@@ -102,7 +109,7 @@ export class VcDetailSheet extends VcModal {
   render() {
     const w = this.wine;
     if (!w) return nothing;
-    const name = w.name || "Onbekende wijn";
+    const name = w.name || t("wine.unknown");
     const status = w.window_status || "unknown";
     const image = safeUrl(w.image_url);
     const link = safeUrl(w.vivino_url);
@@ -110,11 +117,11 @@ export class VcDetailSheet extends VcModal {
       w.start_year && w.end_year
         ? `${w.start_year} – ${w.end_year}`
         : w.start_year
-          ? `vanaf ${w.start_year}`
+          ? t("window.from", { year: w.start_year })
           : w.end_year
-            ? `tot ${w.end_year}`
-            : "onbekend";
-    const source = SOURCES[w.window_source];
+            ? t("window.until", { year: w.end_year })
+            : t("window.unknown");
+    const source = SOURCES.includes(w.window_source) ? t(`detail.source.${w.window_source}`) : "";
     const type = [WINE_TYPES[w.type_id], w.style].filter(Boolean).join(" · ");
     const origin = [w.region, w.country].filter(Boolean).join(", ");
     const foods = (w.foods || []).map((f) => f.name).filter(Boolean).join(", ");
@@ -134,7 +141,7 @@ export class VcDetailSheet extends VcModal {
               ${w.winery ? html`<div class="muted">${w.winery}</div>` : nothing}
               <div class="badges">
                 ${typeof w.rating === "number"
-                  ? html`<span class="badge star-badge"><ha-icon icon="mdi:star"></ha-icon>${formatRating(w.rating)}${w.ratings_count ? ` · ${w.ratings_count} beoordelingen` : ""}</span>`
+                  ? html`<span class="badge star-badge"><ha-icon icon="mdi:star"></ha-icon>${formatRating(w.rating)}${w.ratings_count ? ` · ${t("detail.ratings_count", { count: w.ratings_count })}` : ""}</span>`
                   : nothing}
                 <span class="badge">${STATUS_LABELS[status] || status}</span>
               </div>
@@ -143,16 +150,16 @@ export class VcDetailSheet extends VcModal {
           </div>
           <div class="body">
             <dl>
-              ${row("Drinkvenster", html`${window}${source ? html` <span class="muted">(${source})</span>` : nothing}`)}
-              ${row("Soort", type)}
-              ${row("Herkomst", origin)}
-              ${row("Druiven", grapes)}
-              ${row("Past bij", foods)}
+              ${row(t("detail.window"), html`${window}${source ? html` <span class="muted">(${source})</span>` : nothing}`)}
+              ${row(t("detail.type"), type)}
+              ${row(t("detail.origin"), origin)}
+              ${row(t("detail.grapes"), grapes)}
+              ${row(t("detail.foods"), foods)}
               ${row(
-                "Flessen",
+                t("detail.bottles"),
                 spots.length
-                  ? spots.map((s) => html`<div>${s.location}${s.bin ? ` · vak ${s.bin}` : ""}: ${s.bottles.length}×</div>`)
-                  : "Geen flessen op voorraad"
+                  ? spots.map((s) => html`<div>${spotLabel(s)}: ${s.bottles.length}×</div>`)
+                  : t("detail.no_bottles")
               )}
             </dl>
             ${this._ratingSection()}
@@ -160,13 +167,13 @@ export class VcDetailSheet extends VcModal {
           <div class="foot">
             ${link
               ? html`<a class="vivino" href=${link} target="_blank" rel="noopener noreferrer">
-                  Bekijk op Vivino <ha-icon icon="mdi:open-in-new"></ha-icon>
+                  ${t("detail.view_on_vivino")} <ha-icon icon="mdi:open-in-new"></ha-icon>
                 </a>`
               : nothing}
-            <button class="btn" id="close" autofocus @click=${() => fire(this, "vc-close")}>Sluiten</button>
+            <button class="btn" id="close" autofocus @click=${() => fire(this, "vc-close")}>${t("common.close")}</button>
             ${(w.bottles || []).length
               ? html`<button class="btn btn-primary" @click=${() => fire(this, "vc-drink", { vintageId: vintageId(w) })}>
-                  <ha-icon icon="mdi:glass-wine"></ha-icon> Ontkurken
+                  <ha-icon icon="mdi:glass-wine"></ha-icon> ${t("common.uncork")}
                 </button>`
               : nothing}
           </div>

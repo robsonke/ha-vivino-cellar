@@ -22,6 +22,7 @@ from .exceptions import (
     VivinoAuthError,
     VivinoConnectionError,
 )
+from .i18n import async_texts, plural
 from .locations import location_counts
 from .vivino_client import VivinoClient
 
@@ -344,7 +345,7 @@ class VivinoCellarOptionsFlow(config_entries.OptionsFlow):
                 CONF_NOW_LIMIT: int(user_input[CONF_NOW_LIMIT]),
                 CONF_WEATHER_ENTITY: user_input.get(CONF_WEATHER_ENTITY) or None,
             }
-            if self._location_fields():
+            if await self._async_location_fields():
                 return await self.async_step_locations()
             existing = (self.config_entry.options or {}).get(CONF_LOCATION_NAMES)
             if existing:
@@ -360,26 +361,30 @@ class VivinoCellarOptionsFlow(config_entries.OptionsFlow):
             data_schema=self.add_suggested_values_to_schema(OPTIONS_SCHEMA, suggested),
         )
 
-    def _location_fields(self) -> dict[str, int]:
+    async def _async_location_fields(self) -> dict[str, int]:
         """Form label -> storage location id, for the locations in the cellar.
 
         Vivino only gives ids, so the label itself names the location and its
-        bottle count (dynamic fields have no translation).
+        bottle count. Dynamic fields get no translation from HA, so the label
+        comes from our own "common" translations in HA's language.
         """
         hass = getattr(self, "hass", None)
         domain_data = getattr(hass, "data", {}).get(DOMAIN, {}) if hass else {}
         coordinator = domain_data.get(self.config_entry.entry_id)
         counts = location_counts(getattr(coordinator, "data", None))
+        if not counts:
+            return {}
+        texts = await async_texts(hass)
         return {
-            f"Locatie {loc_id} · {n} {'fles' if n == 1 else 'flessen'}": loc_id
+            plural(texts, "location_field", n, id=loc_id): loc_id
             for loc_id, n in counts.items()
         }
 
     async def async_step_locations(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Name each storage location (e.g. Kelder, Koelkast)."""
-        fields = self._location_fields()
+        """Name each storage location (e.g. Cellar, Fridge)."""
+        fields = await self._async_location_fields()
         if user_input is not None:
             names = {
                 str(loc_id): str(user_input.get(label) or "").strip()

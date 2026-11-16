@@ -1,14 +1,21 @@
-/** The one wine to open tonight: big photo, reason line, primary Ontkurken. */
+/** The one wine to open tonight: big photo, reason line, primary uncork button. */
 import { LitElement, css, html, nothing } from "lit";
 
+import { t } from "../logic/i18n.js";
 import { styleLine } from "../logic/ranking.js";
 import { reasonLine } from "../logic/status.js";
 import { safeUrl, vintageId } from "../logic/util.js";
 import { themeStyles } from "../styles/theme.js";
 import { fire } from "./events.js";
+import { LanguageController } from "./language.js";
 
 export class VcTopPick extends LitElement {
   static properties = { wine: { attribute: false } };
+
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
 
   _open() {
     fire(this, "vc-open", { vintageId: vintageId(this.wine) });
@@ -17,7 +24,7 @@ export class VcTopPick extends LitElement {
   render() {
     const w = this.wine;
     if (!w) return nothing;
-    const name = w.name || "Onbekende wijn";
+    const name = w.name || t("wine.unknown");
     const image = safeUrl(w.image_url);
     const sub = [styleLine(w), w.winery, w.region].filter(Boolean).join(" · ");
     return html`
@@ -25,7 +32,7 @@ export class VcTopPick extends LitElement {
         class="pick s-${w.window_status || "unknown"}"
         role="button"
         tabindex="0"
-        aria-label="Details: ${name}"
+        aria-label=${t("wine.details", { name })}
         @click=${this._open}
         @keydown=${(e) => {
           if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
@@ -48,7 +55,7 @@ export class VcTopPick extends LitElement {
               fire(this, "vc-drink", { vintageId: vintageId(w) });
             }}
           >
-            <ha-icon icon="mdi:glass-wine"></ha-icon> Ontkurken
+            <ha-icon icon="mdi:glass-wine"></ha-icon> ${t("common.uncork")}
           </button>
         </div>
       </div>
