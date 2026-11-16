@@ -1535,7 +1535,7 @@ function rankTonight(wines, chipId) {
   }
   return picks.sort((a3, b3) => rule.rank(a3, b3) || byDefault(a3, b3));
 }
-function describe(wine) {
+function styleLine(wine) {
   const type = WINE_TYPES[wine.type_id];
   const body = bodyOf(wine);
   if (wine.type_id === RED && body >= 4) return "Vol, krachtig";
@@ -1547,7 +1547,7 @@ function hintLine(wine, chipId, year) {
   const end = wine.end_year;
   if (wine.window_status === "past_peak") return end ? `Voorbij de piek \xB7 sinds ${end}` : "Voorbij de piek";
   if (wine.window_status === "can_wait") return end ? `Kan nog liggen \xB7 tot ${end}` : "Kan nog liggen";
-  const text = describe(wine);
+  const text = styleLine(wine);
   if (wine.window_status === "near_past_peak") return `${text} \xB7 drink in ${end ?? year}`;
   return end ? `${text} \xB7 tot ${end}` : text;
 }
@@ -1605,7 +1605,7 @@ var VcTopPick = class extends i4 {
     if (!w2) return A;
     const name = w2.name || "Onbekende wijn";
     const image = safeUrl(w2.image_url);
-    const sub = [w2.winery, w2.region].filter(Boolean).join(" \xB7 ");
+    const sub = [styleLine(w2), w2.winery, w2.region].filter(Boolean).join(" \xB7 ");
     return b2`
       <div
         class="pick s-${w2.window_status || "unknown"}"

@@ -102,7 +102,8 @@ export function rankTonight(wines, chipId) {
   return picks.sort((a, b) => rule.rank(a, b) || byDefault(a, b));
 }
 
-function describe(wine) {
+/** "Licht, rood", "Fris, wit", "Vol, krachtig": type and weight in a few words. */
+export function styleLine(wine) {
   const type = WINE_TYPES[wine.type_id];
   const body = bodyOf(wine);
   if (wine.type_id === RED && body >= 4) return "Vol, krachtig";
@@ -116,7 +117,7 @@ export function hintLine(wine, chipId, year) {
   const end = wine.end_year;
   if (wine.window_status === "past_peak") return end ? `Voorbij de piek · sinds ${end}` : "Voorbij de piek";
   if (wine.window_status === "can_wait") return end ? `Kan nog liggen · tot ${end}` : "Kan nog liggen";
-  const text = describe(wine);
+  const text = styleLine(wine);
   if (wine.window_status === "near_past_peak") return `${text} · drink in ${end ?? year}`;
   return end ? `${text} · tot ${end}` : text;
 }
