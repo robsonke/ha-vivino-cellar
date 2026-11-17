@@ -242,6 +242,9 @@ class VivinoCellarSuggestWineIntent(intent.IntentHandler):
             loc_parts = []
             if first_b.location_name:
                 loc_parts.append(f"in {first_b.location_name}")
+            elif first_b.location_number:
+                word = "Locatie" if is_nl else "Location"
+                loc_parts.append(f"in {word} {first_b.location_number}")
             if first_b.bin:
                 if is_nl:
                     loc_parts.append(f"vak {first_b.bin}")

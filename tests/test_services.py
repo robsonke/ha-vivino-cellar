@@ -84,6 +84,7 @@ def _create_sample_pairing_results() -> list[PairingResult]:
         location_name="Wine Fridge",
         bin="A1",
         created_at="2024-01-01",
+        location_number=1,
     )
     bottle2 = Bottle(
         id=102,
@@ -199,6 +200,7 @@ async def test_suggest_pairing_with_dish(mock_coordinator: MagicMock) -> None:
     assert b1["bottle_id"] == 101
     assert b1["storage_location_id"] == 10
     assert b1["location_name"] == "Wine Fridge"
+    assert b1["location_number"] == 1
     assert b1["bin"] == "A1"
 
 

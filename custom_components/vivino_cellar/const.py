@@ -19,21 +19,25 @@ CONF_NOW_LIMIT = "now_limit"
 CONF_LOCATION_NAMES = "location_names"
 CONF_WEATHER_ENTITY = "weather_entity"
 
-DEFAULT_TITLE = "Wijnkelder"
+# English fallback for the sidebar title; translated via i18n.py (common.panel_title)
+DEFAULT_TITLE = "Wine cellar"
 DEFAULT_SCAN_INTERVAL = 6
 DEFAULT_NOW_LIMIT = 5
 
-# Title HA gives a new entry; shown as DEFAULT_TITLE until the user renames it.
+# Title HA gives a new entry; it counts as "no name" until the user renames it.
 _DEFAULT_ENTRY_TITLE = re.compile(r"^Vivino Cellar \(.*\)$")
 
 
 def cellar_title(entry: Any) -> str:
-    """Return the cellar name: the entry title, unless it is still the default."""
+    """Return the cellar name the user chose, or "" when it is still the default.
+
+    An empty title lets the card and the sidebar show a translated default.
+    """
     title = getattr(entry, "title", None)
     if not isinstance(title, str) or not title.strip():
-        return DEFAULT_TITLE
+        return ""
     title = title.strip()
-    return DEFAULT_TITLE if _DEFAULT_ENTRY_TITLE.match(title) else title
+    return "" if _DEFAULT_ENTRY_TITLE.match(title) else title
 
 
 def cellar_settings(entry: Any) -> dict[str, Any]:

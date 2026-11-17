@@ -153,8 +153,33 @@ async def test_register_frontend_sidebar_panel(mock_hass):
     call_kwargs = frontend.async_register_panel.call_args[1]
     assert call_kwargs.get("frontend_url_path") == "vivino_cellar"
     assert call_kwargs.get("webcomponent_name") == "vivino-cellar-card"
-    assert call_kwargs.get("sidebar_title") == "Wijnkelder"
+    assert call_kwargs.get("sidebar_title") == "Wine cellar"
     assert call_kwargs.get("sidebar_icon") == "mdi:barrel"
+
+
+@pytest.mark.asyncio
+async def test_register_frontend_default_title_in_ha_language(mock_hass):
+    """Without a cellar name the sidebar shows the default in HA's language."""
+    mock_hass.config.language = "nl"
+    load = AsyncMock(
+        return_value={"component.vivino_cellar.common.panel_title": "Wijnkelder"}
+    )
+    with patch("custom_components.vivino_cellar.i18n._async_load", load):
+        await async_register_frontend(mock_hass)
+    kwargs = mock_hass.components.frontend.async_register_panel.call_args[1]
+    assert kwargs["sidebar_title"] == "Wijnkelder"
+    assert load.await_args.args[1] == "nl"
+
+
+@pytest.mark.asyncio
+async def test_register_frontend_title_falls_back_to_english(mock_hass):
+    """A failing translation lookup still gives a sidebar title."""
+    mock_hass.config.language = "fr"
+    load = AsyncMock(side_effect=RuntimeError("no translations"))
+    with patch("custom_components.vivino_cellar.i18n._async_load", load):
+        await async_register_frontend(mock_hass)
+    kwargs = mock_hass.components.frontend.async_register_panel.call_args[1]
+    assert kwargs["sidebar_title"] == "Wine cellar"
 
 
 @pytest.mark.asyncio

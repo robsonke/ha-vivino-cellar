@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
+import { setLanguage } from "../src/logic/i18n.js";
+
+setLanguage("nl"); // these tests pin the Dutch texts the card showed before i18n
+
 import { weatherSuggestion } from "../src/logic/weather.js";
 
 const hass = (temperature, unit = "°C") => ({
@@ -10,18 +14,18 @@ const hass = (temperature, unit = "°C") => ({
 
 test("warm suggests Verfrissend", () => {
   assert.deepEqual(weatherSuggestion(hass(27), "weather.home"), {
-    chip: "verfrissend",
+    chip: "refreshing",
     text: "☀️ Het is 27°. Iets fris?",
   });
-  assert.equal(weatherSuggestion(hass(24), "weather.home").chip, "verfrissend");
+  assert.equal(weatherSuggestion(hass(24), "weather.home").chip, "refreshing");
 });
 
 test("cold suggests Winteravond", () => {
   assert.deepEqual(weatherSuggestion(hass(5.4), "weather.home"), {
-    chip: "winteravond",
+    chip: "winter_evening",
     text: "❄️ Het is 5°. Iets voor bij de haard?",
   });
-  assert.equal(weatherSuggestion(hass(8), "weather.home").chip, "winteravond");
+  assert.equal(weatherSuggestion(hass(8), "weather.home").chip, "winter_evening");
 });
 
 test("mild weather: no suggestion", () => {
@@ -30,7 +34,7 @@ test("mild weather: no suggestion", () => {
 
 test("Fahrenheit is converted for the thresholds but shown as-is", () => {
   const s = weatherSuggestion(hass(80, "°F"), "weather.home");
-  assert.equal(s.chip, "verfrissend");
+  assert.equal(s.chip, "refreshing");
   assert.equal(s.text, "☀️ Het is 80°. Iets fris?");
   assert.equal(weatherSuggestion(hass(60, "°F"), "weather.home"), null);
 });

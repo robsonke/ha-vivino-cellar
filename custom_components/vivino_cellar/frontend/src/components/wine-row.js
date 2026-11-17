@@ -4,9 +4,11 @@
  */
 import { LitElement, css, html, nothing } from "lit";
 
+import { t } from "../logic/i18n.js";
 import { safeUrl, vintageId } from "../logic/util.js";
 import { themeStyles } from "../styles/theme.js";
 import { fire } from "./events.js";
+import { LanguageController } from "./language.js";
 
 export class VcWineRow extends LitElement {
   static properties = {
@@ -17,6 +19,7 @@ export class VcWineRow extends LitElement {
   constructor() {
     super();
     this.lines = [];
+    this._language = new LanguageController(this);
   }
 
   _open() {
@@ -39,7 +42,7 @@ export class VcWineRow extends LitElement {
   render() {
     const w = this.wine;
     if (!w) return nothing;
-    const name = w.name || "Onbekende wijn";
+    const name = w.name || t("wine.unknown");
     const image = safeUrl(w.image_url);
     const status = w.window_status || "unknown";
     return html`
@@ -47,7 +50,7 @@ export class VcWineRow extends LitElement {
         class="row s-${status}"
         role="button"
         tabindex="0"
-        aria-label="Details: ${name}"
+        aria-label=${t("wine.details", { name })}
         @click=${this._open}
         @keydown=${this._key}
       >
@@ -60,8 +63,8 @@ export class VcWineRow extends LitElement {
         </div>
         <button
           class="icon-btn glass"
-          title="Ontkurken"
-          aria-label="Ontkurken: ${name}"
+          title=${t("common.uncork")}
+          aria-label=${t("wine.uncork_name", { name })}
           ?disabled=${!(w.bottles || []).length}
           @click=${this._drink}
         >

@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from .const import DEFAULT_TITLE
+from .i18n import async_texts
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ PANEL_URL = "vivino_cellar"
 PANEL_ICON = "mdi:barrel"
 PANEL_WEBCOMPONENT = "vivino-cellar-card"
 CARD_JS = "vivino-cellar-card.js"
-VERSION = "0.9.1"
+VERSION = "0.10.0"
 
 try:
     from homeassistant.components.http import StaticPathConfig
@@ -65,12 +65,13 @@ def _get_frontend_component(hass: Any) -> Any:
 
 
 async def async_register_frontend(
-    hass: Any, *, title: str = DEFAULT_TITLE, show_panel: bool = True
+    hass: Any, *, title: str = "", show_panel: bool = True
 ) -> None:
     """Register frontend static path, Lovelace resource, and sidebar panel.
 
     The card is always served (dashboards use it); the sidebar panel only
-    when show_panel is on.
+    when show_panel is on. Without a title the panel gets the translated
+    default ("Wine cellar" in HA's language).
     """
     # Check if panel is already registered
     panels = (
@@ -135,6 +136,7 @@ async def async_register_frontend(
         return
 
     # 5. Register sidebar panel via panel_custom
+    title = title or (await async_texts(hass))["panel_title"]
     panel_custom = await _ensure_panel_custom(hass)
     registered = False
 

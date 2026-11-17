@@ -154,5 +154,10 @@
         }
       }
     }
+  },
+  "common": {
+    "panel_title": "Wijnkelder",
+    "location_field_one": "Locatie {id} · {count} fles",
+    "location_field_other": "Locatie {id} · {count} flessen"
   }
 }

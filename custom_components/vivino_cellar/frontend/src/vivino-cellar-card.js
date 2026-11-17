@@ -15,6 +15,7 @@ import "./components/spot-picker.js";
 import "./components/toast-stack.js";
 import "./components/wine-row.js";
 import { EMPTY_FILTERS } from "./logic/filters.js";
+import { getLanguage, setLanguage, t } from "./logic/i18n.js";
 import { rankTonight } from "./logic/ranking.js";
 import { STATUS_ORDER } from "./logic/status.js";
 import { bottleId, bottleSpots, viewWines, vintageId } from "./logic/util.js";
@@ -22,9 +23,7 @@ import { weatherSuggestion } from "./logic/weather.js";
 import { themeStyles, tokenStyles } from "./styles/theme.js";
 
 const DEFAULT_TABS = ["now", "pairing", "cellar"];
-const TAB_ALIASES = { windows: "cellar" }; // old name of the Kelder tab
-const TAB_LABELS = { now: "Nu drinken", pairing: "Wijn & Spijs", cellar: "Kelder" };
-const DEFAULT_TITLE = "Wijnkelder";
+const TAB_ALIASES = { windows: "cellar" }; // old name of the cellar tab
 const DEFAULT_NOW_LIMIT = 5;
 const UNDO_MS = 8000;
 const ERROR_TOAST_MS = 8000;
@@ -73,7 +72,7 @@ export class VivinoCellarCard extends LitElement {
     this._chip = null;
     this._chipTouched = false; // the user picked a chip; the weather no longer preselects
     this._weatherApplied = false; // the weather preselects a chip once per load
-    this._focusDish = false; // "Bij het eten" asks Wijn & Spijs to focus the dish input
+    this._focusDish = false; // the food chip asks the pairing tab to focus the dish input
     this._pairing = { dish: "", foodIds: new Set(), results: null, loading: false, error: null };
     this._unsubscribe = null;
     this._subscribing = false;
@@ -97,8 +96,8 @@ export class VivinoCellarCard extends LitElement {
 
   _parseConfig(config) {
     const tabs = (Array.isArray(config.tabs) && config.tabs.length ? config.tabs : DEFAULT_TABS)
-      .map((t) => TAB_ALIASES[t] || t)
-      .filter((t) => TAB_LABELS[t]);
+      .map((tab) => TAB_ALIASES[tab] || tab)
+      .filter((tab) => DEFAULT_TABS.includes(tab));
     return {
       ...config,
       tabs: tabs.length ? tabs : DEFAULT_TABS,
@@ -115,7 +114,7 @@ export class VivinoCellarCard extends LitElement {
   }
 
   get title() {
-    return this._config.title || this._data?.settings?.title || DEFAULT_TITLE;
+    return this._config.title || this._data?.settings?.title || t("card.default_title");
   }
 
   get nowLimit() {
@@ -143,6 +142,8 @@ export class VivinoCellarCard extends LitElement {
 
   willUpdate(changed) {
     if (changed.has("hass") && this.hass) {
+      // Before rendering: children re-render themselves when the language changes.
+      setLanguage(this.hass.locale?.language || this.hass.language);
       this.toggleAttribute("dark", Boolean(this.hass.themes?.darkMode));
       if (this.isConnected) this._subscribe();
     }
@@ -197,7 +198,7 @@ export class VivinoCellarCard extends LitElement {
       this._data = await this.hass.callWS({ type: "vivino_cellar/cellar" });
       this._error = null;
     } catch (err) {
-      this._error = err?.message || "Fout bij ophalen van keldergegevens.";
+      this._error = err?.message || t("card.load_error");
     } finally {
       this._loading = false;
     }
@@ -211,7 +212,7 @@ export class VivinoCellarCard extends LitElement {
       if (!this._unsubscribe) this._data = await this.hass.callWS({ type: "vivino_cellar/cellar" });
       this._error = null;
     } catch (err) {
-      this._error = err?.message || "Fout bij vernieuwen van kelder.";
+      this._error = err?.message || t("card.refresh_error");
     } finally {
       this._refreshing = false;
     }
@@ -252,7 +253,7 @@ export class VivinoCellarCard extends LitElement {
   _startDrink(wine, bottle) {
     const id = bottleId(bottle);
     if (this._pending.has(id)) return;
-    const name = wine.name || "Fles";
+    const name = wine.name || t("wine.bottle_fallback");
     this._pending.set(id, {
       timer: setTimeout(() => this._commitDrink(id), UNDO_MS),
       startedAt: Date.now(),
@@ -284,7 +285,7 @@ export class VivinoCellarCard extends LitElement {
       if (!this._unsubscribe) await this._loadOnce();
     } catch (err) {
       this._pending.delete(id);
-      this._showError(`Ontkurken van ${pending.label} mislukt: ${err?.message || err}`);
+      this._showError(t("card.drink_error", { label: pending.label, error: err?.message || err }));
     }
     this.requestUpdate();
   }
@@ -371,7 +372,7 @@ export class VivinoCellarCard extends LitElement {
     const ids = [...(foodIds || [])];
     const state = { ...this._pairing, dish: cleanDish, foodIds: new Set(ids) };
     if (!cleanDish && ids.length === 0) {
-      this._pairing = { ...state, results: null, error: "Voer een gerecht in of kies een categorie." };
+      this._pairing = { ...state, results: null, error: t("pairing.need_input") };
       return;
     }
     this._pairing = { ...state, loading: true, error: null };
@@ -382,7 +383,7 @@ export class VivinoCellarCard extends LitElement {
       const res = await this.hass.callWS(payload);
       this._pairing = { ...this._pairing, loading: false, results: res.matches || res.pairings || [] };
     } catch (err) {
-      this._pairing = { ...this._pairing, loading: false, results: null, error: err?.message || "Fout bij zoeken naar pairing." };
+      this._pairing = { ...this._pairing, loading: false, results: null, error: err?.message || t("pairing.error") };
     }
   }
 
@@ -432,11 +433,11 @@ export class VivinoCellarCard extends LitElement {
 
   _lastRefresh() {
     const iso = this._data?.last_refresh_time;
-    if (!iso) return "Nooit";
+    if (!iso) return t("card.never");
     const d = new Date(iso);
     return Number.isNaN(d.getTime())
       ? iso
-      : d.toLocaleDateString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+      : d.toLocaleDateString(getLanguage(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   }
 
   render() {
@@ -449,12 +450,12 @@ export class VivinoCellarCard extends LitElement {
             <div class="logo"><ha-icon icon="mdi:barrel"></ha-icon></div>
             <div class="titles">
               <div class="title">${this.title}</div>
-              <div class="muted sub">${total} flessen · bijgewerkt ${this._lastRefresh()}</div>
+              <div class="muted sub">${t("card.summary", { count: total, time: this._lastRefresh() })}</div>
             </div>
             <button
               class="icon-btn ${this._refreshing ? "spinning" : ""}"
-              title="Vernieuwen"
-              aria-label="Vernieuwen"
+              title=${t("card.refresh")}
+              aria-label=${t("card.refresh")}
               ?disabled=${this._refreshing}
               @click=${this._refresh}
             >
@@ -465,7 +466,7 @@ export class VivinoCellarCard extends LitElement {
           ${this._data?.last_update_success === false
             ? html`<div class="banner warn">
                 <ha-icon icon="mdi:alert"></ha-icon>
-                Laatste update van Vivino mislukt. Gegevens kunnen verouderd zijn; controleer de Vivino-sessie.
+                ${t("card.stale")}
               </div>`
             : nothing}
           ${this._error ? html`<div class="banner error"><ha-icon icon="mdi:alert-circle"></ha-icon>${this._error}</div>` : nothing}
@@ -473,23 +474,23 @@ export class VivinoCellarCard extends LitElement {
           ${this._config.tabs.length > 1
             ? html`<nav class="tabs" role="tablist">
                 ${this._config.tabs.map(
-                  (t) => html`<button
+                  (tab) => html`<button
                     role="tab"
                     class="tab"
-                    aria-selected=${this._tab === t}
+                    aria-selected=${this._tab === tab}
                     @click=${() => {
-                      this._tab = t;
+                      this._tab = tab;
                       this._focusDish = false;
                     }}
                   >
-                    ${TAB_LABELS[t]}
+                    ${t(`tabs.${tab}`)}
                   </button>`
                 )}
               </nav>`
             : nothing}
 
           ${this._loading && !this._data
-            ? html`<div class="empty">Kelder laden…</div>`
+            ? html`<div class="empty">${t("card.loading")}</div>`
             : this._renderTab(wines)}
         </div>
       </ha-card>

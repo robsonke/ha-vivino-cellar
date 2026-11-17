@@ -73,6 +73,7 @@ def _create_sample_cellar_data() -> CellarData:
         location_name="Wine Fridge",
         bin="A1",
         created_at="2024-01-01",
+        location_number=1,
     )
     b2 = Bottle(
         id=102,
@@ -273,6 +274,7 @@ async def test_ws_cellar_overview(mock_coordinator: MagicMock) -> None:
     assert margaux["style"] == "Bordeaux Red"
     assert len(margaux["bottles"]) == 2
     assert margaux["bottles"][0]["location_name"] == "Wine Fridge"
+    assert margaux["bottles"][0]["location_number"] == 1
     assert margaux["bottles"][0]["bin"] == "A1"
 
     # Grouped wines check
@@ -352,6 +354,7 @@ async def test_ws_pairing_with_dish(mock_coordinator: MagicMock) -> None:
     assert match["explanation"] == "Excellent match with grilled ribeye beef."
     assert len(match["bottles"]) == 2
     assert match["bottles"][0]["bottle_id"] == 101
+    assert match["bottles"][0]["location_number"] == 1
 
 
 @pytest.mark.asyncio

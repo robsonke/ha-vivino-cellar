@@ -1,4 +1,5 @@
-/** Kelder filtering, facet options and sorting. */
+/** Cellar tab filtering, facet options and sorting. */
+import { getLanguage } from "./i18n.js";
 import { STATUS_ORDER } from "./status.js";
 
 export const EMPTY_FILTERS = {
@@ -47,10 +48,10 @@ export function filterOptions(wines, key, valuesOf, labelOf, ctx, alsoSkip = [])
   if (selected && !counts.has(selected)) counts.set(selected, 0);
   return [...counts.entries()]
     .map(([value, n]) => ({ value, label: labelOf(value), n }))
-    .sort((a, b) => a.label.localeCompare(b.label, "nl"));
+    .sort((a, b) => a.label.localeCompare(b.label, getLanguage()));
 }
 
-const byName = (a, b) => (a.name || "").localeCompare(b.name || "", "nl");
+const byName = (a, b) => (a.name || "").localeCompare(b.name || "", getLanguage());
 const nullsLast = (v) => (v === null || v === undefined ? Infinity : v);
 
 const SORTERS = {

@@ -1,13 +1,15 @@
 /**
- * Wijn & Spijs: dish search or food chips, results as compact rows.
+ * Food pairing tab: dish search or food chips, results as compact rows.
  * Fires vc-pairing-search {dish, foodIds} and vc-pairing-reset.
  */
 import { LitElement, css, html, nothing } from "lit";
 
+import { t } from "../logic/i18n.js";
 import { STATUS_LABELS } from "../logic/status.js";
 import { vintageId } from "../logic/util.js";
 import { themeStyles } from "../styles/theme.js";
 import { fire } from "./events.js";
+import { LanguageController } from "./language.js";
 import "./wine-row.js";
 
 export class VcPairingTab extends LitElement {
@@ -18,6 +20,11 @@ export class VcPairingTab extends LitElement {
     focusDish: { type: Boolean },
     _dish: { state: true },
   };
+
+  constructor() {
+    super();
+    this._language = new LanguageController(this);
+  }
 
   willUpdate(changed) {
     if (changed.has("pairing") && this._dish === undefined) this._dish = this.pairing?.dish || "";
@@ -47,19 +54,19 @@ export class VcPairingTab extends LitElement {
 
   _results() {
     const p = this.pairing || {};
-    if (p.loading) return html`<div class="empty">Zoeken…</div>`;
+    if (p.loading) return html`<div class="empty">${t("pairing.searching")}</div>`;
     if (p.error) return html`<div class="error">${p.error}</div>`;
     if (!p.results) return nothing;
-    if (!p.results.length) return html`<div class="empty">Geen passende wijn in je kelder.</div>`;
+    if (!p.results.length) return html`<div class="empty">${t("pairing.no_match")}</div>`;
     const byId = new Map((this.wines || []).map((w) => [vintageId(w), w]));
     return html`
-      <div class="section-label">Past erbij</div>
+      <div class="section-label">${t("pairing.matches")}</div>
       <div class="list">
         ${p.results.map((match) => {
           const wine = { ...match, ...(byId.get(vintageId(match)) || {}) };
           if (!(wine.bottles || []).length) return nothing;
           const status = wine.window_status || "unknown";
-          const when = [STATUS_LABELS[status], wine.end_year ? `tot ${wine.end_year}` : ""].filter(Boolean).join(" · ");
+          const when = [STATUS_LABELS[status], wine.end_year ? t("window.until", { year: wine.end_year }) : ""].filter(Boolean).join(" · ");
           return html`<vc-wine-row .wine=${wine} .lines=${[match.explanation, when]}></vc-wine-row>`;
         })}
       </div>
@@ -76,18 +83,18 @@ export class VcPairingTab extends LitElement {
           id="dish"
           class="input"
           type="search"
-          placeholder="Wat eet je? Bijv. pasta met truffel"
+          placeholder=${t("pairing.dish_placeholder")}
           .value=${this._dish ?? ""}
           @input=${(e) => (this._dish = e.target.value)}
           @keydown=${(e) => e.key === "Enter" && this._search()}
         />
         <button class="btn btn-primary" ?disabled=${!(this._dish || "").trim()} @click=${this._search}>
-          Zoek
+          ${t("pairing.search")}
         </button>
       </div>
 
       ${categories.length
-        ? html`<div class="foods" role="group" aria-label="Of kies een categorie">
+        ? html`<div class="foods" role="group" aria-label=${t("pairing.categories_label")}>
             ${categories.map(
               (c) => html`<button class="chip" aria-pressed=${selected.has(c.id)} @click=${() => this._toggleFood(c.id)}>
                 ${c.name}
@@ -97,7 +104,7 @@ export class VcPairingTab extends LitElement {
         : nothing}
 
       ${p.results || p.error || (this._dish || "") || selected.size
-        ? html`<button class="btn btn-link reset" @click=${this._reset}>Opnieuw</button>`
+        ? html`<button class="btn btn-link reset" @click=${this._reset}>${t("pairing.reset")}</button>`
         : nothing}
 
       ${this._results()}

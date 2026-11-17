@@ -284,3 +284,32 @@ async def test_intent_dutch_spoken_summary(mock_coordinator: MagicMock) -> None:
     speech = response.speech["plain"]["speech"]
     assert "Ik raad" in speech
     assert "flessen" in speech or "fles" in speech
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("language", "expected"), [("en", "in Location 2"), ("nl", "in Locatie 2")]
+)
+async def test_intent_unnamed_location_is_numbered(
+    mock_coordinator: MagicMock, language: str, expected: str
+) -> None:
+    """A location without a name is spoken as its number."""
+    results = _create_sample_pairing_results()
+    bottle = results[0].vintage.bottles[0]
+    bottle.location_name = ""
+    bottle.location_number = 2
+    mock_coordinator.async_suggest_pairing = AsyncMock(return_value=results)
+    hass = MockHass()
+    hass.data[DOMAIN] = {"entry_1": mock_coordinator}
+
+    handler = VivinoCellarSuggestWineIntent(hass)
+    intent_obj = Intent(
+        hass=hass,
+        platform="conversation",
+        intent_type=INTENT_SUGGEST_WINE,
+        slots={"dish": {"value": "Biefstuk"}},
+        language=language,
+    )
+
+    response = await handler.async_handle(intent_obj)
+    assert expected in response.speech["plain"]["speech"]

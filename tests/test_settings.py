@@ -24,7 +24,6 @@ from custom_components.vivino_cellar.const import (
     CONF_SHOW_PANEL,
     DEFAULT_NOW_LIMIT,
     DEFAULT_SCAN_INTERVAL,
-    DEFAULT_TITLE,
     cellar_settings,
     cellar_title,
 )
@@ -46,15 +45,15 @@ def _entry(title="Vivino Cellar (651553)", options=None, data=None):
 @pytest.mark.parametrize(
     ("title", "expected"),
     [
-        ("Vivino Cellar (651553)", DEFAULT_TITLE),
-        ("", DEFAULT_TITLE),
-        (None, DEFAULT_TITLE),
+        ("Vivino Cellar (651553)", ""),
+        ("", ""),
+        (None, ""),
         ("Kelder Kerkstraat", "Kelder Kerkstraat"),
         ("  Kelder  ", "Kelder"),
     ],
 )
 def test_cellar_title(title, expected):
-    """The default entry title falls back to Wijnkelder; a rename wins."""
+    """The default entry title is empty (the card translates it); a rename wins."""
     assert cellar_title(_entry(title=title)) == expected
 
 
@@ -62,7 +61,7 @@ def test_cellar_settings_defaults():
     """Unset options use the defaults."""
     settings = cellar_settings(_entry())
     assert settings == {
-        "title": DEFAULT_TITLE,
+        "title": "",
         CONF_AI_TASK: None,
         CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
         CONF_SHOW_PANEL: True,
@@ -144,6 +143,14 @@ def test_payload_includes_settings():
     assert _build_cellar_payload(coordinator)["settings"]["weather_entity"] == (
         "weather.home"
     )
+
+
+def test_payload_title_empty_for_default_name():
+    """No cellar name: the card shows its own translated default."""
+    coordinator = MagicMock()
+    coordinator.data = None
+    coordinator.settings = cellar_settings(_entry())
+    assert _build_cellar_payload(coordinator)["settings"]["title"] == ""
 
 
 def _setup_patches():

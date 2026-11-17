@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
+import { setLanguage } from "../src/logic/i18n.js";
+
+setLanguage("nl"); // these tests pin the Dutch texts the card showed before i18n
+
 import {
   bottleSpots,
   formatRating,
@@ -30,7 +34,7 @@ test("bottleSpots groups bottles by location and bin", () => {
     spots.map((s) => [s.location, s.bin, s.bottles.length]),
     [
       ["Koelkast", "A1", 2],
-      ["Kelder", null, 1],
+      ["Onbekende locatie", null, 1],
     ]
   );
 });
