@@ -1,0 +1,128 @@
+<!doctype html>
+<!--
+  Demo page for README screenshots: the built card with a fake `hass` and a made-up cellar.
+  Serve the repo root (python3 -m http.server 8765) and open /scripts/demo/?tab=now
+  Params: tab=now|pairing|cellar, dark=1, lang=en|nl, detail=<vintage id>, dish=<text>, width=<px>
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vivino Cellar demo</title>
+    <style>
+      :root {
+        --primary-color: #03a9f4;
+        --text-primary-color: #fff;
+        --primary-text-color: #212121;
+        --secondary-text-color: #727272;
+        --card-background-color: #fff;
+        --secondary-background-color: #e5e5e5;
+        --divider-color: rgba(0, 0, 0, 0.12);
+        --ha-card-border-radius: 12px;
+        --ha-font-family-body: Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-family: var(--ha-font-family-body);
+      }
+      :root.dark {
+        --primary-text-color: #e1e1e1;
+        --secondary-text-color: #9b9b9b;
+        --card-background-color: #1c1c1c;
+        --secondary-background-color: #282828;
+        --divider-color: rgba(225, 225, 225, 0.12);
+      }
+      body { margin: 0; padding: 16px; background: #f0f0f0; }
+      :root.dark body { background: #111; }
+      #host { margin: 0 auto; }
+    </style>
+  </head>
+  <body>
+    <div id="host"></div>
+    <script type="module">
+      import * as mdi from "https://cdn.jsdelivr.net/npm/@mdi/js@7.4.47/mdi.js";
+      import { cellarPayload, PAIRING } from "./data.js";
+
+      // Stand-in for HA's <ha-icon>: draws the MDI path.
+      customElements.define(
+        "ha-icon",
+        class extends HTMLElement {
+          static observedAttributes = ["icon"];
+          attributeChangedCallback() {
+            const name = (this.getAttribute("icon") || "").replace("mdi:", "");
+            const key = "mdi" + name.replace(/(^|-)(\w)/g, (_, __, c) => c.toUpperCase());
+            this.style.display = "inline-flex";
+            this.style.width = this.style.height = "var(--mdc-icon-size, 24px)";
+            // Shadow DOM: light-DOM children would shift Lit's template node indices.
+            (this.shadowRoot || this.attachShadow({ mode: "open" })).innerHTML =`<svg viewBox="0 0 24 24" width="100%" height="100%" fill="currentColor"><path d="${mdi[key] || ""}"/></svg>`;
+          }
+        }
+      );
+
+      // Stand-in for HA's <ha-card>.
+      customElements.define(
+        "ha-card",
+        class extends HTMLElement {
+          connectedCallback() {
+            Object.assign(this.style, {
+              display: "block",
+              background: "var(--card-background-color)",
+              color: "var(--primary-text-color)",
+              borderRadius: "var(--ha-card-border-radius)",
+              border: "1px solid var(--divider-color)",
+            });
+          }
+        }
+      );
+
+      await import("../../custom_components/vivino_cellar/frontend/vivino-cellar-card.js");
+
+      const p = new URLSearchParams(location.search);
+      const dark = p.get("dark") === "1";
+      document.documentElement.classList.toggle("dark", dark);
+      const host = document.getElementById("host");
+      host.style.maxWidth = `${p.get("width") || 440}px`;
+
+      const data = cellarPayload();
+      const hass = {
+        language: p.get("lang") || "en",
+        locale: { language: p.get("lang") || "en" },
+        themes: { darkMode: dark },
+        states: {},
+        config: { unit_system: { temperature: "°C" } },
+        connection: {
+          subscribeMessage: async (cb) => {
+            cb(data);
+            return () => {};
+          },
+        },
+        callWS: async (msg) => {
+          switch (msg.type) {
+            case "vivino_cellar/cellar":
+              return data;
+            case "vivino_cellar/pairing":
+              return { matches: PAIRING[(msg.dish || "").toLowerCase()] || PAIRING["truffle risotto with wild mushrooms"] };
+            case "vivino_cellar/rating":
+              return { rating: 4, note: "" };
+            default:
+              return {};
+          }
+        },
+      };
+
+      const card = document.createElement("vivino-cellar-card");
+      card.setConfig({});
+      card.hass = hass;
+      host.append(card);
+      await card.updateComplete;
+
+      // Search before showing the tab, so the dish field starts filled in.
+      if (p.get("dish")) {
+        card.dispatchEvent(new CustomEvent("vc-pairing-search", { detail: { dish: p.get("dish"), foodIds: [] } }));
+        await new Promise((r) => setTimeout(r));
+      }
+      const tab = p.get("tab");
+      if (tab) card._tab = tab;
+      await card.updateComplete;
+      if (p.get("detail")) card._openDetail(Number(p.get("detail")));
+      document.body.dataset.ready = "1";
+    </script>
+  </body>
+</html>

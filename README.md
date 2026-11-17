@@ -8,6 +8,21 @@
 
 **Vivino Cellar** integrates your personal Vivino wine cellar into [Home Assistant](https://www.home-assistant.io/). Keep track of bottle counts, monitor drinking windows (hold, ready, can wait, near peak, past peak), discover food & wine pairings using Vivino food categories or Home Assistant Assist / AI, and mark bottles as drunk directly from your dashboard or voice assistant.
 
+
+<table>
+  <tr>
+    <td><img src="docs/images/now.png" alt="Drink now: top pick and other wines for tonight" width="260"></td>
+    <td><img src="docs/images/pairing.png" alt="Food pairing for a dish" width="260"></td>
+    <td><img src="docs/images/detail.png" alt="Wine details with your rating" width="260"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/now-dark.png" alt="Drink now in a dark theme" width="260"></td>
+    <td colspan="2"><img src="docs/images/cellar.png" alt="Cellar with status pills, filters and groups" width="260"></td>
+  </tr>
+</table>
+
+<sub>Screenshots use a made-up demo cellar (<code>scripts/demo</code>).</sub>
+
 ---
 
 ## Features
@@ -38,8 +53,7 @@
   - `button.vivino_cellar_refresh` (with automatic 30s rate limiting)
   - Full Home Assistant Diagnostics support with sensitive cookie & token redaction.
 - 📱 **Sidebar Panel & Lovelace Custom Card**:
-  - Dedicated **Wine cellar** panel in your Home Assistant sidebar (`mdi:barrel`), titled in Home Assistant's system language.
-  - English and Dutch texts; the card follows each user's profile language.
+  - Dedicated **Wine cellar** panel in your Home Assistant sidebar (`mdi:barrel`).
   - Lovelace card (`custom:vivino-cellar-card`) for dashboard embedding.
 
 ---
