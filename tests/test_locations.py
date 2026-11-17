@@ -184,7 +184,10 @@ async def test_location_label_grammar(count, word):
 
 def _ha_translations(lang):
     """What HA's async_get_translations returns for our "common" category."""
-    path = Path(__file__).parents[1] / f"custom_components/vivino_cellar/translations/{lang}.json"
+    path = (
+        Path(__file__).parents[1]
+        / f"custom_components/vivino_cellar/translations/{lang}.json"
+    )
     common = json.loads(path.read_text())["common"]
     return {f"component.{DOMAIN}.common.{k}": v for k, v in common.items()}
 
@@ -208,4 +211,6 @@ def test_common_translations_match_the_fallback(lang):
     keys = {k.rsplit(".", 1)[1] for k in _ha_translations(lang)}
     assert keys == set(FALLBACK)
     if lang == "en":
-        assert {k.rsplit(".", 1)[1]: v for k, v in _ha_translations(lang).items()} == FALLBACK
+        assert {
+            k.rsplit(".", 1)[1]: v for k, v in _ha_translations(lang).items()
+        } == FALLBACK
